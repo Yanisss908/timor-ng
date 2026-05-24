@@ -27,7 +27,7 @@
   --border:      rgba(201,168,76,0.15);
   --border-strong:rgba(201,168,76,0.35);
 }
-
+ 
 /* ════ RESET ════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -46,7 +46,7 @@ body::before {
     radial-gradient(ellipse 40% 40% at 80% 80%, rgba(74,127,165,0.04) 0%, transparent 50%);
   pointer-events: none; z-index: 0;
 }
-
+ 
 /* ════ NAV ════ */
 nav {
   position: sticky; top: 0; z-index: 100;
@@ -71,7 +71,7 @@ nav {
   padding: 6px 14px; border-radius: 4px; transition: all 0.2s;
 }
 .nav-links a:hover, .nav-links a.active { color: var(--gold); background: rgba(201,168,76,0.08); }
-
+ 
 /* ════ HERO ════ */
 .hero {
   position: relative; z-index: 1;
@@ -115,7 +115,7 @@ nav {
 }
 .hero-stat .lbl { font-size: 0.75rem; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; }
 .hero-btns { display: flex; gap: 12px; }
-
+ 
 /* ════ BUTTONS ════ */
 .btn-primary {
   font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.15em;
@@ -131,7 +131,7 @@ nav {
   text-decoration: none; display: inline-block; transition: all 0.2s;
 }
 .btn-outline:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
-
+ 
 /* Discord button */
 .btn-discord {
   font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em;
@@ -142,7 +142,7 @@ nav {
 }
 .btn-discord:hover { background: #4752c4; transform: translateY(-1px); }
 .btn-discord:disabled { opacity: 0.4; cursor: default; transform: none; }
-
+ 
 /* ════ SECTIONS ════ */
 .section {
   display: none; position: relative; z-index: 1;
@@ -159,7 +159,7 @@ nav {
   color: var(--gold); letter-spacing: 0.08em;
 }
 .section-header p { font-size: 0.95rem; color: var(--text-muted); font-style: italic; margin-top: 2px; }
-
+ 
 /* ════ AUTH NAV ════ */
 #nav-auth { display: flex; align-items: center; }
 .nav-user {
@@ -186,7 +186,7 @@ nav {
   transition: color 0.15s; line-height: 1;
 }
 .btn-nav-logout:hover { color: var(--danger); }
-
+ 
 /* ════ AUTH BANNER ════ */
 .auth-banner {
   background: var(--dark2); border: 1px solid var(--border-strong);
@@ -197,7 +197,7 @@ nav {
   gap: 1rem; flex-wrap: wrap;
 }
 .auth-banner p { font-size: 0.95rem; color: var(--text-muted); font-style: italic; margin: 0; }
-
+ 
 /* ════ ADMIN PANEL ════ */
 .admin-section {
   background: rgba(165,74,74,0.07);
@@ -221,7 +221,7 @@ nav {
   padding: 6px 14px; border-radius: 2px; cursor: pointer; transition: all 0.2s;
 }
 .btn-admin:hover { background: rgba(165,74,74,0.2); border-color: rgba(165,74,74,0.4); }
-
+ 
 /* ════ QUEST ════ */
 .quest-filter { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .filter-btn {
@@ -257,7 +257,7 @@ nav {
 .status-progress { background: rgba(201,168,76,0.15); color: var(--gold);      border: 1px solid rgba(201,168,76,0.3); }
 .status-locked   { background: rgba(90,84,72,0.2);   color: var(--text-dim);  border: 1px solid rgba(90,84,72,0.3); }
 .status-todo     { background: rgba(74,127,165,0.15); color: var(--accent-light); border: 1px solid rgba(74,127,165,0.3); }
-
+ 
 /* Bouton validation admin sur les quêtes */
 .btn-validate-quest {
   font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.06em;
@@ -267,7 +267,7 @@ nav {
 }
 .btn-validate-quest:hover { background: rgba(74,138,90,0.2); }
 body.is-admin .btn-validate-quest { display: block; }
-
+ 
 /* ════ TUTORIALS ════ */
 .tuto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .tuto-card {
@@ -290,7 +290,7 @@ body.is-admin .btn-validate-quest { display: block; }
 .step-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
 .step-text strong { color: var(--text); font-weight: 600; font-style: normal; display: block; margin-bottom: 2px; }
 .tuto-toggle { font-size: 0.78rem; color: var(--gold-dim); font-family: 'Cinzel', serif; letter-spacing: 0.06em; }
-
+ 
 /* ════ PAYS ════ */
 .pays-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 2rem; }
 .info-block { background: var(--dark2); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem 1.5rem; }
@@ -321,7 +321,7 @@ body.is-admin .btn-validate-quest { display: block; }
   padding: 3px 10px; border-radius: 2px;
   background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.25);
 }
-
+ 
 /* ════ LEADERBOARD ════ */
 .leaderboard { display: flex; flex-direction: column; gap: 6px; }
 .lb-row {
@@ -348,7 +348,7 @@ body.is-admin .btn-validate-quest { display: block; }
 .lb-detail { font-size: 0.82rem; color: var(--text-dim); font-style: italic; margin-top: 1px; }
 .lb-xp { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; color: var(--gold); }
 .lb-quests { font-size: 0.75rem; color: var(--text-dim); font-family: 'Cinzel', serif; letter-spacing: 0.06em; text-align: right; }
-
+ 
 /* ════ DIVIDER ════ */
 .divider {
   display: flex; align-items: center; gap: 1rem;
@@ -356,7 +356,7 @@ body.is-admin .btn-validate-quest { display: block; }
   font-size: 0.75rem; font-family: 'Cinzel', serif; letter-spacing: 0.2em;
 }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
+ 
 /* ════ ACTIVITY ════ */
 .activity-list { display: flex; flex-direction: column; gap: 8px; }
 .activity-item {
@@ -370,7 +370,7 @@ body.is-admin .btn-validate-quest { display: block; }
 .activity-text { flex: 1; color: var(--text-muted); font-style: italic; }
 .activity-text strong { color: var(--text); font-style: normal; }
 .activity-time { color: var(--text-dim); font-size: 0.78rem; font-family: 'Cinzel', serif; }
-
+ 
 /* ════ FOOTER ════ */
 footer {
   position: relative; z-index: 1;
@@ -379,7 +379,7 @@ footer {
 }
 footer strong { color: var(--gold-dim); font-style: normal; font-family: 'Cinzel', serif; }
 footer a { color: var(--gold-dim); }
-
+ 
 /* ════ TOAST ════ */
 #toast {
   position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
@@ -390,7 +390,7 @@ footer a { color: var(--gold-dim); }
   transition: opacity 0.3s; max-width: 320px;
 }
 #toast.show { opacity: 1; }
-
+ 
 /* ════ RESPONSIVE ════ */
 @media (max-width: 640px) {
   nav { padding: 0 1rem; }
@@ -404,10 +404,10 @@ footer a { color: var(--gold-dim); }
 </style>
 </head>
 <body>
-
+ 
 <!-- ════ TOAST ════ -->
 <div id="toast"></div>
-
+ 
 <!-- ════ NAV ════ -->
 <nav>
   <a class="nav-logo" onclick="showSection('accueil')">
@@ -432,7 +432,7 @@ footer a { color: var(--gold-dim); }
     </button>
   </div>
 </nav>
-
+ 
 <!-- ════ HERO ════ -->
 <div class="hero">
   <div class="hero-emblem">
@@ -453,7 +453,7 @@ footer a { color: var(--gold-dim); }
     <a href="#" class="btn-outline"  onclick="showSection('pays');   return false;">Découvrir Timor</a>
   </div>
 </div>
-
+ 
 <!-- ════ ACCUEIL ════ -->
 <div class="section active" id="accueil">
   <div class="section-header">
@@ -462,7 +462,7 @@ footer a { color: var(--gold-dim); }
       <p>Vos quêtes en cours et l'activité récente</p>
     </div>
   </div>
-
+ 
   <!-- Panneau admin — visible uniquement pour admin/modo -->
   <div class="admin-section" id="admin-panel">
     <div class="admin-title">⚔ Panneau Administrateur</div>
@@ -473,7 +473,7 @@ footer a { color: var(--gold-dim); }
       <button class="btn-admin" onclick="showSection('classement')">Voir classement</button>
     </div>
   </div>
-
+ 
   <!-- Bannière connexion — cachée quand connecté -->
   <div class="auth-banner" id="auth-banner">
     <p>Connecte-toi avec Discord pour suivre ta progression et apparaître au classement.</p>
@@ -484,7 +484,7 @@ footer a { color: var(--gold-dim); }
       Se connecter avec Discord
     </button>
   </div>
-
+ 
   <div class="quests-grid" style="margin-bottom:2rem;">
     <div class="quest-card">
       <div class="quest-icon" style="background:rgba(74,138,90,0.15);">🏠</div>
@@ -516,9 +516,9 @@ footer a { color: var(--gold-dim); }
       <div class="quest-status status-locked">Verrouillée</div>
     </div>
   </div>
-
+ 
   <div class="divider">Activité récente</div>
-
+ 
   <div class="activity-list">
     <div class="activity-item">
       <div class="activity-dot dot-gold"></div>
@@ -542,7 +542,7 @@ footer a { color: var(--gold-dim); }
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ QUÊTES ════ -->
 <div class="section" id="quetes">
   <div class="section-header">
@@ -665,7 +665,7 @@ footer a { color: var(--gold-dim); }
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ TUTORIELS ════ -->
 <div class="section" id="tutoriels">
   <div class="section-header">
@@ -746,7 +746,7 @@ footer a { color: var(--gold-dim); }
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ LE PAYS ════ -->
 <div class="section" id="pays">
   <div class="section-header">
@@ -828,7 +828,7 @@ footer a { color: var(--gold-dim); }
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ CLASSEMENT ════ -->
 <div class="section" id="classement">
   <div class="section-header">
@@ -903,12 +903,12 @@ footer a { color: var(--gold-dim); }
     Le classement est mis à jour dynamiquement depuis Firestore. Pour signaler une quête complétée, rendez-vous sur notre Discord dans le canal <strong style="color:var(--gold);font-style:normal;">#validation-quêtes</strong>.
   </div>
 </div>
-
+ 
 <footer>
   <strong>TIMOR</strong> — Pays référent sur NationsGlory &nbsp;·&nbsp; Site réalisé par la communauté timoraise &nbsp;·&nbsp;
   <a href="#" onclick="showSection('accueil');return false;">Accueil</a>
 </footer>
-
+ 
 <!-- ════ FIREBASE + DISCORD LOGIC ════ -->
 <script type="module">
 import { initializeApp }                                         from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -916,7 +916,7 @@ import { getAuth, signInWithCustomToken, signOut, onAuthStateChanged }
                                                                   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, orderBy, query, limit }
                                                                   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+ 
 /* ──────── CONFIG ──────── */
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyCuJB4TvWad3_7hpKHpIYAlcjYKrNdt49U",
@@ -926,25 +926,25 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "827878800488",
   appId:             "1:827878800488:web:bebd23cc03139bfd0ecfdd"
 };
-
+ 
 const DISCORD_CLIENT_ID    = "1508123459782443260";
 const DISCORD_REDIRECT_URI = "https://yanisss908.github.io/timor-ng/discord-callback.html";
 const DISCORD_SCOPES       = "identify guilds.members.read";
 const EXCHANGE_URL         = "https://timor-discord-auth.yanismanca66.workers.dev/";
-
+ 
 /* Rôles admins par Discord ID — ajoute ici les IDs des admins/modos */
 const ADMIN_IDS = new Set([
-  /* ex: "123456789012345678" */
+  "1407099669271810159"
 ]);
 const MODO_IDS  = new Set([
   /* ex: "987654321098765432" */
 ]);
-
+ 
 /* ──────── INIT ──────── */
 const app  = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-
+ 
 /* ──────── DISCORD OAUTH ──────── */
 function loginWithDiscord() {
   const state = crypto.randomUUID();
@@ -957,7 +957,7 @@ function loginWithDiscord() {
   url.searchParams.set("state",         state);
   window.location.href = url.toString();
 }
-
+ 
 async function handleDiscordCallback(code, returnedState) {
   const savedState = sessionStorage.getItem("discord_oauth_state");
   if (savedState && returnedState && returnedState !== savedState) {
@@ -966,7 +966,7 @@ async function handleDiscordCallback(code, returnedState) {
     return null;
   }
   sessionStorage.removeItem("discord_oauth_state");
-
+ 
   try {
     const res = await fetch(EXCHANGE_URL, {
       method:  "POST",
@@ -974,11 +974,11 @@ async function handleDiscordCallback(code, returnedState) {
       body:    JSON.stringify({ code, redirect_uri: DISCORD_REDIRECT_URI })
     });
     if (!res.ok) throw new Error("Token exchange failed: " + res.status);
-
+ 
     const { access_token, firebase_token } = await res.json();
     const userCred   = await signInWithCustomToken(auth, firebase_token);
     const discordUser = await fetchDiscordUser(access_token);
-
+ 
     await upsertUserProfile(userCred.user.uid, discordUser, access_token);
     showToast("Connexion réussie ! Bienvenue, " + (discordUser.global_name || discordUser.username) + " !");
     return userCred.user;
@@ -988,7 +988,7 @@ async function handleDiscordCallback(code, returnedState) {
     return null;
   }
 }
-
+ 
 async function fetchDiscordUser(accessToken) {
   const res = await fetch("https://discord.com/api/users/@me", {
     headers: { Authorization: "Bearer " + accessToken }
@@ -996,15 +996,15 @@ async function fetchDiscordUser(accessToken) {
   if (!res.ok) throw new Error("Discord API error: " + res.status);
   return res.json();
 }
-
+ 
 async function upsertUserProfile(uid, discordUser, accessToken) {
   const ref  = doc(db, "users", uid);
   const snap = await getDoc(ref);
-
+ 
   const avatarUrl = discordUser.avatar
     ? "https://cdn.discordapp.com/avatars/" + discordUser.id + "/" + discordUser.avatar + ".png?size=128"
     : "https://cdn.discordapp.com/embed/avatars/" + (Number(discordUser.discriminator || 0) % 5) + ".png";
-
+ 
   const base = {
     discordId:     discordUser.id,
     username:      discordUser.username,
@@ -1014,7 +1014,7 @@ async function upsertUserProfile(uid, discordUser, accessToken) {
     discordToken:  accessToken,
     updatedAt:     new Date().toISOString()
   };
-
+ 
   if (!snap.exists()) {
     await setDoc(ref, {
       ...base,
@@ -1031,13 +1031,13 @@ async function upsertUserProfile(uid, discordUser, accessToken) {
     await updateDoc(ref, updates);
   }
 }
-
+ 
 async function logout() {
   await signOut(auth);
   document.body.classList.remove("is-admin", "is-modo");
   showToast("Déconnecté.");
 }
-
+ 
 /* ──────── RÉACTIVITÉ UI ──────── */
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -1049,28 +1049,28 @@ onAuthStateChanged(auth, async (user) => {
     renderDisconnectedState();
   }
 });
-
+ 
 function renderConnectedState(user, profile) {
   document.getElementById("auth-banner").style.display = "none";
-
+ 
   const name   = escHtml(profile?.globalName || profile?.username || user.displayName || "Citoyen");
   const avatar = profile?.avatar || "";
   const xp     = profile?.xp ?? 0;
   const role   = profile?.role || "citoyen";
-
+ 
   /* Classes body pour règles CSS admin */
   document.body.classList.toggle("is-admin", role === "admin");
   document.body.classList.toggle("is-modo",  role === "modo");
-
+ 
   /* Panneau admin */
   const adminPanel = document.getElementById("admin-panel");
   if (adminPanel) adminPanel.classList.toggle("visible", role === "admin" || role === "modo");
-
+ 
   /* Badge rôle */
   let roleBadge = "";
   if (role === "admin") roleBadge = '<span class="nav-role-badge role-admin">Admin</span>';
   else if (role === "modo") roleBadge = '<span class="nav-role-badge role-modo">Modo</span>';
-
+ 
   /* Nav */
   const navAuth = document.getElementById("nav-auth");
   if (navAuth) {
@@ -1084,10 +1084,10 @@ function renderConnectedState(user, profile) {
       "</div>";
     document.getElementById("btn-logout").addEventListener("click", logout);
   }
-
+ 
   const dashWelcome = document.getElementById("dash-welcome");
   if (dashWelcome) dashWelcome.textContent = "Bienvenue, " + (profile?.globalName || profile?.username || "Citoyen") + " !";
-
+ 
   /* Marque les quêtes complétées */
   if (profile?.quetes) {
     Object.keys(profile.quetes).forEach(function(qid) {
@@ -1103,17 +1103,17 @@ function renderConnectedState(user, profile) {
     });
   }
 }
-
+ 
 function renderDisconnectedState() {
   document.getElementById("auth-banner").style.display = "";
   document.body.classList.remove("is-admin", "is-modo");
-
+ 
   const adminPanel = document.getElementById("admin-panel");
   if (adminPanel) adminPanel.classList.remove("visible");
-
+ 
   const dashWelcome = document.getElementById("dash-welcome");
   if (dashWelcome) dashWelcome.textContent = "Tableau de bord";
-
+ 
   const navAuth = document.getElementById("nav-auth");
   if (navAuth) {
     navAuth.innerHTML =
@@ -1126,7 +1126,7 @@ function renderDisconnectedState() {
     document.getElementById("btn-login").addEventListener("click", loginWithDiscord);
   }
 }
-
+ 
 /* ──────── CLASSEMENT FIRESTORE ──────── */
 async function loadLeaderboard() {
   const lbEl = document.getElementById("leaderboard-dynamic");
@@ -1135,11 +1135,11 @@ async function loadLeaderboard() {
     const q    = query(collection(db, "users"), orderBy("xp", "desc"), limit(10));
     const snap = await getDocs(q);
     if (snap.empty) return;
-
+ 
     const medals     = ["🥇","🥈","🥉"];
     const topClasses = ["top1","top2","top3"];
     const rankClasses = ["rank-1","rank-2","rank-3"];
-
+ 
     lbEl.innerHTML = "";
     var i = 0;
     snap.forEach(function(docSnap) {
@@ -1154,7 +1154,7 @@ async function loadLeaderboard() {
       const avatarHtml = p.avatar
         ? '<div class="lb-avatar"><img src="' + p.avatar + '" alt="" onerror="this.parentNode.textContent=\'' + initials + '\'"></div>'
         : '<div class="lb-avatar">' + initials + "</div>";
-
+ 
       lbEl.innerHTML +=
         '<div class="lb-row ' + rowClass + '">' +
           '<div class="lb-rank ' + rankClass + '">' + rankLabel + "</div>" +
@@ -1174,27 +1174,27 @@ async function loadLeaderboard() {
     console.warn("Classement Firestore indisponible:", err.message);
   }
 }
-
+ 
 /* ──────── ADMIN : VALIDER QUÊTE ──────── */
 window.adminValidateQuest = async function(btn, questId, xpValue) {
   const user = auth.currentUser;
   if (!user) { showToast("Non connecté."); return; }
-
+ 
   // Cible le joueur sélectionné (ici on valide pour l'utilisateur connecté comme demo)
   // Pour valider pour un autre joueur, il faudrait un sélecteur de cible
   const ref  = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
   if (!snap.exists()) { showToast("Profil introuvable."); return; }
-
+ 
   const profile = snap.data();
   const quetes  = profile.quetes || {};
   if (quetes[questId]) { showToast("Quête déjà validée."); return; }
-
+ 
   quetes[questId] = { completedAt: new Date().toISOString(), validatedBy: user.uid };
   const newXp = (profile.xp || 0) + xpValue;
-
+ 
   await updateDoc(ref, { quetes: quetes, xp: newXp });
-
+ 
   /* Met à jour l'UI de la carte */
   const card = btn.closest(".quest-card");
   if (card) {
@@ -1202,11 +1202,11 @@ window.adminValidateQuest = async function(btn, questId, xpValue) {
     if (statusEl) { statusEl.className = "quest-status status-done"; statusEl.textContent = "Terminé"; }
     card.classList.remove("locked");
   }
-
+ 
   showToast("Quête validée ! +" + xpValue + " XP accordés.");
   await loadLeaderboard();
 };
-
+ 
 /* ──────── UTILS ──────── */
 function escHtml(str) {
   return String(str)
@@ -1215,10 +1215,10 @@ function escHtml(str) {
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;");
 }
-
+ 
 /* ──────── EXPOSE API PUBLIQUE ──────── */
 window.Timor = { loginWithDiscord, logout, handleDiscordCallback };
-
+ 
 /* ──────── TRAITE LE CODE RETOUR DU CALLBACK ──────── */
 (async function() {
   const pendingCode  = sessionStorage.getItem("discord_pending_code");
@@ -1232,7 +1232,7 @@ window.Timor = { loginWithDiscord, logout, handleDiscordCallback };
   }
 })();
 </script>
-
+ 
 <!-- ════ HELPERS UI (non-module) ════ -->
 <script>
 function showSection(id) {
@@ -1246,7 +1246,7 @@ function showSection(id) {
   if (map[id] !== undefined && links[map[id]]) links[map[id]].classList.add('active');
   window.scrollTo({ top: document.querySelector('nav').offsetHeight, behavior: 'smooth' });
 }
-
+ 
 function filterQuests(level, btn) {
   document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
@@ -1254,7 +1254,7 @@ function filterQuests(level, btn) {
     card.style.display = (level === 'all' || card.dataset.level === level) ? 'flex' : 'none';
   });
 }
-
+ 
 function toggleTuto(card) {
   var isOpen = card.classList.contains('open');
   document.querySelectorAll('.tuto-card').forEach(function(c) { c.classList.remove('open'); });
@@ -1265,7 +1265,7 @@ function toggleTuto(card) {
     if (toggle) toggle.textContent = 'Fermer ▴';
   }
 }
-
+ 
 var _toastTimer = null;
 function showToast(msg) {
   var el = document.getElementById('toast');
