@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion — Timor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Cinzel', serif;
+    background: #0d0d0f;
+    color: #c9a84c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    flex-direction: column;
+    gap: 1.25rem;
+    letter-spacing: 0.1em;
+  }
+  .emblem {
+    width: 64px; height: 64px;
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 0.5rem;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  .emblem svg { width: 28px; height: 28px; fill: #c9a84c; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid rgba(201,168,76,0.15);
+    border-top-color: #c9a84c;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .title { font-size: 0.8rem; letter-spacing: 0.2em; color: #c9a84c; }
+  .msg { color: #5a5448; font-size: 0.72rem; letter-spacing: 0.08em; }
+  .error {
+    color: #a54a4a;
+    font-size: 0.8rem;
+    background: rgba(165,74,74,0.1);
+    border: 1px solid rgba(165,74,74,0.25);
+    padding: 10px 20px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+<div class="emblem">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 1L3 5v6c0 5.25 3.75 10.15 9 11.25C17.25 21.15 21 16.25 21 11V5L12 1zm0 4l6 2.67V11c0 3.75-2.57 7.26-6 8.43C8.57 18.26 6 14.75 6 11V7.67L12 5z"/>
+  </svg>
+</div>
+<div class="spinner"></div>
+<div class="title">AUTHENTIFICATION EN COURS</div>
+<div class="msg" id="status">Échange du code Discord…</div>
+
+<script>
+  (function() {
+    var statusEl = document.getElementById('status');
+    var params = new URLSearchParams(window.location.search);
+    var code   = params.get('code');
+    var state  = params.get('state');
+    var error  = params.get('error');
+
+    function redirect(msg, delay) {
+      statusEl.textContent = msg || 'Redirection…';
+      setTimeout(function() {
+        window.location.replace('index.html');
+      }, delay || 1200);
+    }
+
+    if (error) {
+      statusEl.textContent = '';
+      var errDiv = document.createElement('div');
+      errDiv.className = 'error';
+      errDiv.textContent = 'Connexion annulée — retour au site…';
+      statusEl.parentNode.insertBefore(errDiv, statusEl);
+      setTimeout(function() { window.location.replace('index.html'); }, 2500);
+      return;
+    }
+
+    if (!code) {
+      redirect('Paramètre manquant — redirection…', 1500);
+      return;
+    }
+
+    // Vérifie le state CSRF avant de stocker quoi que ce soit
+    var savedState = sessionStorage.getItem('discord_oauth_state');
+    if (savedState && state && state !== savedState) {
+      statusEl.textContent = '';
+      var errDiv2 = document.createElement('div');
+      errDiv2.className = 'error';
+      errDiv2.textContent = 'Erreur de sécurité (state mismatch) — retour au site…';
+      statusEl.parentNode.insertBefore(errDiv2, statusEl);
+      sessionStorage.removeItem('discord_oauth_state');
+      setTimeout(function() { window.location.replace('index.html'); }, 3000);
+      return;
+    }
+
+    // Stocke le code pour traitement dans index.html
+    sessionStorage.setItem('discord_pending_code',  code);
+    sessionStorage.setItem('discord_pending_state', state || '');
+    redirect('Redirection vers Timor…', 800);
+  })();
+</script>
+</body>
+</html>
