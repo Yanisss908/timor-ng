@@ -235,86 +235,76 @@ nav {
 .admin-card-item-name { flex: 1; font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--text-muted); }
 .admin-card-item-xp { font-family: 'Cinzel', serif; font-size: 0.68rem; color: var(--gold); }
 
-/* ══ QUEST PAGE ══ */
-.quest-page { display: none; position: fixed; inset: 0; z-index: 200; background: var(--dark); overflow-y: auto; }
-.quest-page.active { display: block; animation: fadeUp 0.3s ease; }
-.quest-page-inner { max-width: 720px; margin: 0 auto; padding: 2rem; }
-.quest-page-back {
+/* ══ XP MANUAL CONTROL ══ */
+.xp-control-row {
+  display: flex; gap: 8px; align-items: center; margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid rgba(165,74,74,0.15);
+}
+.xp-control-row label { color: var(--text-dim); font-size: 0.75rem; white-space: nowrap; min-width: 80px; }
+.xp-control-row input {
+  font-family: 'Crimson Pro', serif; font-size: 0.88rem;
+  background: var(--dark3); color: var(--text);
+  border: 1px solid rgba(165,74,74,0.3); border-radius: 3px;
+  padding: 7px 12px; width: 110px; outline: none;
+  transition: border-color 0.2s;
+}
+.xp-control-row input:focus { border-color: rgba(165,74,74,0.6); }
+.xp-hint { font-size: 0.75rem; color: var(--text-dim); font-style: italic; }
+
+/* ══ DISCOVERY FLOW OVERLAY ══ */
+.discovery-page { display: none; position: fixed; inset: 0; z-index: 200; background: var(--dark); overflow-y: auto; }
+.discovery-page.active { display: block; animation: fadeUp 0.3s ease; }
+.discovery-inner { max-width: 720px; margin: 0 auto; padding: 2rem; }
+.discovery-back {
   font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em;
   color: var(--text-dim); background: none; border: none; cursor: pointer;
   display: flex; align-items: center; gap: 6px; margin-bottom: 2rem;
   transition: color 0.2s; padding: 0;
 }
-.quest-page-back:hover { color: var(--gold); }
-.quest-page-header { margin-bottom: 2rem; }
-.quest-page-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-.quest-page-title { font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 700; color: var(--gold); margin-bottom: 0.5rem; }
-.quest-page-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
-.quest-page-xp { font-family: 'Cinzel', serif; font-size: 0.82rem; color: var(--gold); background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.25); padding: 4px 12px; border-radius: 2px; }
-.quest-page-level { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--text-dim); border: 1px solid var(--border); padding: 4px 12px; border-radius: 2px; }
-.quest-page-desc { font-size: 1rem; color: var(--text-muted); font-style: italic; line-height: 1.8; }
-
-/* Tuto steps inside quest */
-.quest-tuto { background: var(--dark2); border: 1px solid var(--border); border-radius: 4px; padding: 1.5rem; margin-bottom: 1.5rem; }
-.quest-tuto-title { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 1.25rem; }
-.quest-step {
-  display: flex; gap: 14px; align-items: flex-start; margin-bottom: 1.25rem;
-  padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+.discovery-back:hover { color: var(--gold); }
+.discovery-header { margin-bottom: 2rem; }
+.discovery-title { font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 700; color: var(--gold); margin-bottom: 0.5rem; }
+.discovery-subtitle { font-size: 1rem; color: var(--text-muted); font-style: italic; line-height: 1.7; }
+.discovery-progress-bar { height: 4px; background: rgba(201,168,76,0.12); border-radius: 99px; margin-bottom: 2rem; }
+.discovery-progress-fill { height: 100%; background: var(--gold); border-radius: 99px; transition: width 0.5s ease; }
+.discovery-steps { display: flex; flex-direction: column; gap: 12px; }
+.discovery-step {
+  background: var(--dark2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1.25rem 1.5rem;
+  display: flex; gap: 16px; align-items: flex-start;
+  transition: border-color 0.3s;
 }
-.quest-step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-.quest-step-num {
-  width: 28px; height: 28px; border-radius: 50%;
+.discovery-step.done { border-color: rgba(74,138,90,0.4); background: rgba(74,138,90,0.05); }
+.discovery-step.pending { border-color: rgba(201,168,76,0.3); }
+.discovery-step-num {
+  width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid var(--gold-dim);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold);
+  font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--gold);
   flex-shrink: 0; margin-top: 2px; transition: all 0.3s;
 }
-.quest-step.done .quest-step-num { background: rgba(74,138,90,0.2); border-color: rgba(74,138,90,0.5); color: #7ac98a; }
-.quest-step-body { flex: 1; }
-.quest-step-name { font-family: 'Cinzel', serif; font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-.quest-step-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; font-style: italic; }
-.quest-step-check { margin-top: 10px; }
-.quest-step-check label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: var(--text-dim); transition: color 0.2s; }
-.quest-step-check label:hover { color: var(--text); }
-.quest-step-check input[type=checkbox] { accent-color: var(--gold); width: 15px; height: 15px; cursor: pointer; }
-.quest-progress-bar { height: 4px; background: rgba(201,168,76,0.12); border-radius: 99px; margin-bottom: 1.5rem; }
-.quest-progress-bar-fill { height: 100%; background: var(--gold); border-radius: 99px; transition: width 0.5s ease; }
-.quest-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn-skip {
-  font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em;
-  color: var(--text-dim); background: transparent; border: 1px solid var(--border);
-  padding: 10px 20px; border-radius: 2px; cursor: pointer; transition: all 0.2s;
+.discovery-step.done .discovery-step-num { background: rgba(74,138,90,0.2); border-color: rgba(74,138,90,0.5); color: #7ac98a; }
+.discovery-step-body { flex: 1; }
+.discovery-step-title { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.discovery-step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; font-style: italic; }
+.discovery-step-xp { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); margin-top: 6px; }
+.discovery-step-status { margin-top: 10px; }
+.discovery-step-status label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: var(--text-dim); transition: color 0.2s; }
+.discovery-step-status label:hover { color: var(--text); }
+.discovery-step-status input[type=checkbox] { accent-color: var(--gold); width: 15px; height: 15px; cursor: pointer; }
+.discovery-step.done .discovery-step-status { display: none; }
+.discovery-step-done-badge { display: none; margin-top: 8px; font-family: 'Cinzel', serif; font-size: 0.72rem; color: #7ac98a; }
+.discovery-step.done .discovery-step-done-badge { display: block; }
+.discovery-step.pending .discovery-step-done-badge { display: block; color: var(--gold-dim); }
+.discovery-note {
+  margin-top: 1.5rem; background: var(--dark2); border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-dim); border-radius: 0 4px 4px 0;
+  padding: 1rem 1.25rem; font-size: 0.88rem; color: var(--text-muted); font-style: italic; line-height: 1.7;
 }
-.btn-skip:hover { color: var(--text-muted); border-color: var(--border-strong); }
-.quest-completed-badge {
-  background: rgba(74,138,90,0.15); border: 1px solid rgba(74,138,90,0.3);
-  border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
-  display: none; align-items: center; gap: 12px;
+.discovery-empty {
+  padding: 3rem 2rem; text-align: center; color: var(--text-dim);
+  font-style: italic; font-size: 0.95rem;
 }
-.quest-completed-badge.show { display: flex; }
-.quest-completed-badge .check { font-size: 1.5rem; }
-.quest-completed-badge p { font-family: 'Cinzel', serif; font-size: 0.85rem; color: #7ac98a; letter-spacing: 0.08em; }
-
-/* ══ QUESTS GRID ══ */
-.quest-filter { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.filter-btn { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.1em; padding: 6px 16px; border-radius: 2px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
-.filter-btn.active, .filter-btn:hover { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.06); }
-.quests-grid { display: flex; flex-direction: column; gap: 10px; }
-.quest-card { background: var(--dark2); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; transition: all 0.2s; cursor: pointer; }
-.quest-card:hover:not(.locked) { border-color: var(--border-strong); background: var(--dark3); transform: translateX(3px); }
-.quest-card.locked { opacity: 0.45; cursor: default; }
-.quest-icon { width: 44px; height: 44px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
-.quest-body { flex: 1; min-width: 0; }
-.quest-name { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-.quest-desc { font-size: 0.88rem; color: var(--text-muted); font-style: italic; }
-.quest-xp { font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--gold); margin-top: 4px; }
-.quest-progress { height: 3px; background: rgba(201,168,76,0.12); border-radius: 99px; margin-top: 8px; }
-.quest-progress-fill { height: 100%; background: var(--gold); border-radius: 99px; transition: width 0.6s ease; }
-.quest-status { flex-shrink: 0; font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 2px; }
-.status-done     { background: rgba(74,138,90,0.2);  color: #7ac98a;             border: 1px solid rgba(74,138,90,0.3); }
-.status-progress { background: rgba(201,168,76,0.15); color: var(--gold);         border: 1px solid rgba(201,168,76,0.3); }
-.status-locked   { background: rgba(90,84,72,0.2);   color: var(--text-dim);     border: 1px solid rgba(90,84,72,0.3); }
-.status-todo     { background: rgba(74,127,165,0.15); color: var(--accent-light); border: 1px solid rgba(74,127,165,0.3); }
 
 /* ══ TUTOS ══ */
 .tuto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
@@ -371,9 +361,6 @@ footer strong { color: var(--gold-dim); font-style: normal; font-family: 'Cinzel
 footer a { color: var(--gold-dim); }
 #toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; background: var(--dark3); border: 1px solid var(--border-strong); border-radius: 4px; padding: 12px 20px; font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.08em; color: var(--gold); opacity: 0; pointer-events: none; transition: opacity 0.3s; max-width: 320px; }
 #toast.show { opacity: 1; }
-.editable-field { position: relative; }
-.editable-field:hover .edit-hint { opacity: 1; }
-.edit-hint { opacity: 0; position: absolute; top: -24px; right: 0; font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.08em; color: #d98080; background: rgba(165,74,74,0.15); padding: 2px 8px; border-radius: 2px; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
 @media (max-width: 640px) {
   nav { padding: 0 1rem; }
   .nav-links { display: none; }
@@ -383,41 +370,33 @@ footer a { color: var(--gold-dim); }
   .section { padding: 2rem 1rem; }
   .hero-btns { flex-direction: column; align-items: center; }
 }
+
+/* ══ DASHBOARD PLAY BUTTON ══ */
+.play-block {
+  background: var(--dark2); border: 1px solid var(--border-strong);
+  border-radius: 4px; padding: 2rem; text-align: center;
+  margin-bottom: 2rem;
+}
+.play-block h3 { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); margin-bottom: 0.5rem; letter-spacing: 0.08em; }
+.play-block p { font-size: 0.92rem; color: var(--text-muted); font-style: italic; margin-bottom: 1.5rem; line-height: 1.7; }
 </style>
 </head>
 <body>
 
 <div id="toast"></div>
 
-<!-- ══ QUEST PAGE OVERLAY ══ -->
-<div class="quest-page" id="quest-page">
-  <div class="quest-page-inner">
-    <button class="quest-page-back" onclick="closeQuestPage()">← Retour aux quêtes</button>
-    <div class="quest-page-header">
-      <div class="quest-page-icon" id="qp-icon">🗺️</div>
-      <div class="quest-page-title" id="qp-title">Titre de la quête</div>
-      <div class="quest-page-meta">
-        <span class="quest-page-xp" id="qp-xp">+100 XP</span>
-        <span class="quest-page-level" id="qp-level">Débutant</span>
-      </div>
-      <div class="quest-page-desc" id="qp-desc">Description</div>
+<!-- ══ DISCOVERY FLOW OVERLAY ══ -->
+<div class="discovery-page" id="discovery-page">
+  <div class="discovery-inner">
+    <button class="discovery-back" onclick="closeDiscovery()">← Retour à l'accueil</button>
+    <div class="discovery-header">
+      <div class="discovery-title">🗺️ Commencer à jouer</div>
+      <div class="discovery-subtitle" id="disc-subtitle">Accomplis les étapes ci-dessous pour découvrir NationsGlory et Timor. Chaque action complétée sera validée par un administrateur qui t'attribuera l'XP correspondante.</div>
     </div>
-
-    <div class="quest-completed-badge" id="qp-done-badge">
-      <span class="check">✅</span>
-      <p>Quête terminée ! En attente de validation par un administrateur.</p>
-    </div>
-
-    <div class="quest-progress-bar"><div class="quest-progress-bar-fill" id="qp-progress-fill" style="width:0%"></div></div>
-
-    <div class="quest-tuto" id="qp-tuto">
-      <div class="quest-tuto-title">📖 Tutoriel — Suis les étapes</div>
-      <div id="qp-steps"></div>
-    </div>
-
-    <div class="quest-actions" id="qp-actions">
-      <button class="btn-primary" id="qp-btn-done" onclick="markQuestTutoComplete()">J'ai tout complété ✓</button>
-      <button class="btn-skip" onclick="skipQuestTuto()">Passer le tutoriel</button>
+    <div class="discovery-progress-bar"><div class="discovery-progress-fill" id="disc-progress-fill" style="width:0%"></div></div>
+    <div class="discovery-steps" id="disc-steps"></div>
+    <div class="discovery-note" id="disc-note">
+      Une fois une étape cochée, un administrateur la validera sur Discord et t'attribuera l'XP manuellement. Contacte-nous dans <strong style="color:var(--gold);font-style:normal;">#validation</strong>.
     </div>
   </div>
 </div>
@@ -429,7 +408,6 @@ footer a { color: var(--gold-dim); }
   </a>
   <ul class="nav-links" id="nav-links">
     <li><a class="active" onclick="showSection('accueil');   return false;" href="#">Accueil</a></li>
-    <li><a                onclick="showSection('quetes');    return false;" href="#">Quêtes</a></li>
     <li><a                onclick="showSection('tutoriels'); return false;" href="#">Tutoriels</a></li>
     <li><a                onclick="showSection('pays');      return false;" href="#">Le Pays</a></li>
     <li><a                onclick="showSection('classement');return false;" href="#">Classement</a></li>
@@ -451,12 +429,11 @@ footer a { color: var(--gold-dim); }
   <p id="hero-desc">Nation fondée sur la discipline, le commerce et la solidarité. Rejoins nos rangs et bâtis quelque chose de grand.</p>
   <div class="hero-stats">
     <div class="hero-stat"><span class="num" id="stat-membres">142</span><span class="lbl">Membres</span></div>
-    <div class="hero-stat"><span class="num" id="stat-quetes">24</span><span class="lbl">Quêtes</span></div>
     <div class="hero-stat"><span class="num" id="stat-rang">#3</span><span class="lbl">Rang</span></div>
   </div>
   <div class="hero-btns">
-    <a href="#" class="btn-primary" onclick="showSection('quetes'); return false;">Commencer les quêtes</a>
-    <a href="#" class="btn-outline" onclick="showSection('pays');   return false;">Découvrir Timor</a>
+    <a href="#" class="btn-primary" onclick="openDiscovery(); return false;">Commencer à jouer</a>
+    <a href="#" class="btn-outline" onclick="showSection('pays'); return false;">Découvrir Timor</a>
   </div>
 </div>
 
@@ -465,7 +442,7 @@ footer a { color: var(--gold-dim); }
   <div class="section-header">
     <div>
       <h2 id="dash-welcome">Tableau de bord</h2>
-      <p>Vos quêtes en cours</p>
+      <p>Bienvenue sur le site de Timor</p>
     </div>
   </div>
 
@@ -474,7 +451,7 @@ footer a { color: var(--gold-dim); }
     <div class="admin-title">⚔ Panneau Administrateur</div>
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="switchAdminTab('joueurs', this)">👤 Joueurs</button>
-      <button class="admin-tab" onclick="switchAdminTab('quetes-edit', this)">⚔ Quêtes</button>
+      <button class="admin-tab" onclick="switchAdminTab('decouverte', this)">🗺️ Découverte</button>
       <button class="admin-tab" onclick="switchAdminTab('tutos-edit', this)">📖 Tutoriels</button>
       <button class="admin-tab" onclick="switchAdminTab('pays-edit', this)">🏛 Pays</button>
     </div>
@@ -485,58 +462,54 @@ footer a { color: var(--gold-dim); }
       <select class="admin-select" id="admin-target-player">
         <option value="">— Chargement des joueurs… —</option>
       </select>
-      <label class="admin-label">QUÊTE À VALIDER</label>
-      <select class="admin-select" id="admin-target-quest">
-        <option value="">— Sélectionne une quête —</option>
-        <option value="q_discord:50">👋 Rejoindre le Discord (+50 XP)</option>
-        <option value="q_install:100">🗺️ Installe-toi dans le pays (+100 XP)</option>
-        <option value="q_constit:30">📜 Lis la Constitution (+30 XP)</option>
-        <option value="q_carte:75">🌍 Explore la carte nationale (+75 XP)</option>
-        <option value="q_shop:200">🏪 Ouvre ton premier commerce (+200 XP)</option>
-        <option value="q_coins:150">💰 Accumule 1 000 NGCoins (+150 XP)</option>
-        <option value="q_reunion:180">🤝 Participe à une réunion (+180 XP)</option>
-        <option value="q_defense:400">⚔️ Défends le territoire (+400 XP)</option>
-        <option value="q_recrut:350">👑 Recrute un nouveau citoyen (+350 XP)</option>
-        <option value="q_gouv:600">🏛️ Obtiens un poste gouvernemental (+600 XP)</option>
-      </select>
       <div class="admin-actions">
-        <button class="btn-admin" id="btn-valider-quete" onclick="adminValidateSelectedQuest()">✓ Valider la quête</button>
         <button class="btn-admin" onclick="adminRefreshPlayers()">↺ Actualiser liste</button>
         <button class="btn-admin" onclick="showSection('classement')">📊 Classement</button>
       </div>
+
+      <!-- XP MANUAL CONTROL -->
+      <div class="xp-control-row">
+        <label>Modifier XP</label>
+        <input type="number" id="admin-xp-amount" placeholder="ex: 150 ou -50" style="">
+        <button class="btn-admin" onclick="adminModifyXP(1)">+ Ajouter XP</button>
+        <button class="btn-admin" onclick="adminModifyXP(-1)">− Retirer XP</button>
+      </div>
+      <div class="xp-hint" style="margin-top:6px;">Entre un montant positif, puis clique + Ajouter ou − Retirer selon l'action souhaitée.</div>
+
       <div class="admin-feedback" id="admin-feedback"></div>
     </div>
 
-    <!-- TAB QUÊTES -->
-    <div class="admin-tab-panel" id="admin-tab-quetes-edit">
-      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Sélectionne une quête pour modifier son titre, description, XP ou étapes de tutoriel.</p>
-      <div class="admin-card-list" id="admin-quest-list"></div>
-      <div id="admin-quest-editor" style="display:none;">
-        <div class="admin-row"><label>Titre</label><input class="admin-input" id="aqe-title" placeholder="Titre de la quête"></div>
-        <div class="admin-row"><label>Icône</label><input class="admin-input" id="aqe-icon" placeholder="Emoji ex: 🗺️" style="max-width:100px"></div>
-        <div class="admin-row"><label>XP</label><input class="admin-input" id="aqe-xp" type="number" placeholder="100" style="max-width:100px"></div>
-        <div class="admin-row"><label>Desc.</label><textarea class="admin-textarea" id="aqe-desc" placeholder="Description courte"></textarea></div>
-        <div class="admin-row"><label>Niveau</label>
-          <select class="admin-select" id="aqe-level" style="margin-bottom:0">
-            <option value="debutant">Débutant</option>
-            <option value="intermediaire">Intermédiaire</option>
-            <option value="avance">Avancé</option>
-          </select>
-        </div>
-        <label class="admin-label" style="margin-top:8px;">ÉTAPES DU TUTORIEL (une par ligne : Titre|Description)</label>
-        <textarea class="admin-textarea" id="aqe-steps" placeholder="Crée ton compte|Va sur nationsglory.fr et inscris-toi&#10;Choisis un serveur|Demande sur le Discord lequel rejoindre" style="min-height:120px;font-family:monospace;font-size:0.8rem;"></textarea>
-        <div class="admin-actions" style="margin-top:8px;">
-          <button class="btn-admin" onclick="adminSaveQuest()">💾 Sauvegarder</button>
-          <button class="btn-admin" onclick="document.getElementById('admin-quest-editor').style.display='none'">Annuler</button>
-        </div>
-        <div class="admin-feedback" id="admin-quest-feedback"></div>
+    <!-- TAB DÉCOUVERTE -->
+    <div class="admin-tab-panel" id="admin-tab-decouverte">
+      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Configure les étapes affichées aux joueurs dans le flow "Commencer à jouer". Chaque étape a un titre, une description et une valeur XP indicative (attribuée manuellement).</p>
+
+      <label class="admin-label">TITRE DU FLOW</label>
+      <input class="admin-input" id="disc-flow-title" placeholder="Titre affiché en haut du flow">
+
+      <label class="admin-label">DESCRIPTION / INTRO</label>
+      <textarea class="admin-textarea" id="disc-flow-desc" placeholder="Texte d'introduction du flow…"></textarea>
+
+      <label class="admin-label">NOTE DE BAS DE PAGE</label>
+      <textarea class="admin-textarea" id="disc-flow-note" placeholder="Instruction pour valider, canal Discord, etc."></textarea>
+
+      <label class="admin-label" style="margin-top:4px;">ÉTAPES (une par ligne : Titre|Description|XP)</label>
+      <textarea class="admin-textarea" id="disc-flow-steps" placeholder="Rejoins le Discord|Rejoins notre serveur et présente-toi.|50&#10;Installe-toi|Construis ta première maison dans Timor.|100" style="min-height:160px;font-family:monospace;font-size:0.8rem;"></textarea>
+
+      <div class="admin-actions" style="margin-top:8px;">
+        <button class="btn-admin" onclick="adminSaveDiscovery()">💾 Sauvegarder</button>
+        <button class="btn-admin" onclick="previewDiscovery()">👁 Aperçu</button>
       </div>
+      <div class="admin-feedback" id="admin-disc-feedback"></div>
     </div>
 
     <!-- TAB TUTORIELS -->
     <div class="admin-tab-panel" id="admin-tab-tutos-edit">
-      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Modifie les tutoriels de la page Tutoriels.</p>
+      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Modifie les tutoriels de la page Tutoriels. Clique sur une carte pour l'éditer, ou ajoute-en un nouveau.</p>
       <div class="admin-card-list" id="admin-tuto-list"></div>
+      <div style="margin-bottom:8px;">
+        <button class="btn-admin" onclick="adminNewTuto()">+ Nouveau tutoriel</button>
+        <button class="btn-admin" onclick="adminDeleteTuto()" id="btn-del-tuto" style="display:none;">🗑 Supprimer</button>
+      </div>
       <div id="admin-tuto-editor" style="display:none;">
         <div class="admin-row"><label>Titre</label><input class="admin-input" id="ate-title" placeholder="Titre du tutoriel"></div>
         <div class="admin-row"><label>Icône</label><input class="admin-input" id="ate-icon" placeholder="Emoji" style="max-width:100px"></div>
@@ -545,7 +518,7 @@ footer a { color: var(--gold-dim); }
         <textarea class="admin-textarea" id="ate-steps" placeholder="Étape 1|Description&#10;Étape 2|Description" style="min-height:120px;font-family:monospace;font-size:0.8rem;"></textarea>
         <div class="admin-actions" style="margin-top:8px;">
           <button class="btn-admin" onclick="adminSaveTuto()">💾 Sauvegarder</button>
-          <button class="btn-admin" onclick="document.getElementById('admin-tuto-editor').style.display='none'">Annuler</button>
+          <button class="btn-admin" onclick="document.getElementById('admin-tuto-editor').style.display='none';document.getElementById('btn-del-tuto').style.display='none'">Annuler</button>
         </div>
         <div class="admin-feedback" id="admin-tuto-feedback"></div>
       </div>
@@ -576,26 +549,20 @@ footer a { color: var(--gold-dim); }
     </button>
   </div>
 
-  <!-- Quêtes en cours (dashboard) -->
-  <div class="quests-grid" id="dash-quests" style="margin-bottom:2rem;"></div>
-</div>
-
-<!-- QUÊTES -->
-<div class="section" id="quetes">
-  <div class="section-header"><div><h2>Quêtes</h2><p>Clique sur une quête pour ouvrir son tutoriel</p></div></div>
-  <div class="quest-filter">
-    <button class="filter-btn active" onclick="filterQuests('all', this)">Toutes</button>
-    <button class="filter-btn" onclick="filterQuests('debutant', this)">Débutant</button>
-    <button class="filter-btn" onclick="filterQuests('intermediaire', this)">Intermédiaire</button>
-    <button class="filter-btn" onclick="filterQuests('avance', this)">Avancé</button>
+  <!-- Bloc "Commencer à jouer" -->
+  <div class="play-block">
+    <h3>Prêt à rejoindre Timor ?</h3>
+    <p>Découvre NationsGlory étape par étape et gagne de l'XP en accomplissant des actions réelles dans le jeu et sur notre Discord.</p>
+    <button class="btn-primary" onclick="openDiscovery()">🗺️ Commencer à jouer</button>
   </div>
-  <div class="quests-grid" id="quests-list"></div>
 </div>
 
 <!-- TUTORIELS -->
 <div class="section" id="tutoriels">
   <div class="section-header"><div><h2>Tutoriels</h2><p>Tout ce qu'il faut savoir pour maîtriser NationsGlory</p></div></div>
-  <div class="tuto-grid" id="tuto-grid"></div>
+  <div class="tuto-grid" id="tuto-grid">
+    <div style="grid-column:1/-1;padding:3rem;text-align:center;color:var(--text-dim);font-style:italic;font-size:0.95rem;" id="tuto-empty">Aucun tutoriel disponible pour l'instant. Revenez bientôt !</div>
+  </div>
 </div>
 
 <!-- LE PAYS -->
@@ -620,7 +587,7 @@ footer a { color: var(--gold-dim); }
     <div style="padding:2rem;text-align:center;color:var(--text-dim);font-style:italic;font-size:0.9rem;">Chargement du classement…</div>
   </div>
   <div style="margin-top:1.5rem;background:var(--dark2);border:1px solid var(--border);border-radius:4px;padding:1.25rem 1.5rem;font-size:0.9rem;color:var(--text-muted);font-style:italic;line-height:1.7;">
-    Le classement est mis à jour dynamiquement depuis Firestore. Pour signaler une quête complétée, rendez-vous sur notre Discord dans le canal <strong style="color:var(--gold);font-style:normal;">#validation-quêtes</strong>.
+    Le classement est mis à jour par les administrateurs. Pour signaler une action complétée, rendez-vous sur notre Discord.
   </div>
 </div>
 
@@ -657,27 +624,14 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 /* ── Données par défaut ── */
-const DEFAULT_QUESTS = [
-  { id:"q_discord",  icon:"👋", title:"Rejoindre le Discord de Timor", desc:"Rejoins notre serveur et présente-toi dans #présentations", xp:50,  level:"debutant",      steps:[{title:"Rejoins le serveur",desc:"Clique sur le lien Discord de Timor et accepte les règles."},{title:"Présente-toi",desc:"Poste dans #présentations ton pseudo, ton âge et pourquoi tu rejoins Timor."}] },
-  { id:"q_install",  icon:"🗺️", title:"Installe-toi dans le pays",    desc:"Obtiens la nationalité timoraise et pose ta première pierre", xp:100, level:"debutant",      steps:[{title:"Demande ta nationalité",desc:"Contacte un officiel de Timor via le Discord ou le menu diplomatique."},{title:"Construis ta maison",desc:"Place au moins un bloc dans le territoire timorais pour valider ta résidence."}] },
-  { id:"q_constit",  icon:"📜", title:"Lis la Constitution de Timor",  desc:"Consulte les lois et règles du pays sur le Discord",          xp:30,  level:"debutant",      steps:[{title:"Trouve le canal #lois",desc:"Sur notre Discord, ouvre le canal #lois ou #constitution."},{title:"Confirme la lecture",desc:"Ajoute une réaction ✅ sous le message pour confirmer ta lecture."}] },
-  { id:"q_carte",    icon:"🌍", title:"Explore la carte nationale",    desc:"Repère les zones clés : marché, mairie, zones de construction", xp:75,  level:"debutant",      steps:[{title:"Ouvre la carte",desc:"Dans le jeu, utilise /map ou visite le site de la carte en ligne."},{title:"Repère les zones",desc:"Identifie le marché, la mairie et les zones constructibles de Timor."}] },
-  { id:"q_shop",     icon:"🏪", title:"Ouvre ton premier commerce",    desc:"Crée un shop et effectue ta première vente sur le marché",     xp:200, level:"intermediaire", steps:[{title:"Choisis un emplacement",desc:"Demande un emplacement au ministre de l'économie."},{title:"Crée le shop",desc:"Place un coffre et un panneau de vente avec le bon format."},{title:"Réalise une vente",desc:"Vends au moins un article à un autre joueur."}] },
-  { id:"q_coins",    icon:"💰", title:"Accumule 1 000 NGCoins",       desc:"Démontre ta capacité à générer de la richesse pour Timor",     xp:150, level:"intermediaire", steps:[{title:"Choisis ton métier",desc:"Sélectionne un métier rentable (mineur, fermier, forgeron…)."},{title:"Farme des ressources",desc:"Récupère des ressources et vends-les sur le marché."},{title:"Atteins 1 000 NGCoins",desc:"Accumule 1 000 NGCoins dans ton portefeuille."}] },
-  { id:"q_reunion",  icon:"🤝", title:"Participe à une réunion",      desc:"Assiste à un conseil national ou une session diplomatique",    xp:180, level:"intermediaire", steps:[{title:"Surveille les annonces",desc:"Dans #annonces du Discord, guette les annonces de réunion."},{title:"Rejoins la réunion",desc:"Connecte-toi au vocal ou à la salle de réunion à l'heure prévue."}] },
-  { id:"q_defense",  icon:"⚔️", title:"Défends le territoire",        desc:"Participe à la défense d'une zone timoraise lors d'un conflit", xp:400, level:"avance",        steps:[{title:"Rejoins l'armée",desc:"Inscris-toi dans le canal #armée du Discord."},{title:"Participe à un conflit",desc:"Suis les ordres du ministre de la Défense lors d'une attaque."}] },
-  { id:"q_recrut",   icon:"👑", title:"Recrute un nouveau citoyen",   desc:"Fais rejoindre un joueur et guide-le dans ses premières quêtes", xp:350, level:"avance",        steps:[{title:"Trouve un joueur",desc:"Convaincs un ami ou un nouveau joueur de rejoindre Timor."},{title:"Accompagne-le",desc:"Guide-le dans ses 3 premières quêtes pour valider ce recrutement."}] },
-  { id:"q_gouv",     icon:"🏛️", title:"Obtiens un poste gouvernemental", desc:"Candidature à un ministère ou poste officiel de Timor",    xp:600, level:"avance",        steps:[{title:"Lis les conditions",desc:"Vérifie dans #postes les prérequis pour le poste visé."},{title:"Candidate",desc:"Poste ta candidature dans le canal dédié avec ta lettre de motivation."}] },
-];
+const DEFAULT_TUTOS = []; // Vide par défaut — l'admin remplit
 
-const DEFAULT_TUTOS = [
-  { id:"t_debut",   icon:"🚀", title:"Débuter sur NationsGlory",   desc:"Les premières étapes pour créer ton compte et rejoindre Timor.", steps:[{title:"Crée ton compte",desc:"Rends-toi sur nationsglory.fr et inscris-toi."},{title:"Choisis un serveur",desc:"Sélectionne le serveur où Timor est actif."},{title:"Demande ta nationalité",desc:"Contacte un officiel de Timor via Discord."},{title:"Installe-toi",desc:"Construis ta maison dans le territoire timorais."}] },
-  { id:"t_eco",     icon:"💰", title:"Économie & Commerce",         desc:"Comment gagner des NGCoins, ouvrir un shop et devenir riche.", steps:[{title:"Choisis un métier",desc:"Chaque métier produit des ressources différentes."},{title:"Récolte des ressources",desc:"Utilise les outils adaptés pour farmer efficacement."},{title:"Ouvre un shop",desc:"Place un panneau de vente sur un coffre."},{title:"Fixe des bons prix",desc:"Regarde le marché national pour calibrer tes prix."}] },
-  { id:"t_gouv",    icon:"🏛️", title:"Politique & Gouvernement",   desc:"Comment fonctionne Timor, qui dirige et comment participer.", steps:[{title:"Comprends la hiérarchie",desc:"Timor est dirigé par un Président entouré de ministres."},{title:"Lis les lois",desc:"Le canal #lois liste les règles internes à respecter."},{title:"Participe aux votes",desc:"Les décisions importantes sont soumises aux citoyens actifs."},{title:"Postule",desc:"Candidature ouverte dans le canal dédié du Discord."}] },
-  { id:"t_guerre",  icon:"⚔️", title:"Guerre & Diplomatie",        desc:"Alliances, conflits et stratégie internationale de Timor.", steps:[{title:"Comprends les alliances",desc:"Timor entretient des pactes avec plusieurs nations."},{title:"Ne provoque pas seul",desc:"Tout acte de guerre engage tout le pays."},{title:"Suis les consignes",desc:"En cas de conflit, le ministre de la Défense coordonne."}] },
-  { id:"t_constru", icon:"🗺️", title:"Construction & Territoire",  desc:"Où construire, les règles d'urbanisme et comment étendre le territoire.", steps:[{title:"Zones constructibles",desc:"Construis uniquement dans les zones assignées à Timor."},{title:"Respecte l'esthétique",desc:"Le style architectural doit rester cohérent."},{title:"Claim ton terrain",desc:"Utilise la commande de claim pour sécuriser ta parcelle."}] },
-  { id:"t_discord", icon:"🤝", title:"Discord & Communauté",       desc:"Comment bien utiliser notre serveur Discord et qui contacter.", steps:[{title:"Présente-toi",desc:"Poste dans #présentations ton pseudo et tes motivations."},{title:"Lis les canaux importants",desc:"#règles, #annonces et #lois sont les canaux prioritaires."},{title:"Contacte un parrain",desc:"Un membre expérimenté peut t'accompagner dans #aide-nouveaux."}] },
-];
+const DEFAULT_DISCOVERY = {
+  title: "🗺️ Commencer à jouer",
+  desc:  "Accomplis les étapes ci-dessous pour découvrir NationsGlory et Timor. Chaque action sera validée par un administrateur qui t'attribuera l'XP correspondante.",
+  note:  "Une fois une étape cochée, contacte un administrateur sur Discord dans #validation pour recevoir ton XP.",
+  steps: []
+};
 
 const DEFAULT_PAYS = {
   membres:"142", rang:"#3", fondation:"[Année]",
@@ -692,86 +646,116 @@ const DEFAULT_PAYS = {
   ]
 };
 
-/* ── Cache local des données ── */
-let _quests = null;
-let _tutos  = null;
-let _pays   = null;
+/* ── Cache local ── */
+let _tutos     = null;
+let _pays      = null;
+let _discovery = null;
 
 async function loadSiteData() {
   try {
-    const [qSnap, tSnap, pSnap] = await Promise.all([
-      getDoc(doc(db, "sitedata", "quests")),
+    const [tSnap, pSnap, dSnap] = await Promise.all([
       getDoc(doc(db, "sitedata", "tutos")),
       getDoc(doc(db, "sitedata", "pays")),
+      getDoc(doc(db, "sitedata", "discovery")),
     ]);
-    _quests = qSnap.exists() ? qSnap.data().list : DEFAULT_QUESTS;
-    _tutos  = tSnap.exists() ? tSnap.data().list : DEFAULT_TUTOS;
-    _pays   = pSnap.exists() ? pSnap.data()      : DEFAULT_PAYS;
+    _tutos     = tSnap.exists() ? tSnap.data().list : DEFAULT_TUTOS;
+    _pays      = pSnap.exists() ? pSnap.data()      : DEFAULT_PAYS;
+    _discovery = dSnap.exists() ? dSnap.data()      : DEFAULT_DISCOVERY;
   } catch(e) {
-    _quests = DEFAULT_QUESTS;
-    _tutos  = DEFAULT_TUTOS;
-    _pays   = DEFAULT_PAYS;
+    _tutos     = DEFAULT_TUTOS;
+    _pays      = DEFAULT_PAYS;
+    _discovery = DEFAULT_DISCOVERY;
   }
-  renderQuests();
   renderTutos();
   renderPays();
+  renderDiscovery();
 }
 
-/* ── Rendu des quêtes ── */
-function renderQuests(userProfile) {
-  if (!_quests) return;
-  const list = document.getElementById("quests-list");
-  const dash = document.getElementById("dash-quests");
-  if (!list) return;
-  list.innerHTML = "";
-  if (dash) dash.innerHTML = "";
+/* ── Discovery flow ── */
+function renderDiscovery() {
+  if (!_discovery) return;
+  const d = _discovery;
+  setEl("disc-subtitle", d.desc || DEFAULT_DISCOVERY.desc);
+  setEl("disc-note",     d.note || DEFAULT_DISCOVERY.note);
+  const discTitle = document.querySelector(".discovery-title");
+  if (discTitle) discTitle.textContent = d.title || DEFAULT_DISCOVERY.title;
 
-  _quests.forEach(function(q) {
-    const done = userProfile?.quetes?.[q.id];
-    const locked = (q.level === "intermediaire" || q.level === "avance") && !done;
-    const statusCls  = done ? "status-done" : "status-todo";
-    const statusTxt  = done ? "Terminé"     : "À faire";
-    const levelLabel = q.level === "debutant" ? "Débutant" : q.level === "intermediaire" ? "Intermédiaire" : "Avancé";
-    const bgCol = done ? "rgba(74,138,90,0.15)" : q.level === "debutant" ? "rgba(201,168,76,0.1)" : "rgba(90,84,72,0.15)";
-    const html =
-      '<div class="quest-card' + (locked ? " locked" : "") + '" data-level="' + q.level + '" data-quest="' + q.id + '" onclick="' + (locked ? "" : 'openQuestPage("' + q.id + '")') + '">' +
-        '<div class="quest-icon" style="background:' + bgCol + ';">' + q.icon + '</div>' +
-        '<div class="quest-body">' +
-          '<div class="quest-name">' + escHtml(q.title) + '</div>' +
-          '<div class="quest-desc">' + escHtml(q.desc)  + '</div>' +
-          '<div class="quest-xp">+' + q.xp + ' XP · ' + levelLabel + '</div>' +
-          (done ? '<div class="quest-progress"><div class="quest-progress-fill" style="width:100%"></div></div>' : '') +
-        '</div>' +
-        '<div class="quest-status ' + statusCls + '">' + statusTxt + '</div>' +
-      '</div>';
-    list.innerHTML += html;
-    /* Dashboard : affiche les 3 premières quêtes non terminées ou en cours */
-    if (dash && !done && !locked) dash.innerHTML += html;
-  });
-  /* Si dashboard vide, message encourageant */
-  if (dash && dash.innerHTML === "") {
-    dash.innerHTML = '<div style="padding:1.25rem;background:var(--dark2);border:1px solid var(--border);border-radius:4px;color:var(--text-muted);font-style:italic;font-size:0.9rem;">Toutes vos quêtes disponibles sont complètes ! Consultez la page Quêtes pour débloquer les niveaux suivants.</div>';
+  const container = document.getElementById("disc-steps");
+  if (!container) return;
+
+  if (!d.steps || d.steps.length === 0) {
+    container.innerHTML = '<div class="discovery-empty">Aucune étape configurée pour le moment. Revenez bientôt !</div>';
+    document.getElementById("disc-progress-fill").style.width = "0%";
+    return;
   }
+
+  container.innerHTML = "";
+  d.steps.forEach(function(s, i) {
+    container.innerHTML +=
+      '<div class="discovery-step" id="dstep-' + i + '">' +
+        '<div class="discovery-step-num">' + (i+1) + '</div>' +
+        '<div class="discovery-step-body">' +
+          '<div class="discovery-step-title">' + escHtml(s.title) + '</div>' +
+          '<div class="discovery-step-desc">' + escHtml(s.desc) + '</div>' +
+          '<div class="discovery-step-xp">🏆 +' + (s.xp||0) + ' XP (si validé par un admin)</div>' +
+          '<div class="discovery-step-status"><label><input type="checkbox" data-step="' + i + '" onchange="updateDiscoveryProgress()"> J\'ai accompli cette étape</label></div>' +
+          '<div class="discovery-step-done-badge">✅ En attente de validation admin</div>' +
+        '</div>' +
+      '</div>';
+  });
+  updateDiscoveryProgress();
 }
+
+window.updateDiscoveryProgress = function() {
+  const checks = document.querySelectorAll("#disc-steps input[type=checkbox]");
+  const total  = checks.length;
+  const done   = Array.from(checks).filter(function(c){ return c.checked; }).length;
+  const pct    = total > 0 ? Math.round((done/total)*100) : 0;
+  document.getElementById("disc-progress-fill").style.width = pct + "%";
+  checks.forEach(function(c) {
+    const step = document.getElementById("dstep-" + c.dataset.step);
+    if (step) step.classList.toggle("pending", c.checked);
+  });
+};
+
+window.openDiscovery = function() {
+  document.getElementById("discovery-page").classList.add("active");
+  window.scrollTo(0, 0);
+};
+
+window.closeDiscovery = function() {
+  document.getElementById("discovery-page").classList.remove("active");
+};
 
 /* ── Rendu des tutoriels ── */
 function renderTutos() {
   if (!_tutos) return;
   const grid = document.getElementById("tuto-grid");
   if (!grid) return;
-  grid.innerHTML = "";
+  const emptyMsg = document.getElementById("tuto-empty");
+
+  if (_tutos.length === 0) {
+    if (emptyMsg) emptyMsg.style.display = "";
+    return;
+  }
+  if (emptyMsg) emptyMsg.style.display = "none";
+  // Clear existing tuto cards (but keep empty msg)
+  Array.from(grid.children).forEach(function(c){ if(c.id !== "tuto-empty") c.remove(); });
+
   _tutos.forEach(function(t) {
-    let stepsHtml = t.steps.map(function(s,i) {
+    let stepsHtml = (t.steps||[]).map(function(s,i) {
       return '<div class="tuto-step"><div class="step-n">' + (i+1) + '</div><div class="step-text"><strong>' + escHtml(s.title) + '</strong>' + escHtml(s.desc) + '</div></div>';
     }).join("");
-    grid.innerHTML +=
-      '<div class="tuto-card" onclick="toggleTuto(this)">' +
-        '<div class="tuto-icon">' + t.icon + '</div>' +
-        '<div class="tuto-title">' + escHtml(t.title) + '</div>' +
-        '<div class="tuto-desc">' + escHtml(t.desc) + '</div>' +
-        '<div class="tuto-toggle">Voir le guide ▾</div>' +
-        '<div class="tuto-steps">' + stepsHtml + '</div>' +
-      '</div>';
+    const card = document.createElement("div");
+    card.className = "tuto-card";
+    card.onclick = function(){ toggleTuto(card); };
+    card.innerHTML =
+      '<div class="tuto-icon">' + (t.icon||'📖') + '</div>' +
+      '<div class="tuto-title">' + escHtml(t.title) + '</div>' +
+      '<div class="tuto-desc">' + escHtml(t.desc) + '</div>' +
+      '<div class="tuto-toggle">Voir le guide ▾</div>' +
+      '<div class="tuto-steps">' + stepsHtml + '</div>';
+    grid.appendChild(card);
   });
 }
 
@@ -795,71 +779,6 @@ function renderPays() {
 }
 
 function setEl(id, val) { var e = document.getElementById(id); if(e) e.textContent = val; }
-
-/* ── Quest page ── */
-window._currentQuestId = null;
-window.openQuestPage = function(questId) {
-  const q = (_quests || DEFAULT_QUESTS).find(function(x){ return x.id === questId; });
-  if (!q) return;
-  window._currentQuestId = questId;
-  document.getElementById("qp-icon").textContent  = q.icon;
-  document.getElementById("qp-title").textContent = q.title;
-  document.getElementById("qp-xp").textContent    = "+" + q.xp + " XP";
-  document.getElementById("qp-level").textContent = q.level === "debutant" ? "Débutant" : q.level === "intermediaire" ? "Intermédiaire" : "Avancé";
-  document.getElementById("qp-desc").textContent  = q.desc;
-
-  /* Vérifie si déjà terminé */
-  const user = auth.currentUser;
-  const doneBadge = document.getElementById("qp-done-badge");
-  const actions   = document.getElementById("qp-actions");
-
-  /* Steps */
-  const stepsEl = document.getElementById("qp-steps");
-  stepsEl.innerHTML = "";
-  (q.steps || []).forEach(function(s, i) {
-    stepsEl.innerHTML +=
-      '<div class="quest-step" id="qstep-' + i + '">' +
-        '<div class="quest-step-num">' + (i+1) + '</div>' +
-        '<div class="quest-step-body">' +
-          '<div class="quest-step-name">' + escHtml(s.title) + '</div>' +
-          '<div class="quest-step-text">' + escHtml(s.desc) + '</div>' +
-          '<div class="quest-step-check"><label><input type="checkbox" onchange="updateQuestProgress()"> Lu et compris</label></div>' +
-        '</div>' +
-      '</div>';
-  });
-  updateQuestProgress();
-  doneBadge.classList.remove("show");
-  actions.style.display = "";
-  document.getElementById("quest-page").classList.add("active");
-  window.scrollTo(0, 0);
-};
-
-window.updateQuestProgress = function() {
-  const checks = document.querySelectorAll("#qp-steps input[type=checkbox]");
-  const total  = checks.length;
-  const done   = Array.from(checks).filter(function(c){ return c.checked; }).length;
-  const pct    = total > 0 ? Math.round((done/total)*100) : 0;
-  document.getElementById("qp-progress-fill").style.width = pct + "%";
-  checks.forEach(function(c,i) {
-    const step = document.getElementById("qstep-" + i);
-    if (step) step.classList.toggle("done", c.checked);
-  });
-};
-
-window.markQuestTutoComplete = function() {
-  showToast("✓ Tutoriel terminé ! En attente de validation admin.");
-  document.getElementById("qp-done-badge").classList.add("show");
-  document.getElementById("qp-actions").style.display = "none";
-};
-
-window.skipQuestTuto = function() {
-  if (!confirm("Passer le tutoriel ? Tu ne gagneras pas l'XP tant que l'admin ne valide pas.")) return;
-  closeQuestPage();
-};
-
-window.closeQuestPage = function() {
-  document.getElementById("quest-page").classList.remove("active");
-};
 
 /* ── Discord OAuth ── */
 function loginWithDiscord() {
@@ -904,7 +823,7 @@ async function upsertUserProfile(uid, d, token) {
     : "https://cdn.discordapp.com/embed/avatars/" + (Number(d.discriminator||0)%5) + ".png";
   const base = { discordId:d.id, username:d.username, discriminator:d.discriminator||"0", globalName:d.global_name||d.username, avatar, discordToken:token, updatedAt:new Date().toISOString() };
   if (!snap.exists()) {
-    await setDoc(ref, {...base, xp:0, quetes:{}, role: ADMIN_IDS.has(d.id)?"admin": MODO_IDS.has(d.id)?"modo":"citoyen", joinedAt:new Date().toISOString()});
+    await setDoc(ref, {...base, xp:0, role: ADMIN_IDS.has(d.id)?"admin": MODO_IDS.has(d.id)?"modo":"citoyen", joinedAt:new Date().toISOString()});
   } else {
     const upd = {...base};
     if (ADMIN_IDS.has(d.id)) upd.role="admin";
@@ -921,11 +840,9 @@ onAuthStateChanged(auth, async function(user) {
     const snap    = await getDoc(doc(db, "users", user.uid));
     const profile = snap.exists() ? snap.data() : null;
     renderConnectedState(user, profile);
-    renderQuests(profile);
     await loadLeaderboard();
   } else {
     renderDisconnectedState();
-    renderQuests(null);
     await loadLeaderboard();
   }
 });
@@ -940,7 +857,12 @@ function renderConnectedState(user, profile) {
   const adminPanel = document.getElementById("admin-panel");
   if (adminPanel) {
     adminPanel.classList.toggle("visible", role==="admin"||role==="modo");
-    if (role==="admin"||role==="modo") { adminRefreshPlayers(); adminLoadQuestEditor(); adminLoadTutoEditor(); adminLoadPaysEditor(); }
+    if (role==="admin"||role==="modo") {
+      adminRefreshPlayers();
+      adminLoadTutoEditor();
+      adminLoadPaysEditor();
+      adminLoadDiscoveryEditor();
+    }
   }
   let badge = "";
   if (role==="admin") badge = '<span class="nav-role-badge role-admin">Admin</span>';
@@ -982,10 +904,10 @@ async function loadLeaderboard() {
     snap.forEach(function(ds) {
       const p = ds.data();
       const name = escHtml(p.globalName||p.username||"Inconnu");
-      const xp   = p.xp??0; const qc = Object.keys(p.quetes||{}).length;
+      const xp   = p.xp??0;
       const init = name.slice(0,2).toUpperCase();
       const avt  = p.avatar ? '<div class="lb-avatar"><img src="'+p.avatar+'" alt="" onerror="this.parentNode.textContent=\''+init+'\'"></div>' : '<div class="lb-avatar">'+init+'</div>';
-      lbEl.innerHTML += '<div class="lb-row '+(i<3?topCls[i]:'')+'"><div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+avt+'<div class="lb-info"><div class="lb-name">'+name+'</div><div class="lb-detail">'+qc+' quête'+(qc>1?'s':'')+' complétée'+(qc>1?'s':'')+'</div></div><div style="text-align:right;"><div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div><div class="lb-quests">'+qc+' quête'+(qc>1?'s':'')+'</div></div></div>';
+      lbEl.innerHTML += '<div class="lb-row '+(i<3?topCls[i]:'')+'"><div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+avt+'<div class="lb-info"><div class="lb-name">'+name+'</div></div><div style="text-align:right;"><div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div></div></div>';
       i++;
     });
   } catch(err) { console.warn("Leaderboard error:", err.message); }
@@ -1010,87 +932,68 @@ window.adminRefreshPlayers = async function() {
   } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
 };
 
-window.adminValidateSelectedQuest = async function() {
-  const targetUid  = document.getElementById("admin-target-player")?.value;
-  const questValue = document.getElementById("admin-target-quest")?.value;
-  if (!targetUid)  { setAdminFeedback("Sélectionne un joueur.","err"); return; }
-  if (!questValue) { setAdminFeedback("Sélectionne une quête.","err"); return; }
-  const parts = questValue.split(":"); const questId = parts[0]; const xpValue = parseInt(parts[1],10);
-  const btn = document.getElementById("btn-valider-quete");
-  if (btn) btn.disabled = true;
-  setAdminFeedback("Validation…","");
+/* ── Admin : modifier XP (+ ou -) ── */
+window.adminModifyXP = async function(sign) {
+  const targetUid = document.getElementById("admin-target-player")?.value;
+  if (!targetUid) { setAdminFeedback("Sélectionne un joueur.","err"); return; }
+  const rawAmount = parseInt(document.getElementById("admin-xp-amount")?.value, 10);
+  if (isNaN(rawAmount) || rawAmount <= 0) { setAdminFeedback("Entre un montant positif valide.","err"); return; }
+  const delta = sign * rawAmount;
+  setAdminFeedback("Modification…","");
   try {
     const ref  = doc(db,"users",targetUid);
     const snap = await getDoc(ref);
-    if (!snap.exists()) { setAdminFeedback("Joueur introuvable.","err"); if(btn)btn.disabled=false; return; }
+    if (!snap.exists()) { setAdminFeedback("Joueur introuvable.","err"); return; }
     const profile = snap.data();
-    const quetes  = Object.assign({},profile.quetes||{});
-    if (quetes[questId]) { setAdminFeedback((profile.globalName||profile.username||"Joueur")+" a déjà cette quête.","err"); if(btn)btn.disabled=false; return; }
-    quetes[questId] = {completedAt:new Date().toISOString(), validatedBy:auth.currentUser?.uid||"admin"};
-    const newXp = (profile.xp||0)+xpValue;
-    await updateDoc(ref, {quetes, xp:newXp});
+    const newXp   = Math.max(0, (profile.xp||0) + delta);
+    await updateDoc(ref, {xp: newXp});
     const pn = profile.globalName||profile.username||"Joueur";
-    setAdminFeedback("✓ Validé pour "+pn+" ! +"+xpValue+" XP (Total: "+newXp+" XP)","ok");
-    showToast("✓ "+pn+" — +"+xpValue+" XP");
-    await adminRefreshPlayers(); await loadLeaderboard();
+    const label = delta >= 0 ? "+" + delta : String(delta);
+    setAdminFeedback("✓ " + pn + " : " + label + " XP → Total : " + newXp + " XP", "ok");
+    showToast("✓ " + pn + " — " + label + " XP");
+    await adminRefreshPlayers();
+    await loadLeaderboard();
   } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
-  if (btn) btn.disabled=false;
 };
 
-/* ── Admin : quêtes ── */
-window._editingQuestId = null;
-window.adminLoadQuestEditor = function() {
-  if (!_quests) return;
-  const list = document.getElementById("admin-quest-list");
-  if (!list) return;
-  list.innerHTML = "";
-  _quests.forEach(function(q) {
-    const item = document.createElement("div");
-    item.className = "admin-card-item";
-    item.dataset.id = q.id;
-    item.innerHTML = '<span style="font-size:1.1rem;">' + q.icon + '</span><span class="admin-card-item-name">' + escHtml(q.title) + '</span><span class="admin-card-item-xp">+' + q.xp + ' XP</span>';
-    item.onclick = function() {
-      document.querySelectorAll(".admin-card-item").forEach(function(i){ i.classList.remove("selected"); });
-      item.classList.add("selected");
-      window._editingQuestId = q.id;
-      document.getElementById("aqe-title").value  = q.title;
-      document.getElementById("aqe-icon").value   = q.icon;
-      document.getElementById("aqe-xp").value     = q.xp;
-      document.getElementById("aqe-desc").value   = q.desc;
-      document.getElementById("aqe-level").value  = q.level;
-      document.getElementById("aqe-steps").value  = (q.steps||[]).map(function(s){ return s.title+"|"+s.desc; }).join("\n");
-      document.getElementById("admin-quest-editor").style.display = "";
-    };
-    list.appendChild(item);
+/* ── Admin : discovery editor ── */
+window.adminLoadDiscoveryEditor = function() {
+  if (!_discovery) return;
+  setInputVal("disc-flow-title", _discovery.title||"");
+  setInputVal("disc-flow-desc",  _discovery.desc||"");
+  setInputVal("disc-flow-note",  _discovery.note||"");
+  const stepsTA = document.getElementById("disc-flow-steps");
+  if (stepsTA && _discovery.steps) {
+    stepsTA.value = _discovery.steps.map(function(s){ return s.title+"|"+s.desc+"|"+(s.xp||0); }).join("\n");
+  }
+};
+
+window.adminSaveDiscovery = async function() {
+  const stepsRaw = (document.getElementById("disc-flow-steps")?.value||"").trim().split("\n").filter(Boolean);
+  const steps = stepsRaw.map(function(line){
+    const p = line.split("|");
+    return {title:(p[0]||"").trim(), desc:(p[1]||"").trim(), xp:parseInt(p[2]||"0",10)||0};
   });
-};
-
-window.adminSaveQuest = async function() {
-  const qid = window._editingQuestId;
-  if (!qid) return;
-  const idx = _quests.findIndex(function(q){ return q.id===qid; });
-  if (idx<0) return;
-  const stepsRaw = document.getElementById("aqe-steps").value.trim().split("\n").filter(Boolean);
-  const steps = stepsRaw.map(function(line){ const p=line.split("|"); return {title:(p[0]||"").trim(), desc:(p[1]||"").trim()}; });
-  _quests[idx] = {
-    id: qid,
-    icon:  document.getElementById("aqe-icon").value.trim()  || _quests[idx].icon,
-    title: document.getElementById("aqe-title").value.trim() || _quests[idx].title,
-    desc:  document.getElementById("aqe-desc").value.trim()  || _quests[idx].desc,
-    xp:    parseInt(document.getElementById("aqe-xp").value,10) || _quests[idx].xp,
-    level: document.getElementById("aqe-level").value        || _quests[idx].level,
-    steps: steps.length ? steps : _quests[idx].steps,
+  _discovery = {
+    title: document.getElementById("disc-flow-title")?.value.trim() || _discovery.title,
+    desc:  document.getElementById("disc-flow-desc")?.value.trim()  || _discovery.desc,
+    note:  document.getElementById("disc-flow-note")?.value.trim()  || _discovery.note,
+    steps: steps,
   };
   try {
-    await setDoc(doc(db,"sitedata","quests"), {list:_quests});
-    document.getElementById("admin-quest-feedback").textContent = "✓ Quête sauvegardée !";
-    document.getElementById("admin-quest-feedback").className   = "admin-feedback ok";
-    renderQuests(); adminLoadQuestEditor();
-    showToast("Quête mise à jour !");
+    await setDoc(doc(db,"sitedata","discovery"), _discovery);
+    document.getElementById("admin-disc-feedback").textContent = "✓ Flow de découverte sauvegardé !";
+    document.getElementById("admin-disc-feedback").className   = "admin-feedback ok";
+    renderDiscovery();
+    showToast("Flow de découverte mis à jour !");
   } catch(err) {
-    document.getElementById("admin-quest-feedback").textContent = "Erreur: "+err.message;
-    document.getElementById("admin-quest-feedback").className   = "admin-feedback err";
+    document.getElementById("admin-disc-feedback").textContent = "Erreur: "+err.message;
+    document.getElementById("admin-disc-feedback").className   = "admin-feedback err";
   }
+};
+
+window.previewDiscovery = function() {
+  openDiscovery();
 };
 
 /* ── Admin : tutoriels ── */
@@ -1103,35 +1006,62 @@ window.adminLoadTutoEditor = function() {
   _tutos.forEach(function(t) {
     const item = document.createElement("div");
     item.className = "admin-card-item";
-    item.innerHTML = '<span style="font-size:1.1rem;">' + t.icon + '</span><span class="admin-card-item-name">' + escHtml(t.title) + '</span>';
+    item.innerHTML = '<span style="font-size:1.1rem;">' + (t.icon||'📖') + '</span><span class="admin-card-item-name">' + escHtml(t.title) + '</span>';
     item.onclick = function() {
       document.querySelectorAll("#admin-tuto-list .admin-card-item").forEach(function(i){ i.classList.remove("selected"); });
       item.classList.add("selected");
       window._editingTutoId = t.id;
       document.getElementById("ate-title").value = t.title;
-      document.getElementById("ate-icon").value  = t.icon;
+      document.getElementById("ate-icon").value  = t.icon||'';
       document.getElementById("ate-desc").value  = t.desc;
       document.getElementById("ate-steps").value = (t.steps||[]).map(function(s){ return s.title+"|"+s.desc; }).join("\n");
       document.getElementById("admin-tuto-editor").style.display = "";
+      document.getElementById("btn-del-tuto").style.display = "";
     };
     list.appendChild(item);
   });
 };
 
+window.adminNewTuto = function() {
+  window._editingTutoId = "t_" + Date.now();
+  document.getElementById("ate-title").value = "";
+  document.getElementById("ate-icon").value  = "📖";
+  document.getElementById("ate-desc").value  = "";
+  document.getElementById("ate-steps").value = "";
+  document.getElementById("admin-tuto-editor").style.display = "";
+  document.getElementById("btn-del-tuto").style.display = "none";
+  document.querySelectorAll("#admin-tuto-list .admin-card-item").forEach(function(i){ i.classList.remove("selected"); });
+};
+
+window.adminDeleteTuto = async function() {
+  const tid = window._editingTutoId;
+  if (!tid) return;
+  if (!confirm("Supprimer ce tutoriel ?")) return;
+  _tutos = _tutos.filter(function(t){ return t.id !== tid; });
+  try {
+    await setDoc(doc(db,"sitedata","tutos"), {list:_tutos});
+    document.getElementById("admin-tuto-editor").style.display = "none";
+    document.getElementById("btn-del-tuto").style.display = "none";
+    renderTutos(); adminLoadTutoEditor();
+    showToast("Tutoriel supprimé.");
+  } catch(err) { showToast("Erreur: "+err.message); }
+};
+
 window.adminSaveTuto = async function() {
   const tid = window._editingTutoId;
   if (!tid) return;
-  const idx = _tutos.findIndex(function(t){ return t.id===tid; });
-  if (idx<0) return;
   const stepsRaw = document.getElementById("ate-steps").value.trim().split("\n").filter(Boolean);
   const steps = stepsRaw.map(function(line){ const p=line.split("|"); return {title:(p[0]||"").trim(), desc:(p[1]||"").trim()}; });
-  _tutos[idx] = {
+  const newTuto = {
     id: tid,
-    icon:  document.getElementById("ate-icon").value.trim()  || _tutos[idx].icon,
-    title: document.getElementById("ate-title").value.trim() || _tutos[idx].title,
-    desc:  document.getElementById("ate-desc").value.trim()  || _tutos[idx].desc,
-    steps: steps.length ? steps : _tutos[idx].steps,
+    icon:  document.getElementById("ate-icon").value.trim()  || "📖",
+    title: document.getElementById("ate-title").value.trim() || "Tutoriel",
+    desc:  document.getElementById("ate-desc").value.trim()  || "",
+    steps: steps,
   };
+  const idx = _tutos.findIndex(function(t){ return t.id===tid; });
+  if (idx >= 0) _tutos[idx] = newTuto;
+  else _tutos.push(newTuto);
   try {
     await setDoc(doc(db,"sitedata","tutos"), {list:_tutos});
     document.getElementById("admin-tuto-feedback").textContent = "✓ Tutoriel sauvegardé !";
@@ -1212,18 +1142,11 @@ function showSection(id) {
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
   var t = document.getElementById(id);
   if (t) t.classList.add('active');
-  var map = {accueil:0, quetes:1, tutoriels:2, pays:3, classement:4};
+  var map = {accueil:0, tutoriels:1, pays:2, classement:3};
   document.querySelectorAll('.nav-links a').forEach(function(a){ a.classList.remove('active'); });
   var links = document.querySelectorAll('.nav-links a');
   if (map[id]!==undefined && links[map[id]]) links[map[id]].classList.add('active');
   window.scrollTo({top: document.querySelector('nav').offsetHeight, behavior:'smooth'});
-}
-function filterQuests(level, btn) {
-  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  document.querySelectorAll('#quests-list .quest-card').forEach(function(card){
-    card.style.display = (level==='all' || card.dataset.level===level) ? 'flex' : 'none';
-  });
 }
 function toggleTuto(card) {
   var isOpen = card.classList.contains('open');
