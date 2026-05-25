@@ -235,6 +235,140 @@ nav {
 .levelup-close { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--text-dim); background: none; border: 1px solid var(--border-strong); padding: 8px 24px; border-radius: 2px; cursor: pointer; transition: all 0.2s; }
 .levelup-close:hover { color: var(--gold); border-color: var(--gold); }
 
+/* ══ PURCHASE OVERLAY ══ */
+.purchase-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(0,0,0,0.8);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.purchase-overlay.show { opacity: 1; pointer-events: all; }
+.purchase-modal {
+  background: var(--dark2); border: 1px solid var(--border-strong);
+  border-radius: 8px; padding: 2.5rem; text-align: center;
+  transform: scale(0.9); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  max-width: 420px; width: 90%;
+}
+.purchase-overlay.show .purchase-modal { transform: scale(1); }
+.purchase-modal-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.purchase-modal-title { font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 700; color: var(--gold); margin-bottom: 0.4rem; }
+.purchase-modal-desc { font-size: 0.9rem; color: var(--text-muted); font-style: italic; line-height: 1.6; margin-bottom: 1.5rem; }
+.purchase-modal-price { font-family: 'Cinzel', serif; font-size: 1.5rem; color: var(--coin); margin-bottom: 0.4rem; }
+.purchase-modal-balance { font-size: 0.82rem; color: var(--text-dim); font-style: italic; margin-bottom: 1.5rem; }
+.purchase-modal-actions { display: flex; gap: 10px; justify-content: center; }
+.btn-buy-confirm {
+  font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.1em;
+  color: var(--dark); background: var(--gold); border: none;
+  padding: 10px 24px; border-radius: 2px; cursor: pointer; font-weight: 700;
+  transition: all 0.2s;
+}
+.btn-buy-confirm:hover { background: var(--gold-light); }
+.btn-buy-confirm:disabled { opacity: 0.4; cursor: default; }
+.btn-buy-cancel {
+  font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.1em;
+  color: var(--text-muted); background: transparent; border: 1px solid var(--border);
+  padding: 10px 20px; border-radius: 2px; cursor: pointer; transition: all 0.2s;
+}
+.btn-buy-cancel:hover { border-color: var(--border-strong); color: var(--text); }
+.purchase-modal-error { margin-top: 1rem; font-size: 0.82rem; color: #d98080; font-style: italic; min-height: 1.2em; }
+
+/* ══ BOUTIQUE ══ */
+.shop-header-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 12px;
+}
+.shop-balance {
+  background: rgba(240,180,41,0.1); border: 1px solid rgba(240,180,41,0.25);
+  border-radius: 4px; padding: 10px 18px;
+  font-family: 'Cinzel', serif; font-size: 0.95rem; color: var(--coin);
+  display: flex; align-items: center; gap: 8px;
+}
+.shop-balance-num { font-size: 1.25rem; font-weight: 700; }
+.shop-cats { display: flex; gap: 4px; flex-wrap: wrap; }
+.shop-cat-btn {
+  font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.08em;
+  color: var(--text-muted); background: transparent;
+  border: 1px solid var(--border); padding: 5px 14px; border-radius: 2px;
+  cursor: pointer; transition: all 0.2s;
+}
+.shop-cat-btn.active, .shop-cat-btn:hover { color: var(--gold); border-color: var(--border-strong); background: rgba(201,168,76,0.08); }
+.shop-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px; margin-bottom: 2rem;
+}
+.shop-card {
+  background: var(--dark2); border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden;
+  transition: all 0.25s; display: flex; flex-direction: column;
+  position: relative;
+}
+.shop-card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.shop-card.owned { border-color: rgba(74,138,90,0.4); }
+.shop-card.sold-out { opacity: 0.55; }
+.shop-card-img {
+  width: 100%; height: 140px; object-fit: cover; display: block;
+  background: var(--dark3);
+}
+.shop-card-img-placeholder {
+  width: 100%; height: 140px; background: var(--dark3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem;
+}
+.shop-card-body { padding: 1.1rem 1.2rem; flex: 1; display: flex; flex-direction: column; }
+.shop-card-cat {
+  font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.15em;
+  color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;
+}
+.shop-card-title { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+.shop-card-desc { font-size: 0.85rem; color: var(--text-muted); font-style: italic; line-height: 1.5; flex: 1; margin-bottom: 1rem; }
+.shop-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.shop-card-price { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; color: var(--coin); }
+.shop-card-price.free { color: #7ac98a; }
+.shop-badge-owned {
+  font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.08em;
+  color: #7ac98a; background: rgba(74,138,90,0.15);
+  border: 1px solid rgba(74,138,90,0.3); padding: 2px 8px; border-radius: 2px;
+}
+.shop-badge-soldout {
+  font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.08em;
+  color: var(--text-dim); background: rgba(90,84,72,0.2);
+  border: 1px solid var(--border); padding: 2px 8px; border-radius: 2px;
+}
+.shop-badge-limited {
+  position: absolute; top: 10px; right: 10px;
+  font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.1em;
+  color: var(--dark); background: var(--gold); padding: 2px 8px; border-radius: 2px;
+}
+.btn-shop-buy {
+  font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.08em;
+  color: var(--dark); background: var(--gold); border: none;
+  padding: 7px 16px; border-radius: 2px; cursor: pointer;
+  transition: all 0.2s; font-weight: 700; white-space: nowrap;
+}
+.btn-shop-buy:hover { background: var(--gold-light); }
+.btn-shop-buy:disabled { opacity: 0.4; cursor: default; background: var(--gold-dim); }
+.shop-empty {
+  grid-column: 1 / -1; padding: 4rem 2rem; text-align: center;
+  color: var(--text-dim); font-style: italic;
+}
+.shop-inventory-section { margin-top: 2.5rem; }
+.shop-inventory-title {
+  font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.2em;
+  color: var(--text-dim); text-transform: uppercase; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.shop-inventory-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.shop-inventory-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.shop-inv-item {
+  background: var(--dark3); border: 1px solid rgba(74,138,90,0.25);
+  border-radius: 4px; padding: 6px 14px;
+  font-family: 'Cinzel', serif; font-size: 0.72rem; color: #7ac98a;
+  display: flex; align-items: center; gap: 6px;
+}
+.shop-inv-item-icon { font-size: 1rem; }
+
 /* ══ ADMIN PANEL ══ */
 .admin-section {
   background: rgba(165,74,74,0.07);
@@ -394,8 +528,6 @@ nav {
 .discovery-step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; font-style: italic; }
 .discovery-step-xp { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); margin-top: 6px; }
 .discovery-step-action { margin-top: 12px; }
-
-/* Required link button for discovery steps */
 .disc-link-btn {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.1em;
@@ -409,7 +541,6 @@ nav {
   border: 1px solid rgba(201,168,76,0.4); cursor: default;
   pointer-events: none;
 }
-
 .disc-confirm-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
 .disc-confirm-btn {
   font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.08em;
@@ -419,9 +550,7 @@ nav {
 }
 .disc-confirm-btn.visible { display: inline-block; animation: fadeUp 0.3s ease; }
 .disc-confirm-btn:hover { background: rgba(74,138,90,0.22); }
-/* Loading state for confirm button */
 .disc-confirm-btn.loading { opacity: 0.6; pointer-events: none; }
-
 .discovery-step.done .discovery-step-action { display: none; }
 .discovery-step-done-badge { display: none; margin-top: 8px; font-family: 'Cinzel', serif; font-size: 0.72rem; color: #7ac98a; }
 .discovery-step.done .discovery-step-done-badge { display: block; }
@@ -430,7 +559,6 @@ nav {
   border-left: 3px solid var(--gold-dim); border-radius: 0 4px 4px 0;
   padding: 1rem 1.25rem; font-size: 0.88rem; color: var(--text-muted); font-style: italic; line-height: 1.7;
 }
-/* ══ Banner quand non connecté dans le flow ══ */
 .disc-auth-notice {
   background: rgba(88,101,242,0.1); border: 1px solid rgba(88,101,242,0.3);
   border-left: 3px solid var(--discord);
@@ -571,6 +699,8 @@ footer a { color: var(--gold-dim); }
   .section { padding: 2rem 1rem; }
   .hero-btns { flex-direction: column; align-items: center; }
   .xp-control-row { flex-direction: column; align-items: flex-start; }
+  .shop-grid { grid-template-columns: 1fr; }
+  .shop-header-bar { flex-direction: column; align-items: flex-start; }
 }
 </style>
 </head>
@@ -589,6 +719,22 @@ footer a { color: var(--gold-dim); }
   </div>
 </div>
 
+<!-- ══ PURCHASE CONFIRM OVERLAY ══ -->
+<div class="purchase-overlay" id="purchase-overlay">
+  <div class="purchase-modal">
+    <div class="purchase-modal-icon" id="pm-icon">🛒</div>
+    <div class="purchase-modal-title" id="pm-title">Confirmer l'achat</div>
+    <div class="purchase-modal-desc" id="pm-desc"></div>
+    <div class="purchase-modal-price" id="pm-price"></div>
+    <div class="purchase-modal-balance" id="pm-balance"></div>
+    <div class="purchase-modal-actions">
+      <button class="btn-buy-confirm" id="pm-confirm-btn" onclick="confirmPurchase()">Acheter</button>
+      <button class="btn-buy-cancel" onclick="closePurchaseModal()">Annuler</button>
+    </div>
+    <div class="purchase-modal-error" id="pm-error"></div>
+  </div>
+</div>
+
 <!-- ══ DISCOVERY FLOW OVERLAY ══ -->
 <div class="discovery-page" id="discovery-page">
   <div class="discovery-inner">
@@ -598,7 +744,6 @@ footer a { color: var(--gold-dim); }
       <div class="discovery-subtitle" id="disc-subtitle">Accomplis les étapes ci-dessous pour découvrir NationsGlory et Timor.</div>
     </div>
     <div class="discovery-progress-bar"><div class="discovery-progress-fill" id="disc-progress-fill" style="width:0%"></div></div>
-    <!-- Notice quand non connecté -->
     <div class="disc-auth-notice" id="disc-auth-notice">
       ⚠ Connecte-toi avec Discord pour recevoir l'XP automatiquement à chaque étape accomplie.
     </div>
@@ -618,6 +763,7 @@ footer a { color: var(--gold-dim); }
     <li><a class="active" onclick="showSection('accueil');   return false;" href="#">Accueil</a></li>
     <li><a                onclick="showSection('tutoriels'); return false;" href="#">Tutoriels</a></li>
     <li><a                onclick="showSection('pays');      return false;" href="#">Le Pays</a></li>
+    <li><a                onclick="showSection('boutique');  return false;" href="#">🛒 Boutique</a></li>
     <li><a                onclick="showSection('classement');return false;" href="#">Classement</a></li>
   </ul>
   <div id="nav-auth">
@@ -654,7 +800,6 @@ footer a { color: var(--gold-dim); }
     </div>
   </div>
 
-  <!-- Carte de niveau personnelle -->
   <div class="profile-level-card" id="profile-level-card" style="display:none;">
     <div class="level-header">
       <div class="level-badge-big" id="level-badge-num">1</div>
@@ -671,7 +816,7 @@ footer a { color: var(--gold-dim); }
     <div class="level-milestones" id="level-milestones"></div>
   </div>
 
-  <!-- PANNEAU ADMIN FONCTIONNEL -->
+  <!-- PANNEAU ADMIN -->
   <div class="admin-section" id="admin-panel">
     <div class="admin-title">⚔ Panneau Administrateur</div>
 
@@ -685,6 +830,7 @@ footer a { color: var(--gold-dim); }
       <button class="admin-tab" onclick="switchAdminTab('decouverte', this)">🗺️ Découverte</button>
       <button class="admin-tab" onclick="switchAdminTab('tutos-edit', this)">📖 Tutoriels</button>
       <button class="admin-tab" onclick="switchAdminTab('pays-edit', this)">🏛 Pays</button>
+      <button class="admin-tab" onclick="switchAdminTab('shop-edit', this)">🛒 Boutique</button>
     </div>
 
     <!-- TAB JOUEURS -->
@@ -697,26 +843,19 @@ footer a { color: var(--gold-dim); }
         <button class="btn-admin" onclick="adminRefreshPlayers()">↺ Actualiser liste</button>
         <button class="btn-admin" onclick="showSection('classement')">📊 Classement</button>
       </div>
-
-      <!-- XP control -->
       <div class="xp-control-row">
         <label>Modifier XP</label>
         <input type="number" id="admin-xp-amount" placeholder="ex: 150">
         <button class="btn-admin" onclick="adminModifyXP(1)">+ Ajouter XP</button>
         <button class="btn-admin" onclick="adminModifyXP(-1)">− Retirer XP</button>
       </div>
-
-      <!-- Coins control -->
       <div class="xp-control-row">
         <label>Modifier Pièces</label>
         <input type="number" id="admin-coins-amount" placeholder="ex: 100">
         <button class="btn-admin" onclick="adminModifyCoins(1)">+ Ajouter</button>
         <button class="btn-admin" onclick="adminModifyCoins(-1)">− Retirer</button>
       </div>
-
       <div class="xp-hint" style="margin-top:6px;">Entre un montant positif, puis clique Ajouter ou Retirer.</div>
-
-      <!-- Role management -->
       <div class="role-section" id="admin-role-section" style="display:none;">
         <label class="admin-label" style="margin-bottom:8px;">GESTION DU RÔLE</label>
         <div class="role-current">
@@ -724,38 +863,27 @@ footer a { color: var(--gold-dim); }
           <span class="role-badge-display" id="admin-player-role-display">—</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn-role btn-role-grant" id="btn-grant-modo" onclick="adminGrantModo()">
-            ✦ Donner rôle Modo
-          </button>
-          <button class="btn-role btn-role-revoke" id="btn-revoke-modo" onclick="adminRevokeModo()">
-            ✕ Retirer rôle Modo
-          </button>
+          <button class="btn-role btn-role-grant" id="btn-grant-modo" onclick="adminGrantModo()">✦ Donner rôle Modo</button>
+          <button class="btn-role btn-role-revoke" id="btn-revoke-modo" onclick="adminRevokeModo()">✕ Retirer rôle Modo</button>
         </div>
       </div>
-
       <div class="admin-feedback" id="admin-feedback"></div>
     </div>
 
     <!-- TAB DÉCOUVERTE -->
     <div class="admin-tab-panel" id="admin-tab-decouverte">
-      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Configure les étapes du flow "Commencer à jouer". L'XP est désormais attribué automatiquement à la confirmation du joueur.</p>
-
+      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Configure les étapes du flow "Commencer à jouer".</p>
       <label class="admin-label">TITRE DU FLOW</label>
       <input class="admin-input" id="disc-flow-title" placeholder="Titre affiché en haut du flow">
-
       <label class="admin-label">DESCRIPTION / INTRO</label>
       <textarea class="admin-textarea" id="disc-flow-desc" placeholder="Texte d'introduction du flow…"></textarea>
-
       <label class="admin-label">NOTE DE BAS DE PAGE</label>
       <textarea class="admin-textarea" id="disc-flow-note" placeholder="Message affiché en bas du flow…"></textarea>
-
       <label class="admin-label" style="margin-top:4px;">ÉTAPES (une par ligne : Titre|Description|XP|URL du lien|Texte du bouton)</label>
       <div class="admin-format-hint">
-        Format : <code>Titre|Description|XP|https://lien.com|Texte du bouton</code><br>
-        Les colonnes URL et Texte du bouton sont <strong>obligatoires</strong> — le joueur doit cliquer pour avancer.
+        Format : <code>Titre|Description|XP|https://lien.com|Texte du bouton</code>
       </div>
-      <textarea class="admin-textarea" id="disc-flow-steps" placeholder="Rejoins le Discord|Rejoins notre serveur et présente-toi.|50|https://discord.gg/xxx|Rejoindre le Discord&#10;Installe-toi|Construis ta première maison dans Timor.|100|https://nationsglory.fr|Aller sur NationsGlory" style="min-height:160px;font-family:monospace;font-size:0.79rem;"></textarea>
-
+      <textarea class="admin-textarea" id="disc-flow-steps" style="min-height:160px;font-family:monospace;font-size:0.79rem;"></textarea>
       <div class="admin-actions" style="margin-top:8px;">
         <button class="btn-admin" onclick="adminSaveDiscovery()">💾 Sauvegarder</button>
         <button class="btn-admin" onclick="previewDiscovery()">👁 Aperçu</button>
@@ -765,7 +893,7 @@ footer a { color: var(--gold-dim); }
 
     <!-- TAB TUTORIELS -->
     <div class="admin-tab-panel" id="admin-tab-tutos-edit">
-      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Modifie les tutoriels. Chaque tutoriel peut avoir une image bannière, un lien externe, et des étapes avec images/liens.</p>
+      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Modifie les tutoriels.</p>
       <div class="admin-card-list" id="admin-tuto-list"></div>
       <div style="margin-bottom:8px;">
         <button class="btn-admin" onclick="adminNewTuto()">+ Nouveau tutoriel</button>
@@ -775,14 +903,12 @@ footer a { color: var(--gold-dim); }
         <div class="admin-row"><label>Titre</label><input class="admin-input" id="ate-title" placeholder="Titre du tutoriel"></div>
         <div class="admin-row"><label>Icône</label><input class="admin-input" id="ate-icon" placeholder="Emoji 📖" style="max-width:100px"></div>
         <div class="admin-row"><label>Image</label><input class="admin-input" id="ate-image" placeholder="URL de l'image bannière (optionnel)"></div>
-        <div class="admin-row"><label>Lien</label><input class="admin-input" id="ate-link" placeholder="https://… (lien externe, optionnel)"></div>
+        <div class="admin-row"><label>Lien</label><input class="admin-input" id="ate-link" placeholder="https://…"></div>
         <div class="admin-row"><label>Texte lien</label><input class="admin-input" id="ate-link-label" placeholder="Ex : Voir sur le wiki"></div>
         <div class="admin-row"><label>Desc.</label><textarea class="admin-textarea" id="ate-desc" placeholder="Description courte du tutoriel"></textarea></div>
         <label class="admin-label">ÉTAPES</label>
-        <div class="admin-format-hint">
-          Format : <code>Titre|Description</code> — optionnellement ajouter <code>|img:URL</code> et/ou <code>|lien:URL|texte-lien</code>
-        </div>
-        <textarea class="admin-textarea" id="ate-steps" placeholder="Étape 1|Description&#10;Étape 2|Description|img:https://…" style="min-height:140px;font-family:monospace;font-size:0.79rem;"></textarea>
+        <div class="admin-format-hint">Format : <code>Titre|Description</code> — optionnellement <code>|img:URL</code> et/ou <code>|lien:URL|texte-lien</code></div>
+        <textarea class="admin-textarea" id="ate-steps" style="min-height:140px;font-family:monospace;font-size:0.79rem;"></textarea>
         <div class="admin-actions" style="margin-top:8px;">
           <button class="btn-admin" onclick="adminSaveTuto()">💾 Sauvegarder</button>
           <button class="btn-admin" onclick="document.getElementById('admin-tuto-editor').style.display='none';document.getElementById('btn-del-tuto').style.display='none'">Annuler</button>
@@ -800,11 +926,61 @@ footer a { color: var(--gold-dim); }
       <div class="admin-row"><label>Desc. hero</label><textarea class="admin-textarea" id="ape-herodesc" placeholder="Texte d'intro du héros"></textarea></div>
       <div class="admin-row"><label>Présentation</label><textarea class="admin-textarea" id="ape-paydesc" placeholder="Texte de la page Pays" style="min-height:100px;"></textarea></div>
       <label class="admin-label" style="margin-top:4px;">GOUVERNEMENT (une par ligne : Initiales|Nom|Rôle|Badge)</label>
-      <textarea class="admin-textarea" id="ape-gouv" placeholder="PR|Pseudo|Président de Timor|Chef d'État" style="min-height:120px;font-family:monospace;font-size:0.8rem;"></textarea>
+      <textarea class="admin-textarea" id="ape-gouv" style="min-height:120px;font-family:monospace;font-size:0.8rem;"></textarea>
       <div class="admin-actions" style="margin-top:8px;">
         <button class="btn-admin" onclick="adminSavePays()">💾 Sauvegarder</button>
       </div>
       <div class="admin-feedback" id="admin-pays-feedback"></div>
+    </div>
+
+    <!-- TAB BOUTIQUE ADMIN -->
+    <div class="admin-tab-panel" id="admin-tab-shop-edit">
+      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Gère les articles de la boutique. Les joueurs achètent avec leurs pièces 🪙.</p>
+
+      <div class="admin-card-list" id="admin-shop-list"></div>
+      <div style="margin-bottom:8px;">
+        <button class="btn-admin" onclick="adminNewShopItem()">+ Nouvel article</button>
+        <button class="btn-admin" onclick="adminDeleteShopItem()" id="btn-del-shop" style="display:none;">🗑 Supprimer</button>
+      </div>
+
+      <div id="admin-shop-editor" style="display:none;">
+        <div class="admin-row"><label>Nom</label><input class="admin-input" id="ase-name" placeholder="Nom de l'article"></div>
+        <div class="admin-row"><label>Icône</label><input class="admin-input" id="ase-icon" placeholder="Emoji 🎖️" style="max-width:100px"></div>
+        <div class="admin-row"><label>Catégorie</label>
+          <input class="admin-input" id="ase-cat" placeholder="Ex: Rôles, Cosmétiques, Services…">
+        </div>
+        <div class="admin-row"><label>Prix (🪙)</label><input class="admin-input" id="ase-price" type="number" placeholder="500" style="max-width:140px"></div>
+        <div class="admin-row"><label>Stock</label><input class="admin-input" id="ase-stock" type="number" placeholder="-1 = illimité" style="max-width:140px"></div>
+        <div class="admin-row"><label>Image</label><input class="admin-input" id="ase-image" placeholder="URL image (optionnel)"></div>
+        <div class="admin-row"><label>Unique</label>
+          <select class="admin-input" id="ase-unique" style="max-width:180px;margin-bottom:0;">
+            <option value="false">Non (achat multiple)</option>
+            <option value="true">Oui (1 fois par joueur)</option>
+          </select>
+        </div>
+        <div class="admin-row"><label>Limité</label>
+          <select class="admin-input" id="ase-limited" style="max-width:180px;margin-bottom:0;">
+            <option value="false">Non</option>
+            <option value="true">Oui (badge "Limité")</option>
+          </select>
+        </div>
+        <div class="admin-row"><label>Desc.</label><textarea class="admin-textarea" id="ase-desc" placeholder="Description de l'article" style="min-height:70px;"></textarea></div>
+        <div class="admin-format-hint" style="margin-top:4px;">
+          <strong>Instructions admin :</strong> texte affiché uniquement aux admins après achat (ex: rôle à attribuer, action à effectuer).
+        </div>
+        <div class="admin-row"><label>Instr.</label><textarea class="admin-textarea" id="ase-instructions" placeholder="Ex: Attribuer le rôle Discord @VIP au joueur." style="min-height:60px;"></textarea></div>
+        <div class="admin-actions" style="margin-top:8px;">
+          <button class="btn-admin" onclick="adminSaveShopItem()">💾 Sauvegarder</button>
+          <button class="btn-admin" onclick="document.getElementById('admin-shop-editor').style.display='none';document.getElementById('btn-del-shop').style.display='none'">Annuler</button>
+        </div>
+        <div class="admin-feedback" id="admin-shop-feedback"></div>
+      </div>
+
+      <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(165,74,74,0.2);">
+        <div class="admin-title" style="margin-bottom:0.75rem;">📋 HISTORIQUE DES ACHATS</div>
+        <div id="admin-purchases-list" style="font-size:0.82rem;color:var(--text-dim);font-style:italic;">Chargement…</div>
+        <button class="btn-admin" style="margin-top:8px;" onclick="adminLoadPurchases()">↺ Actualiser</button>
+      </div>
     </div>
   </div>
 
@@ -818,7 +994,7 @@ footer a { color: var(--gold-dim); }
 
   <div class="play-block">
     <h3>Prêt à rejoindre Timor ?</h3>
-    <p>Découvre NationsGlory étape par étape et gagne de l'XP instantanément en accomplissant des actions réelles dans le jeu et sur notre Discord.</p>
+    <p>Découvre NationsGlory étape par étape et gagne de l'XP instantanément.</p>
     <button class="btn-primary" onclick="openDiscovery()">🗺️ Commencer à jouer</button>
   </div>
 </div>
@@ -827,7 +1003,7 @@ footer a { color: var(--gold-dim); }
 <div class="section" id="tutoriels">
   <div class="section-header"><div><h2>Tutoriels</h2><p>Tout ce qu'il faut savoir pour maîtriser NationsGlory</p></div></div>
   <div class="tuto-grid" id="tuto-grid">
-    <div style="grid-column:1/-1;padding:3rem;text-align:center;color:var(--text-dim);font-style:italic;font-size:0.95rem;" id="tuto-empty">Aucun tutoriel disponible pour l'instant. Revenez bientôt !</div>
+    <div style="grid-column:1/-1;padding:3rem;text-align:center;color:var(--text-dim);font-style:italic;font-size:0.95rem;" id="tuto-empty">Aucun tutoriel disponible pour l'instant.</div>
   </div>
 </div>
 
@@ -846,6 +1022,44 @@ footer a { color: var(--gold-dim); }
   <div class="gov-grid" id="gov-grid"></div>
 </div>
 
+<!-- BOUTIQUE -->
+<div class="section" id="boutique">
+  <div class="section-header">
+    <div>
+      <h2>Boutique</h2>
+      <p>Dépense tes pièces pour obtenir des avantages exclusifs</p>
+    </div>
+  </div>
+
+  <!-- Bannière si non connecté -->
+  <div class="auth-banner" id="shop-auth-banner" style="display:none;">
+    <p>Connecte-toi pour voir ton solde et acheter des articles.</p>
+    <button class="btn-discord" onclick="Timor.loginWithDiscord()">
+      <svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+      Se connecter avec Discord
+    </button>
+  </div>
+
+  <div class="shop-header-bar">
+    <div class="shop-balance" id="shop-balance-display" style="display:none;">
+      <span>🪙 Mon solde :</span>
+      <span class="shop-balance-num" id="shop-balance-num">0</span>
+      <span>pièces</span>
+    </div>
+    <div class="shop-cats" id="shop-cats"></div>
+  </div>
+
+  <div class="shop-grid" id="shop-grid">
+    <div class="shop-empty" id="shop-empty">Aucun article disponible pour le moment.</div>
+  </div>
+
+  <!-- Inventaire du joueur -->
+  <div class="shop-inventory-section" id="shop-inventory-section" style="display:none;">
+    <div class="shop-inventory-title">Mes achats</div>
+    <div class="shop-inventory-grid" id="shop-inventory-grid"></div>
+  </div>
+</div>
+
 <!-- CLASSEMENT -->
 <div class="section" id="classement">
   <div class="section-header"><div><h2>Classement</h2><p>Les citoyens les plus actifs de Timor</p></div></div>
@@ -853,7 +1067,7 @@ footer a { color: var(--gold-dim); }
     <div style="padding:2rem;text-align:center;color:var(--text-dim);font-style:italic;font-size:0.9rem;">Chargement du classement…</div>
   </div>
   <div style="margin-top:1.5rem;background:var(--dark2);border:1px solid var(--border);border-radius:4px;padding:1.25rem 1.5rem;font-size:0.9rem;color:var(--text-muted);font-style:italic;line-height:1.7;">
-    Le classement est mis à jour en temps réel. Accomplis les quêtes de découverte pour gagner de l'XP et grimper dans le classement !
+    Le classement est mis à jour en temps réel. Accomplis les quêtes de découverte pour gagner de l'XP !
   </div>
 </div>
 
@@ -864,7 +1078,6 @@ footer a { color: var(--gold-dim); }
 
 <!-- ════ LEVEL SYSTEM ════ -->
 <script>
-/* 20 niveaux avec XP total requis, nom de rang, et pièces reçues à l'obtention */
 var LEVELS = [
   {level:1,  name:"Recrue",          xpMin:0,     xpMax:300,    coins:0},
   {level:2,  name:"Éclaireur",       xpMin:300,   xpMax:700,    coins:150},
@@ -906,27 +1119,21 @@ function renderProfileLevel(xp, coins) {
   var card = document.getElementById("profile-level-card");
   if (!card) return;
   card.style.display = "";
-
   var lvl = getLevelData(xp);
   var lvlIdx = lvl.level - 1;
   var nextLvl = LEVELS[Math.min(lvlIdx + 1, LEVELS.length - 1)];
   var pct = lvl.level >= 20 ? 100 : Math.round(((xp - lvl.xpMin) / (nextLvl.xpMin - lvl.xpMin)) * 100);
-
   document.getElementById("level-badge-num").textContent = lvl.level;
   document.getElementById("level-name-display").textContent = lvl.name;
   document.getElementById("level-coins-display").textContent = "🪙 " + (coins||0).toLocaleString("fr-FR") + " pièces";
-
   if (lvl.level >= 20) {
     document.getElementById("level-xp-label").textContent = "Niveau maximum atteint — " + xp.toLocaleString("fr-FR") + " XP";
   } else {
     document.getElementById("level-xp-label").textContent = xp.toLocaleString("fr-FR") + " / " + nextLvl.xpMin.toLocaleString("fr-FR") + " XP pour " + nextLvl.name;
   }
-
   document.getElementById("xp-bar-fill").style.width = pct + "%";
   document.getElementById("xp-bar-min").textContent = lvl.xpMin.toLocaleString("fr-FR") + " XP";
   document.getElementById("xp-bar-max").textContent = (lvl.level >= 20 ? "" : nextLvl.xpMin.toLocaleString("fr-FR") + " XP");
-
-  // Milestones (show all 20 levels as dots)
   var ms = document.getElementById("level-milestones");
   if (ms) {
     ms.innerHTML = "";
@@ -965,7 +1172,7 @@ window.closeLevelUp = function() {
 import { initializeApp }                                          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithCustomToken, signOut, onAuthStateChanged }
                                                                    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, orderBy, query, limit }
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, orderBy, query, limit, addDoc, serverTimestamp }
                                                                    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const FIREBASE_CONFIG = {
@@ -987,11 +1194,11 @@ const app  = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const DEFAULT_TUTOS = [];
+const DEFAULT_TUTOS     = [];
 const DEFAULT_DISCOVERY = {
   title: "🗺️ Commencer à jouer",
-  desc:  "Accomplis les étapes ci-dessous pour découvrir NationsGlory et Timor. L'XP est attribué automatiquement à chaque étape !",
-  note:  "L'XP est attribué automatiquement dès que tu confirmes une étape. Bonne chance, citoyen !",
+  desc:  "Accomplis les étapes ci-dessous pour découvrir NationsGlory et Timor.",
+  note:  "L'XP est attribué automatiquement dès que tu confirmes une étape. Bonne chance !",
   steps: []
 };
 const DEFAULT_PAYS = {
@@ -1006,46 +1213,50 @@ const DEFAULT_PAYS = {
     {init:"MI", nom:"[Pseudo du Ministre]",       role:"Ministre de l'Intégration",badge:"Gouvernement"},
   ]
 };
+const DEFAULT_SHOP = { items: [] };
 
-let _tutos = null, _pays = null, _discovery = null;
+let _tutos = null, _pays = null, _discovery = null, _shop = null;
 let _currentUserRole = null;
 let _currentUserUID  = null;
 let _currentUserXP   = 0;
 let _currentUserCoins= 0;
+let _currentUserPurchases = [];
+let _pendingPurchaseItem  = null;
 
-/* ════ Level system helpers (module scope) ════ */
+/* ════ Level helpers ════ */
 function getLevelFromXP(xp) {
-  const LEVELS_XP = [0,300,700,1300,2100,3200,4700,6600,9000,12000,16000,21000,27000,34500,43500,54000,66500,81000,98000,118000];
-  for (let i = LEVELS_XP.length - 1; i >= 0; i--) {
-    if (xp >= LEVELS_XP[i]) return i + 1;
-  }
+  const XPS = [0,300,700,1300,2100,3200,4700,6600,9000,12000,16000,21000,27000,34500,43500,54000,66500,81000,98000,118000];
+  for (let i = XPS.length - 1; i >= 0; i--) { if (xp >= XPS[i]) return i + 1; }
   return 1;
 }
 
 /* ════ Chargement des données ════ */
 async function loadSiteData() {
   try {
-    const [tSnap, pSnap, dSnap] = await Promise.all([
+    const [tSnap, pSnap, dSnap, sSnap] = await Promise.all([
       getDoc(doc(db, "sitedata", "tutos")),
       getDoc(doc(db, "sitedata", "pays")),
       getDoc(doc(db, "sitedata", "discovery")),
+      getDoc(doc(db, "sitedata", "shop")),
     ]);
     _tutos     = tSnap.exists() ? tSnap.data().list : DEFAULT_TUTOS;
     _pays      = pSnap.exists() ? pSnap.data()      : DEFAULT_PAYS;
     _discovery = dSnap.exists() ? dSnap.data()      : DEFAULT_DISCOVERY;
+    _shop      = sSnap.exists() ? sSnap.data()      : DEFAULT_SHOP;
   } catch(e) {
     console.warn("loadSiteData:", e.message);
-    _tutos = DEFAULT_TUTOS; _pays = DEFAULT_PAYS; _discovery = DEFAULT_DISCOVERY;
+    _tutos = DEFAULT_TUTOS; _pays = DEFAULT_PAYS;
+    _discovery = DEFAULT_DISCOVERY; _shop = DEFAULT_SHOP;
   }
-  renderTutos(); renderPays(); renderDiscovery();
+  renderTutos(); renderPays(); renderDiscovery(); renderShop();
 }
 
-/* ════ ICÔNE LIEN EXTERNE ════ */
+/* ════ Lien externe ════ */
 function linkIcon() {
   return '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
 }
 
-/* ════ Rendu des tutoriels ════ */
+/* ════ Rendu tutoriels ════ */
 function renderTutos() {
   if (!_tutos) return;
   const grid = document.getElementById("tuto-grid");
@@ -1055,21 +1266,17 @@ function renderTutos() {
   if (emptyMsg) emptyMsg.style.display = "none";
   Array.from(grid.children).forEach(function(c){ if(c.id !== "tuto-empty") c.remove(); });
   _tutos.forEach(function(t) {
-    const bannerHtml = t.image
-      ? '<img class="tuto-banner" src="' + escHtml(t.image) + '" alt="" onerror="this.style.display=\'none\'">'
-      : '';
-    const tutoLinkHtml = t.link
-      ? '<a class="tuto-link" href="' + escHtml(t.link) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + linkIcon() + escHtml(t.linkLabel || 'Voir le lien') + '</a>'
-      : '';
+    const bannerHtml = t.image ? '<img class="tuto-banner" src="'+escHtml(t.image)+'" alt="" onerror="this.style.display=\'none\'">' : '';
+    const tutoLinkHtml = t.link ? '<a class="tuto-link" href="'+escHtml(t.link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+linkIcon()+escHtml(t.linkLabel||'Voir le lien')+'</a>' : '';
     let stepsHtml = (t.steps||[]).map(function(s, i) {
-      const imgHtml  = s.img  ? '<img class="step-img" src="' + escHtml(s.img) + '" alt="" onerror="this.style.display=\'none\'">' : '';
-      const linkHtml = s.link ? '<a class="step-link" href="' + escHtml(s.link) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + linkIcon() + escHtml(s.linkLabel || 'Voir') + '</a>' : '';
-      return '<div class="tuto-step"><div class="step-n">' + (i+1) + '</div><div class="step-body"><div class="step-text"><strong>' + escHtml(s.title) + '</strong>' + escHtml(s.desc) + '</div>' + imgHtml + linkHtml + '</div></div>';
+      const imgHtml  = s.img  ? '<img class="step-img" src="'+escHtml(s.img)+'" alt="" onerror="this.style.display=\'none\'">' : '';
+      const linkHtml = s.link ? '<a class="step-link" href="'+escHtml(s.link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+linkIcon()+escHtml(s.linkLabel||'Voir')+'</a>' : '';
+      return '<div class="tuto-step"><div class="step-n">'+(i+1)+'</div><div class="step-body"><div class="step-text"><strong>'+escHtml(s.title)+'</strong>'+escHtml(s.desc)+'</div>'+imgHtml+linkHtml+'</div></div>';
     }).join("");
     const card = document.createElement("div");
     card.className = "tuto-card";
     card.onclick = function(){ toggleTuto(card); };
-    card.innerHTML = bannerHtml + '<div class="tuto-icon">' + (t.icon||'📖') + '</div><div class="tuto-title">' + escHtml(t.title) + '</div><div class="tuto-desc">' + escHtml(t.desc) + '</div>' + tutoLinkHtml + '<div class="tuto-toggle">Voir le guide ▾</div><div class="tuto-steps">' + stepsHtml + '</div>';
+    card.innerHTML = bannerHtml+'<div class="tuto-icon">'+(t.icon||'📖')+'</div><div class="tuto-title">'+escHtml(t.title)+'</div><div class="tuto-desc">'+escHtml(t.desc)+'</div>'+tutoLinkHtml+'<div class="tuto-toggle">Voir le guide ▾</div><div class="tuto-steps">'+stepsHtml+'</div>';
     grid.appendChild(card);
   });
 }
@@ -1078,32 +1285,256 @@ function renderTutos() {
 function renderPays() {
   if (!_pays) return;
   const p = _pays;
-  setEl("pays-fondation", p.fondation || "[Année]");
-  setEl("pays-membres",   p.membres   || "142");
-  setEl("pays-rang",      p.rang      || "#3");
-  setEl("stat-membres",   p.membres   || "142");
-  setEl("stat-rang",      p.rang      || "#3");
-  setEl("pays-desc",      p.paydesc   || "");
-  setEl("hero-desc",      p.herodesc  || "");
+  setEl("pays-fondation", p.fondation||"[Année]");
+  setEl("pays-membres",   p.membres||"142");
+  setEl("pays-rang",      p.rang||"#3");
+  setEl("stat-membres",   p.membres||"142");
+  setEl("stat-rang",      p.rang||"#3");
+  setEl("pays-desc",      p.paydesc||"");
+  setEl("hero-desc",      p.herodesc||"");
   const govGrid = document.getElementById("gov-grid");
   if (govGrid && p.gouv) {
     govGrid.innerHTML = p.gouv.map(function(m) {
-      return '<div class="gov-member"><div class="gov-avatar">' + escHtml(m.init) + '</div><div><div class="gov-name">' + escHtml(m.nom) + '</div><div class="gov-role">' + escHtml(m.role) + '</div></div><span class="gov-badge">' + escHtml(m.badge) + '</span></div>';
+      return '<div class="gov-member"><div class="gov-avatar">'+escHtml(m.init)+'</div><div><div class="gov-name">'+escHtml(m.nom)+'</div><div class="gov-role">'+escHtml(m.role)+'</div></div><span class="gov-badge">'+escHtml(m.badge)+'</span></div>';
     }).join("");
   }
 }
 
-/* ════ Discovery — forced sequential with auto XP award ════ */
-// Storage key for which steps the user has clicked the link on
-function getDiscStorageKey() {
-  return "timor_disc_links_" + (_currentUserUID || "anon");
+/* ════ BOUTIQUE ════ */
+function renderShop() {
+  if (!_shop) return;
+  const items = _shop.items || [];
+  const grid  = document.getElementById("shop-grid");
+  const catsEl= document.getElementById("shop-cats");
+  if (!grid) return;
+
+  // Categories
+  const cats = ["Tous", ...new Set(items.map(function(i){ return i.cat || "Général"; }))];
+  if (catsEl) {
+    catsEl.innerHTML = cats.map(function(c, idx) {
+      return '<button class="shop-cat-btn'+(idx===0?' active':'')+'" onclick="filterShop(\''+escHtml(c)+'\', this)">'+escHtml(c)+'</button>';
+    }).join("");
+  }
+
+  renderShopGrid(items, "Tous");
+
+  // Inventory
+  updateShopInventoryDisplay();
+
+  // Balance display
+  const balanceEl   = document.getElementById("shop-balance-display");
+  const shopBanner  = document.getElementById("shop-auth-banner");
+  if (balanceEl && shopBanner) {
+    if (_currentUserUID) {
+      balanceEl.style.display = "";
+      shopBanner.style.display = "none";
+      document.getElementById("shop-balance-num").textContent = _currentUserCoins.toLocaleString("fr-FR");
+    } else {
+      balanceEl.style.display = "none";
+      shopBanner.style.display = "";
+    }
+  }
 }
-function loadDiscLinkClicks() {
-  try { return JSON.parse(localStorage.getItem(getDiscStorageKey()) || "{}"); } catch(e) { return {}; }
+
+window._currentShopFilter = "Tous";
+window.filterShop = function(cat, btn) {
+  window._currentShopFilter = cat;
+  document.querySelectorAll(".shop-cat-btn").forEach(function(b){ b.classList.remove("active"); });
+  if (btn) btn.classList.add("active");
+  renderShopGrid(_shop ? _shop.items || [] : [], cat);
+};
+
+function renderShopGrid(items, cat) {
+  const grid = document.getElementById("shop-grid");
+  if (!grid) return;
+  const filtered = cat === "Tous" ? items : items.filter(function(i){ return (i.cat||"Général") === cat; });
+
+  grid.innerHTML = "";
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="shop-empty">Aucun article dans cette catégorie.</div>';
+    return;
+  }
+
+  filtered.forEach(function(item) {
+    const isOwned   = _currentUserUID && _currentUserPurchases.some(function(p){ return p.itemId === item.id && item.unique; });
+    const isSoldOut = item.stock !== undefined && item.stock !== -1 && item.stock <= 0;
+    const canBuy    = _currentUserUID && !isOwned && !isSoldOut;
+    const price     = item.price || 0;
+    const affordable= _currentUserCoins >= price;
+
+    let cardClass = "shop-card";
+    if (isOwned)   cardClass += " owned";
+    if (isSoldOut) cardClass += " sold-out";
+
+    const imgHtml = item.image
+      ? '<img class="shop-card-img" src="'+escHtml(item.image)+'" alt="" onerror="this.parentNode.innerHTML=\'<div class=shop-card-img-placeholder>'+escHtml(item.icon||'🛒')+'</div>\'">'
+      : '<div class="shop-card-img-placeholder">'+(item.icon||'🛒')+'</div>';
+
+    const limitedBadge = item.limited ? '<div class="shop-badge-limited">LIMITÉ</div>' : '';
+
+    let footerHtml = '';
+    const priceHtml = '<div class="shop-card-price'+(price===0?' free':'')+'">'+
+      (price===0 ? '🆓 Gratuit' : '🪙 '+price.toLocaleString('fr-FR'))+'</div>';
+
+    if (isOwned) {
+      footerHtml = priceHtml + '<span class="shop-badge-owned">✓ Acquis</span>';
+    } else if (isSoldOut) {
+      footerHtml = priceHtml + '<span class="shop-badge-soldout">Épuisé</span>';
+    } else if (!_currentUserUID) {
+      footerHtml = priceHtml + '<button class="btn-shop-buy" onclick="Timor.loginWithDiscord()">Connexion requise</button>';
+    } else {
+      footerHtml = priceHtml + '<button class="btn-shop-buy" '+(affordable?'':'disabled title="Pièces insuffisantes"')+' onclick="openPurchaseModal(\''+escHtml(item.id)+'\')">Acheter</button>';
+    }
+
+    const stockInfo = (item.stock !== undefined && item.stock !== -1)
+      ? '<div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:8px;font-family:\'Cinzel\',serif;">Stock : '+item.stock+'</div>'
+      : '';
+
+    grid.innerHTML +=
+      '<div class="'+cardClass+'">'+
+        limitedBadge+
+        imgHtml+
+        '<div class="shop-card-body">'+
+          '<div class="shop-card-cat">'+(item.cat||'Général')+'</div>'+
+          '<div class="shop-card-title">'+escHtml(item.name||'Article')+'</div>'+
+          '<div class="shop-card-desc">'+escHtml(item.desc||'')+'</div>'+
+          stockInfo+
+          '<div class="shop-card-footer">'+footerHtml+'</div>'+
+        '</div>'+
+      '</div>';
+  });
 }
-function saveDiscLinkClicks(obj) {
-  try { localStorage.setItem(getDiscStorageKey(), JSON.stringify(obj)); } catch(e) {}
+
+function updateShopInventoryDisplay() {
+  const section = document.getElementById("shop-inventory-section");
+  const grid    = document.getElementById("shop-inventory-grid");
+  if (!section || !grid) return;
+  if (!_currentUserUID || _currentUserPurchases.length === 0) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "";
+  grid.innerHTML = _currentUserPurchases.map(function(p) {
+    return '<div class="shop-inv-item"><span class="shop-inv-item-icon">'+(p.itemIcon||'🛒')+'</span>'+escHtml(p.itemName||p.itemId)+'</div>';
+  }).join("");
 }
+
+/* ════ Modal d'achat ════ */
+window.openPurchaseModal = function(itemId) {
+  if (!_shop || !_currentUserUID) return;
+  const item = (_shop.items||[]).find(function(i){ return i.id === itemId; });
+  if (!item) return;
+  _pendingPurchaseItem = item;
+  document.getElementById("pm-icon").textContent   = item.icon || '🛒';
+  document.getElementById("pm-title").textContent  = item.name || 'Article';
+  document.getElementById("pm-desc").textContent   = item.desc || '';
+  document.getElementById("pm-price").textContent  = item.price === 0 ? '🆓 Gratuit' : '🪙 ' + (item.price||0).toLocaleString('fr-FR') + ' pièces';
+  document.getElementById("pm-balance").textContent= 'Ton solde : 🪙 ' + _currentUserCoins.toLocaleString('fr-FR') + ' pièces';
+  document.getElementById("pm-error").textContent  = '';
+  const confirmBtn = document.getElementById("pm-confirm-btn");
+  confirmBtn.disabled = _currentUserCoins < (item.price||0);
+  document.getElementById("purchase-overlay").classList.add("show");
+};
+
+window.closePurchaseModal = function() {
+  document.getElementById("purchase-overlay").classList.remove("show");
+  _pendingPurchaseItem = null;
+};
+
+window.confirmPurchase = async function() {
+  const item = _pendingPurchaseItem;
+  if (!item || !_currentUserUID) return;
+  const confirmBtn = document.getElementById("pm-confirm-btn");
+  const errorEl    = document.getElementById("pm-error");
+  confirmBtn.disabled  = true;
+  confirmBtn.textContent = "Traitement…";
+  errorEl.textContent  = "";
+
+  try {
+    const ref  = doc(db, "users", _currentUserUID);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) throw new Error("Profil introuvable.");
+    const profile = snap.data();
+    const currentCoins = profile.coins || 0;
+    const price = item.price || 0;
+
+    if (currentCoins < price) { errorEl.textContent = "Pièces insuffisantes."; confirmBtn.disabled = false; confirmBtn.textContent = "Acheter"; return; }
+
+    // Check if already owned (unique items)
+    if (item.unique) {
+      const alreadyOwned = _currentUserPurchases.some(function(p){ return p.itemId === item.id; });
+      if (alreadyOwned) { errorEl.textContent = "Tu possèdes déjà cet article."; confirmBtn.disabled = false; confirmBtn.textContent = "Acheter"; return; }
+    }
+
+    // Check stock
+    if (item.stock !== undefined && item.stock !== -1 && item.stock <= 0) {
+      errorEl.textContent = "Article épuisé."; confirmBtn.disabled = false; confirmBtn.textContent = "Acheter"; return;
+    }
+
+    const newCoins = currentCoins - price;
+    await updateDoc(ref, { coins: newCoins });
+    _currentUserCoins = newCoins;
+
+    // Write purchase record
+    const purchaseData = {
+      uid: _currentUserUID,
+      username: profile.globalName || profile.username || "Inconnu",
+      itemId: item.id,
+      itemName: item.name || "Article",
+      itemIcon: item.icon || "🛒",
+      itemCat:  item.cat  || "Général",
+      price:    price,
+      purchasedAt: new Date().toISOString(),
+    };
+    await addDoc(collection(db, "purchases"), purchaseData);
+    _currentUserPurchases.push(purchaseData);
+
+    // Decrement stock if limited
+    if (item.stock !== undefined && item.stock !== -1) {
+      const shopSnap = await getDoc(doc(db, "sitedata", "shop"));
+      if (shopSnap.exists()) {
+        const shopData = shopSnap.data();
+        const updItems = (shopData.items||[]).map(function(i){
+          if (i.id === item.id) return {...i, stock: Math.max(0, (i.stock||0) - 1)};
+          return i;
+        });
+        await setDoc(doc(db, "sitedata", "shop"), {items: updItems});
+        _shop = {items: updItems};
+      }
+    }
+
+    // Update UI
+    renderShop();
+    renderProfileLevel(_currentUserXP, _currentUserCoins);
+    const navCoinsEl = document.querySelector(".nav-coins");
+    if (navCoinsEl) navCoinsEl.textContent = "🪙 " + newCoins.toLocaleString("fr-FR");
+    await loadLeaderboard();
+
+    closePurchaseModal();
+    showToast("✅ " + escHtml(item.name) + " acheté pour 🪙 " + price.toLocaleString("fr-FR") + " pièces !");
+  } catch(err) {
+    console.error(err);
+    errorEl.textContent = "Erreur : " + err.message;
+    confirmBtn.disabled  = false;
+    confirmBtn.textContent = "Acheter";
+  }
+};
+
+async function loadUserPurchases(uid) {
+  try {
+    const snap = await getDocs(collection(db, "purchases"));
+    _currentUserPurchases = [];
+    snap.forEach(function(ds) {
+      const d = ds.data();
+      if (d.uid === uid) _currentUserPurchases.push({...d, docId: ds.id});
+    });
+  } catch(e) { _currentUserPurchases = []; }
+}
+
+/* ════ Discovery ════ */
+function getDiscStorageKey() { return "timor_disc_links_" + (_currentUserUID || "anon"); }
+function loadDiscLinkClicks() { try { return JSON.parse(localStorage.getItem(getDiscStorageKey()) || "{}"); } catch(e) { return {}; } }
+function saveDiscLinkClicks(obj) { try { localStorage.setItem(getDiscStorageKey(), JSON.stringify(obj)); } catch(e) {} }
 
 function renderDiscovery() {
   if (!_discovery) return;
@@ -1113,80 +1544,57 @@ function renderDiscovery() {
   if (noteEl) noteEl.innerHTML = escHtml(d.note || DEFAULT_DISCOVERY.note).replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--gold);font-style:normal;">$1</strong>');
   const discTitle = document.querySelector(".discovery-title");
   if (discTitle) discTitle.textContent = d.title || DEFAULT_DISCOVERY.title;
-
-  // Show/hide auth notice
   const authNotice = document.getElementById("disc-auth-notice");
   if (authNotice) authNotice.classList.toggle("visible", !_currentUserUID);
-
   const container = document.getElementById("disc-steps");
   if (!container) return;
-
   if (!d.steps || d.steps.length === 0) {
-    container.innerHTML = '<div class="discovery-empty">Aucune étape configurée pour le moment. Revenez bientôt !</div>';
+    container.innerHTML = '<div class="discovery-empty">Aucune étape configurée pour le moment.</div>';
     document.getElementById("disc-progress-fill").style.width = "0%";
     return;
   }
-
   const clicks = loadDiscLinkClicks();
   container.innerHTML = "";
-
   d.steps.forEach(function(s, i) {
     const isClicked = !!clicks[i];
-    // A step is "done" if clicks[i] === "done"
     const isDone    = clicks[i] === "done";
-    // Find the first unlocked step (first not done)
-    const firstIncomplete = d.steps.findIndex(function(_, idx) { return clicks[idx] !== "done"; });
+    const firstIncomplete = d.steps.findIndex(function(_, idx){ return clicks[idx] !== "done"; });
     const isCurrent = i === firstIncomplete;
     const isLocked  = i > firstIncomplete;
-
     let stateClass = "discovery-step";
-    if (isDone)        stateClass += " done";
+    if (isDone) stateClass += " done";
     else if (isCurrent) stateClass += " current";
     else if (isLocked)  stateClass += " locked";
-
-    // Build done badge with XP info
     const xpAmount = s.xp || 0;
-    const doneBadgeText = xpAmount > 0
-      ? "✅ Accompli — +" + xpAmount + " XP reçus !"
-      : "✅ Accompli !";
-
+    const doneBadgeText = xpAmount > 0 ? "✅ Accompli — +" + xpAmount + " XP reçus !" : "✅ Accompli !";
     let actionHtml = "";
     if (!isDone) {
-      // Link button (required)
-      let btnClass = "disc-link-btn" + (isClicked && !isDone ? " clicked" : "");
       let btnContent = "";
       if (s.url) {
-        btnContent = '<a class="' + btnClass + '" href="' + escHtml(s.url) + '" target="_blank" rel="noopener" id="disc-link-' + i + '" onclick="onDiscLinkClick(' + i + ')">' + linkIcon() + ' ' + escHtml(s.urlLabel || 'Ouvrir le lien') + '</a>';
+        btnContent = '<a class="disc-link-btn'+(isClicked&&!isDone?' clicked':'')+'" href="'+escHtml(s.url)+'" target="_blank" rel="noopener" id="disc-link-'+i+'" onclick="onDiscLinkClick('+i+')">'+linkIcon()+' '+escHtml(s.urlLabel||'Ouvrir le lien')+'</a>';
       } else {
-        btnContent = '<button class="disc-link-btn' + (isClicked ? ' clicked' : '') + '" id="disc-link-' + i + '" onclick="onDiscLinkClick(' + i + ')">✓ Marquer comme cliqué</button>';
+        btnContent = '<button class="disc-link-btn'+(isClicked?' clicked':'')+'" id="disc-link-'+i+'" onclick="onDiscLinkClick('+i+')">✓ Marquer comme cliqué</button>';
       }
-
-      // Confirm button (appears after link is clicked)
       let confirmVisible = isClicked ? " visible" : "";
-      let confirmLabel = xpAmount > 0
-        ? "✅ J'ai accompli cette étape (+&nbsp;" + xpAmount + "&nbsp;XP)"
-        : "✅ J'ai accompli cette étape";
-      let confirmHtml = '<div class="disc-confirm-row"><button class="disc-confirm-btn' + confirmVisible + '" id="disc-confirm-' + i + '" onclick="onDiscStepConfirm(' + i + ', ' + xpAmount + ')">' + confirmLabel + '</button></div>';
-
-      actionHtml = '<div class="discovery-step-action">' + btnContent + confirmHtml + '</div>';
+      let confirmLabel = xpAmount > 0 ? "✅ J'ai accompli cette étape (+&nbsp;"+xpAmount+"&nbsp;XP)" : "✅ J'ai accompli cette étape";
+      let confirmHtml = '<div class="disc-confirm-row"><button class="disc-confirm-btn'+confirmVisible+'" id="disc-confirm-'+i+'" onclick="onDiscStepConfirm('+i+', '+xpAmount+')">'+confirmLabel+'</button></div>';
+      actionHtml = '<div class="discovery-step-action">'+btnContent+confirmHtml+'</div>';
     }
-
     container.innerHTML +=
-      '<div class="' + stateClass + '" id="dstep-' + i + '">' +
-        (isLocked ? '<div class="discovery-step-lock">🔒 Étape précédente requise</div>' : '') +
-        '<div class="discovery-step-num">' + (isDone ? '✓' : (i+1)) + '</div>' +
-        '<div class="discovery-step-body">' +
-          '<div class="discovery-step-title">' + escHtml(s.title) + '</div>' +
-          '<div class="discovery-step-desc">'  + escHtml(s.desc)  + '</div>' +
-          '<div class="discovery-step-xp">🏆 +' + xpAmount + ' XP attribués automatiquement</div>' +
-          actionHtml +
-          '<div class="discovery-step-done-badge">' + doneBadgeText + '</div>' +
-        '</div>' +
+      '<div class="'+stateClass+'" id="dstep-'+i+'">'+
+        (isLocked ? '<div class="discovery-step-lock">🔒 Étape précédente requise</div>' : '')+
+        '<div class="discovery-step-num">'+(isDone ? '✓' : (i+1))+'</div>'+
+        '<div class="discovery-step-body">'+
+          '<div class="discovery-step-title">'+escHtml(s.title)+'</div>'+
+          '<div class="discovery-step-desc">'+escHtml(s.desc)+'</div>'+
+          '<div class="discovery-step-xp">🏆 +'+xpAmount+' XP attribués automatiquement</div>'+
+          actionHtml+
+          '<div class="discovery-step-done-badge">'+doneBadgeText+'</div>'+
+        '</div>'+
       '</div>';
   });
-
-  const done = d.steps.filter(function(_, i) { return clicks[i] === "done"; }).length;
-  document.getElementById("disc-progress-fill").style.width = (d.steps.length > 0 ? Math.round((done / d.steps.length) * 100) : 0) + "%";
+  const done = d.steps.filter(function(_, i){ return clicks[i] === "done"; }).length;
+  document.getElementById("disc-progress-fill").style.width = (d.steps.length > 0 ? Math.round((done/d.steps.length)*100) : 0) + "%";
 }
 
 window.onDiscLinkClick = function(stepIdx) {
@@ -1194,23 +1602,17 @@ window.onDiscLinkClick = function(stepIdx) {
   if (clicks[stepIdx] === "done") return;
   clicks[stepIdx] = "clicked";
   saveDiscLinkClicks(clicks);
-  // Show confirm button
-  const confirmBtn = document.getElementById("disc-confirm-" + stepIdx);
+  const confirmBtn = document.getElementById("disc-confirm-"+stepIdx);
   if (confirmBtn) confirmBtn.classList.add("visible");
-  // Style the link button as clicked
-  const linkBtn = document.getElementById("disc-link-" + stepIdx);
+  const linkBtn = document.getElementById("disc-link-"+stepIdx);
   if (linkBtn) linkBtn.classList.add("clicked");
 };
 
-// ══ CORE CHANGE: Auto-award XP on step confirmation ══
 window.onDiscStepConfirm = async function(stepIdx, xpAmount) {
   const clicks = loadDiscLinkClicks();
   if (clicks[stepIdx] === "done") return;
-
-  const confirmBtn = document.getElementById("disc-confirm-" + stepIdx);
+  const confirmBtn = document.getElementById("disc-confirm-"+stepIdx);
   if (confirmBtn) { confirmBtn.classList.add("loading"); confirmBtn.textContent = "Attribution de l'XP…"; }
-
-  // Award XP in Firestore if user is logged in
   if (_currentUserUID && xpAmount > 0) {
     try {
       const ref  = doc(db, "users", _currentUserUID);
@@ -1221,65 +1623,42 @@ window.onDiscStepConfirm = async function(stepIdx, xpAmount) {
         const newXP   = oldXP + xpAmount;
         const oldLvl  = getLevelFromXP(oldXP);
         const newLvl  = getLevelFromXP(newXP);
-
-        // Calculate coins bonus for level-ups
         let coinsBonus = 0;
         if (newLvl > oldLvl) {
-          for (let l = oldLvl + 1; l <= newLvl; l++) {
-            const ld = window.LEVELS ? window.LEVELS[l - 1] : null;
+          for (let l = oldLvl+1; l <= newLvl; l++) {
+            const ld = window.LEVELS ? window.LEVELS[l-1] : null;
             if (ld) coinsBonus += ld.coins;
           }
         }
-
-        const updData = { xp: newXP };
-        if (coinsBonus > 0) updData.coins = Math.max(0, (profile.coins || 0) + coinsBonus);
-
+        const updData = {xp: newXP};
+        if (coinsBonus > 0) updData.coins = Math.max(0, (profile.coins||0) + coinsBonus);
         await updateDoc(ref, updData);
-
-        // Update in-memory state
         _currentUserXP = newXP;
-        if (coinsBonus > 0) _currentUserCoins = (profile.coins || 0) + coinsBonus;
-
-        // Re-render profile card
+        if (coinsBonus > 0) _currentUserCoins = (profile.coins||0) + coinsBonus;
         renderProfileLevel(_currentUserXP, _currentUserCoins);
-
-        // Trigger level-up modal if applicable
-        if (newLvl > oldLvl) {
-          checkLevelUp(oldXP, newXP, profile);
-        }
-
-        // Refresh leaderboard
+        if (newLvl > oldLvl) checkLevelUp(oldXP, newXP, profile);
         await loadLeaderboard();
-
-        // Update nav XP display
         const navXpEl = document.querySelector(".nav-xp");
         if (navXpEl) navXpEl.textContent = newXP.toLocaleString("fr-FR") + " XP";
         const navLvlEl = document.querySelector(".nav-level");
         if (navLvlEl) navLvlEl.textContent = "Niv. " + newLvl;
         const navCoinsEl = document.querySelector(".nav-coins");
         if (navCoinsEl) navCoinsEl.textContent = "🪙 " + _currentUserCoins.toLocaleString("fr-FR");
-
         showToast("🏆 +" + xpAmount + " XP reçus !" + (coinsBonus > 0 ? " 🪙 +" + coinsBonus + " pièces !" : ""));
       }
     } catch(err) {
       console.error("XP award error:", err);
-      // Still mark as done locally even if Firestore fails
       showToast("⚠ XP non enregistré. Connecte-toi et réessaie.");
       if (confirmBtn) { confirmBtn.classList.remove("loading"); confirmBtn.textContent = "✅ J'ai accompli cette étape"; }
       return;
     }
   } else if (!_currentUserUID) {
-    // Not logged in: mark done locally, no XP awarded
     showToast("⚠ Connecte-toi avec Discord pour recevoir l'XP !");
   } else {
     showToast("✅ Étape accomplie !");
   }
-
-  // Mark step as done in localStorage
   clicks[stepIdx] = "done";
   saveDiscLinkClicks(clicks);
-
-  // Re-render discovery to unlock next step
   renderDiscovery();
 };
 
@@ -1304,20 +1683,20 @@ async function handleDiscordCallback(code, returnedState) {
   if (savedState && returnedState && returnedState !== savedState) { showToast("Erreur de sécurité OAuth."); return null; }
   sessionStorage.removeItem("discord_oauth_state");
   try {
-    const res = await fetch(EXCHANGE_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({code, redirect_uri: DISCORD_REDIRECT_URI}) });
-    if (!res.ok) throw new Error("Token exchange failed: " + res.status);
-    const { access_token, firebase_token } = await res.json();
-    const userCred    = await signInWithCustomToken(auth, firebase_token);
+    const res = await fetch(EXCHANGE_URL, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code, redirect_uri: DISCORD_REDIRECT_URI})});
+    if (!res.ok) throw new Error("Token exchange failed: "+res.status);
+    const {access_token, firebase_token} = await res.json();
+    const userCred = await signInWithCustomToken(auth, firebase_token);
     const discordUser = await fetchDiscordUser(access_token);
     await upsertUserProfile(userCred.user.uid, discordUser, access_token);
-    showToast("Bienvenue, " + (discordUser.global_name || discordUser.username) + " !");
+    showToast("Bienvenue, "+(discordUser.global_name||discordUser.username)+" !");
     return userCred.user;
   } catch(err) { console.error(err); showToast("Erreur Discord."); return null; }
 }
 
 async function fetchDiscordUser(t) {
   const r = await fetch("https://discord.com/api/users/@me", {headers:{Authorization:"Bearer "+t}});
-  if (!r.ok) throw new Error("Discord API: " + r.status);
+  if (!r.ok) throw new Error("Discord API: "+r.status);
   return r.json();
 }
 
@@ -1325,11 +1704,11 @@ async function upsertUserProfile(uid, d, token) {
   const ref  = doc(db, "users", uid);
   const snap = await getDoc(ref);
   const avatar = d.avatar
-    ? "https://cdn.discordapp.com/avatars/" + d.id + "/" + d.avatar + ".png?size=128"
-    : "https://cdn.discordapp.com/embed/avatars/" + (Number(d.discriminator||0)%5) + ".png";
-  const base = { discordId:d.id, username:d.username, discriminator:d.discriminator||"0", globalName:d.global_name||d.username, avatar, discordToken:token, updatedAt:new Date().toISOString() };
+    ? "https://cdn.discordapp.com/avatars/"+d.id+"/"+d.avatar+".png?size=128"
+    : "https://cdn.discordapp.com/embed/avatars/"+(Number(d.discriminator||0)%5)+".png";
+  const base = {discordId:d.id, username:d.username, discriminator:d.discriminator||"0", globalName:d.global_name||d.username, avatar, discordToken:token, updatedAt:new Date().toISOString()};
   if (!snap.exists()) {
-    await setDoc(ref, {...base, xp:0, coins:0, role: ADMIN_IDS.has(d.id)?"admin": MODO_IDS.has(d.id)?"modo":"citoyen", joinedAt:new Date().toISOString()});
+    await setDoc(ref, {...base, xp:0, coins:0, role: ADMIN_IDS.has(d.id)?"admin":MODO_IDS.has(d.id)?"modo":"citoyen", joinedAt:new Date().toISOString()});
   } else {
     const upd = {...base};
     if (ADMIN_IDS.has(d.id)) upd.role="admin";
@@ -1351,22 +1730,26 @@ onAuthStateChanged(auth, async function(user) {
     _currentUserCoins = profile?.coins ?? 0;
     window._lastKnownXP    = _currentUserXP;
     window._lastKnownLevel = getLevelFromXP(_currentUserXP);
+    await loadUserPurchases(user.uid);
     renderConnectedState(user, profile);
     renderProfileLevel(_currentUserXP, _currentUserCoins);
-    renderDiscovery(); // re-render with UID known (updates auth notice)
+    renderDiscovery();
+    renderShop();
     await loadLeaderboard();
   } else {
     _currentUserRole = null;
     _currentUserUID  = null;
+    _currentUserPurchases = [];
     renderDisconnectedState();
-    renderDiscovery(); // re-render to show auth notice
+    renderDiscovery();
+    renderShop();
     await loadLeaderboard();
   }
 });
 
 function renderConnectedState(user, profile) {
   document.getElementById("auth-banner").style.display = "none";
-  const name = escHtml(profile?.globalName || profile?.username || user.displayName || "Citoyen");
+  const name = escHtml(profile?.globalName||profile?.username||user.displayName||"Citoyen");
   const xp   = profile?.xp ?? 0;
   const coins= profile?.coins ?? 0;
   const role = profile?.role || "citoyen";
@@ -1381,6 +1764,8 @@ function renderConnectedState(user, profile) {
       adminLoadTutoEditor();
       adminLoadPaysEditor();
       adminLoadDiscoveryEditor();
+      adminLoadShopEditor();
+      adminLoadPurchases();
     }
   }
   let badge = "";
@@ -1388,18 +1773,18 @@ function renderConnectedState(user, profile) {
   else if (role==="modo") badge = '<span class="nav-role-badge role-modo">Modo</span>';
   const navAuth = document.getElementById("nav-auth");
   if (navAuth) {
-    navAuth.innerHTML = '<div class="nav-user">' +
-      (profile?.avatar ? '<img src="'+profile.avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">' : "") +
-      '<span class="nav-username">'+name+'</span>' +
-      badge +
-      '<span class="nav-level">Niv. '+lvl+'</span>' +
-      '<span class="nav-xp">'+xp.toLocaleString("fr-FR")+' XP</span>' +
-      '<span class="nav-coins">🪙 '+coins.toLocaleString("fr-FR")+'</span>' +
+    navAuth.innerHTML = '<div class="nav-user">'+
+      (profile?.avatar ? '<img src="'+profile.avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">' : "")+
+      '<span class="nav-username">'+name+'</span>'+
+      badge+
+      '<span class="nav-level">Niv. '+lvl+'</span>'+
+      '<span class="nav-xp">'+xp.toLocaleString("fr-FR")+' XP</span>'+
+      '<span class="nav-coins">🪙 '+coins.toLocaleString("fr-FR")+'</span>'+
       '<button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';
     document.getElementById("btn-logout").addEventListener("click", logout);
   }
   const dw = document.getElementById("dash-welcome");
-  if (dw) dw.textContent = "Bienvenue, " + (profile?.globalName||profile?.username||"Citoyen") + " !";
+  if (dw) dw.textContent = "Bienvenue, "+(profile?.globalName||profile?.username||"Citoyen")+" !";
 }
 
 function renderDisconnectedState() {
@@ -1438,18 +1823,9 @@ async function loadLeaderboard() {
       const init = name.slice(0,2).toUpperCase();
       const avt  = p.avatar ? '<div class="lb-avatar"><img src="'+p.avatar+'" alt="" onerror="this.parentNode.textContent=\''+init+'\'"></div>' : '<div class="lb-avatar">'+init+'</div>';
       lbEl.innerHTML +=
-        '<div class="lb-row '+(i<3?topCls[i]:'')+'">'+
-          '<div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+
-          avt+
-          '<div class="lb-info">'+
-            '<div class="lb-name">'+name+'</div>'+
-            '<div class="lb-detail">Niveau '+lvl+' · 🪙 '+coins.toLocaleString('fr-FR')+' pièces</div>'+
-          '</div>'+
-          '<div style="text-align:right;">'+
-            '<div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div>'+
-            '<div class="lb-level-badge">Niv. '+lvl+'</div>'+
-          '</div>'+
-        '</div>';
+        '<div class="lb-row '+(i<3?topCls[i]:'')+'">'+'<div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+avt+
+        '<div class="lb-info"><div class="lb-name">'+name+'</div><div class="lb-detail">Niveau '+lvl+' · 🪙 '+coins.toLocaleString('fr-FR')+' pièces</div></div>'+
+        '<div style="text-align:right;"><div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div><div class="lb-level-badge">Niv. '+lvl+'</div></div></div>';
       i++;
     });
   } catch(err) { console.warn("Leaderboard error:", err.message); }
@@ -1471,7 +1847,7 @@ window.adminRefreshPlayers = async function() {
       _adminPlayersCache[ds.id] = p;
       const opt = document.createElement("option");
       opt.value = ds.id;
-      opt.textContent = (p.globalName||p.username||"Inconnu") + " — " + (p.xp||0) + " XP — 🪙 " + (p.coins||0) + " — [" + (p.role||"citoyen") + "]";
+      opt.textContent = (p.globalName||p.username||"Inconnu")+" — "+(p.xp||0)+" XP — 🪙 "+(p.coins||0)+" — ["+(p.role||"citoyen")+"]";
       sel.appendChild(opt);
     });
     setAdminFeedback(snap.size+" joueur(s) chargé(s).","ok");
@@ -1482,25 +1858,22 @@ window.onAdminPlayerChange = function() {
   const sel = document.getElementById("admin-target-player");
   const uid = sel?.value;
   const roleSection = document.getElementById("admin-role-section");
-  if (!uid || !_adminPlayersCache[uid]) {
-    if (roleSection) roleSection.style.display = "none";
-    return;
-  }
+  if (!uid || !_adminPlayersCache[uid]) { if (roleSection) roleSection.style.display = "none"; return; }
   const p = _adminPlayersCache[uid];
   if (roleSection) roleSection.style.display = "";
   const roleDisplay = document.getElementById("admin-player-role-display");
   if (roleDisplay) {
     const r = p.role || "citoyen";
     let cls = r === "admin" ? "role-admin" : r === "modo" ? "role-modo" : "";
-    roleDisplay.className = "role-badge-display nav-role-badge " + cls;
-    roleDisplay.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+    roleDisplay.className = "role-badge-display nav-role-badge "+cls;
+    roleDisplay.textContent = r.charAt(0).toUpperCase()+r.slice(1);
   }
   const grantBtn = document.getElementById("btn-grant-modo");
-  const revokeBtn = document.getElementById("btn-revoke-modo");
+  const revokeBtn= document.getElementById("btn-revoke-modo");
   if (grantBtn && revokeBtn) {
     const r = p.role || "citoyen";
-    grantBtn.style.display  = (r === "admin") ? "none" : (r === "modo" ? "none" : "");
-    revokeBtn.style.display = (r === "modo" ? "" : "none");
+    grantBtn.style.display  = (r==="admin"||r==="modo") ? "none" : "";
+    revokeBtn.style.display = (r==="modo" ? "" : "none");
   }
 };
 
@@ -1513,7 +1886,7 @@ window.adminGrantModo = async function() {
   setAdminFeedback("Attribution du rôle modo…","");
   try {
     await updateDoc(doc(db,"users",uid), {role:"modo"});
-    setAdminFeedback("✓ " + (p.globalName||p.username) + " est maintenant Modo.", "ok");
+    setAdminFeedback("✓ "+(p.globalName||p.username)+" est maintenant Modo.","ok");
     showToast("✓ Rôle modo attribué !");
     await adminRefreshPlayers();
   } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
@@ -1528,7 +1901,7 @@ window.adminRevokeModo = async function() {
   setAdminFeedback("Retrait du rôle modo…","");
   try {
     await updateDoc(doc(db,"users",uid), {role:"citoyen"});
-    setAdminFeedback("✓ " + (p.globalName||p.username) + " est redevenu Citoyen.", "ok");
+    setAdminFeedback("✓ "+(p.globalName||p.username)+" est redevenu Citoyen.","ok");
     showToast("✓ Rôle modo retiré.");
     await adminRefreshPlayers();
   } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
@@ -1538,7 +1911,7 @@ window.adminModifyXP = async function(sign) {
   const targetUid = document.getElementById("admin-target-player")?.value;
   if (!targetUid) { setAdminFeedback("Sélectionne un joueur.","err"); return; }
   const rawAmount = parseInt(document.getElementById("admin-xp-amount")?.value, 10);
-  if (isNaN(rawAmount) || rawAmount <= 0) { setAdminFeedback("Entre un montant positif valide.","err"); return; }
+  if (isNaN(rawAmount)||rawAmount<=0) { setAdminFeedback("Entre un montant positif valide.","err"); return; }
   const delta = sign * rawAmount;
   setAdminFeedback("Modification…","");
   try {
@@ -1550,35 +1923,27 @@ window.adminModifyXP = async function(sign) {
     const newXP   = Math.max(0, oldXP + delta);
     const oldLvl  = getLevelFromXP(oldXP);
     const newLvl  = getLevelFromXP(newXP);
-
     let coinsBonus = 0;
     if (newLvl > oldLvl) {
-      for (let l = oldLvl + 1; l <= newLvl; l++) {
+      for (let l = oldLvl+1; l<=newLvl; l++) {
         const ld = window.LEVELS ? window.LEVELS[l-1] : null;
         if (ld) coinsBonus += ld.coins;
       }
     }
-
     const updData = {xp: newXP};
-    if (coinsBonus > 0) {
-      updData.coins = Math.max(0, (profile.coins||0) + coinsBonus);
-    }
-
+    if (coinsBonus > 0) updData.coins = Math.max(0, (profile.coins||0) + coinsBonus);
     await updateDoc(ref, updData);
-
     const pn = profile.globalName||profile.username||"Joueur";
-    const label = delta >= 0 ? "+" + delta : String(delta);
-    let fb = "✓ " + pn + " : " + label + " XP → Total : " + newXP + " XP";
-    if (coinsBonus > 0) fb += " — Niveau " + newLvl + " atteint ! 🪙 +" + coinsBonus + " pièces";
-    setAdminFeedback(fb, "ok");
-    showToast("✓ " + pn + " — " + label + " XP" + (coinsBonus ? " | Niv. " + newLvl + " !" : ""));
-
+    const label = delta >= 0 ? "+"+delta : String(delta);
+    let fb = "✓ "+pn+" : "+label+" XP → Total : "+newXP+" XP";
+    if (coinsBonus > 0) fb += " — Niveau "+newLvl+" atteint ! 🪙 +"+coinsBonus+" pièces";
+    setAdminFeedback(fb,"ok");
+    showToast("✓ "+pn+" — "+label+" XP"+(coinsBonus?" | Niv. "+newLvl+" !":""));
     if (targetUid === _currentUserUID) {
       _currentUserXP = newXP;
       if (coinsBonus > 0) _currentUserCoins = (profile.coins||0) + coinsBonus;
       renderProfileLevel(_currentUserXP, _currentUserCoins);
     }
-
     await adminRefreshPlayers();
     await loadLeaderboard();
   } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
@@ -1588,7 +1953,7 @@ window.adminModifyCoins = async function(sign) {
   const targetUid = document.getElementById("admin-target-player")?.value;
   if (!targetUid) { setAdminFeedback("Sélectionne un joueur.","err"); return; }
   const rawAmount = parseInt(document.getElementById("admin-coins-amount")?.value, 10);
-  if (isNaN(rawAmount) || rawAmount <= 0) { setAdminFeedback("Entre un montant positif valide.","err"); return; }
+  if (isNaN(rawAmount)||rawAmount<=0) { setAdminFeedback("Entre un montant positif valide.","err"); return; }
   const delta = sign * rawAmount;
   setAdminFeedback("Modification des pièces…","");
   try {
@@ -1599,9 +1964,9 @@ window.adminModifyCoins = async function(sign) {
     const newCoins = Math.max(0, (profile.coins||0) + delta);
     await updateDoc(ref, {coins: newCoins});
     const pn = profile.globalName||profile.username||"Joueur";
-    const label = delta >= 0 ? "+" + delta : String(delta);
-    setAdminFeedback("✓ " + pn + " : " + label + " pièces → Total : " + newCoins + " pièces", "ok");
-    showToast("✓ " + pn + " — " + label + " pièces");
+    const label = delta >= 0 ? "+"+delta : String(delta);
+    setAdminFeedback("✓ "+pn+" : "+label+" pièces → Total : "+newCoins+" pièces","ok");
+    showToast("✓ "+pn+" — "+label+" pièces");
     if (targetUid === _currentUserUID) {
       _currentUserCoins = newCoins;
       renderProfileLevel(_currentUserXP, _currentUserCoins);
@@ -1626,7 +1991,7 @@ window.adminLoadDiscoveryEditor = function() {
 };
 
 window.adminSaveDiscovery = async function() {
-  if (!_currentUserRole || (_currentUserRole !== "admin" && _currentUserRole !== "modo")) {
+  if (!_currentUserRole||(_currentUserRole!=="admin"&&_currentUserRole!=="modo")) {
     document.getElementById("admin-disc-feedback").textContent = "⚠ Accès refusé.";
     document.getElementById("admin-disc-feedback").className   = "admin-feedback err";
     return;
@@ -1637,9 +2002,9 @@ window.adminSaveDiscovery = async function() {
     return {title:(p[0]||"").trim(), desc:(p[1]||"").trim(), xp:parseInt(p[2]||"0",10)||0, url:(p[3]||"").trim(), urlLabel:(p[4]||"").trim()};
   });
   const newDiscovery = {
-    title: (document.getElementById("disc-flow-title")?.value||"").trim() || _discovery.title,
-    desc:  (document.getElementById("disc-flow-desc")?.value||"").trim()  || _discovery.desc,
-    note:  (document.getElementById("disc-flow-note")?.value||"").trim()  || _discovery.note,
+    title: (document.getElementById("disc-flow-title")?.value||"").trim()||_discovery.title,
+    desc:  (document.getElementById("disc-flow-desc")?.value||"").trim()||_discovery.desc,
+    note:  (document.getElementById("disc-flow-note")?.value||"").trim()||_discovery.note,
     steps: steps,
   };
   const fbEl = document.getElementById("admin-disc-feedback");
@@ -1652,10 +2017,10 @@ window.adminSaveDiscovery = async function() {
     const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = "none";
   } catch(err) {
     console.error(err); fbEl.className = "admin-feedback err";
-    if (err.code === "permission-denied" || err.message.includes("Missing or insufficient")) {
+    if (err.code==="permission-denied"||err.message.includes("Missing or insufficient")) {
       fbEl.textContent = "❌ Règles Firestore insuffisantes.";
       const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = "";
-    } else { fbEl.textContent = "Erreur: " + err.message; }
+    } else { fbEl.textContent = "Erreur: "+err.message; }
   }
 };
 
@@ -1697,10 +2062,8 @@ window.adminLoadTutoEditor = function() {
 };
 
 window.adminNewTuto = function() {
-  window._editingTutoId = "t_" + Date.now();
-  ["ate-title","ate-icon","ate-image","ate-link","ate-link-label","ate-desc","ate-steps"].forEach(function(id){
-    const el = document.getElementById(id); if(el) el.value = "";
-  });
+  window._editingTutoId = "t_"+Date.now();
+  ["ate-title","ate-icon","ate-image","ate-link","ate-link-label","ate-desc","ate-steps"].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=""; });
   document.getElementById("ate-icon").value = "📖";
   document.getElementById("admin-tuto-editor").style.display = "";
   document.getElementById("btn-del-tuto").style.display = "none";
@@ -1723,15 +2086,11 @@ window.adminDeleteTuto = async function() {
 function parseTutoSteps(raw) {
   return raw.trim().split("\n").filter(Boolean).map(function(line) {
     const parts = line.split("|");
-    const step = { title: (parts[0]||"").trim(), desc: (parts[1]||"").trim() };
-    for (var i = 2; i < parts.length; i++) {
+    const step = {title:(parts[0]||"").trim(), desc:(parts[1]||"").trim()};
+    for (var i=2; i<parts.length; i++) {
       const seg = parts[i].trim();
       if (seg.startsWith("img:")) { step.img = seg.slice(4).trim(); }
-      else if (seg.startsWith("lien:")) {
-        step.link = seg.slice(5).trim();
-        if (parts[i+1] !== undefined) { step.linkLabel = parts[i+1].trim(); i++; }
-        else { step.linkLabel = "Voir"; }
-      }
+      else if (seg.startsWith("lien:")) { step.link = seg.slice(5).trim(); if(parts[i+1]!==undefined){step.linkLabel=parts[i+1].trim();i++;}else{step.linkLabel="Voir";} }
     }
     return step;
   });
@@ -1740,21 +2099,21 @@ function parseTutoSteps(raw) {
 window.adminSaveTuto = async function() {
   const tid = window._editingTutoId;
   if (!tid) return;
-  const steps = parseTutoSteps(document.getElementById("ate-steps").value || "");
+  const steps = parseTutoSteps(document.getElementById("ate-steps").value||"");
   const newTuto = {
-    id: tid, icon: (document.getElementById("ate-icon").value||"").trim()||"📖",
-    title: (document.getElementById("ate-title").value||"").trim()||"Tutoriel",
-    desc:  (document.getElementById("ate-desc").value||"").trim()||"",
-    image: (document.getElementById("ate-image").value||"").trim()||"",
-    link:  (document.getElementById("ate-link").value||"").trim()||"",
-    linkLabel: (document.getElementById("ate-link-label").value||"").trim()||"",
-    steps: steps,
+    id: tid, icon:(document.getElementById("ate-icon").value||"").trim()||"📖",
+    title:(document.getElementById("ate-title").value||"").trim()||"Tutoriel",
+    desc:(document.getElementById("ate-desc").value||"").trim()||"",
+    image:(document.getElementById("ate-image").value||"").trim()||"",
+    link:(document.getElementById("ate-link").value||"").trim()||"",
+    linkLabel:(document.getElementById("ate-link-label").value||"").trim()||"",
+    steps:steps,
   };
-  if (!newTuto.image)     delete newTuto.image;
-  if (!newTuto.link)      { delete newTuto.link; delete newTuto.linkLabel; }
+  if (!newTuto.image) delete newTuto.image;
+  if (!newTuto.link) { delete newTuto.link; delete newTuto.linkLabel; }
   if (!newTuto.linkLabel) delete newTuto.linkLabel;
   const idx = _tutos.findIndex(function(t){ return t.id===tid; });
-  if (idx >= 0) _tutos[idx] = newTuto; else _tutos.push(newTuto);
+  if (idx>=0) _tutos[idx]=newTuto; else _tutos.push(newTuto);
   const fbEl = document.getElementById("admin-tuto-feedback");
   fbEl.textContent = "Sauvegarde…"; fbEl.className = "admin-feedback";
   try {
@@ -1762,9 +2121,9 @@ window.adminSaveTuto = async function() {
     fbEl.textContent = "✓ Tutoriel sauvegardé !"; fbEl.className = "admin-feedback ok";
     renderTutos(); adminLoadTutoEditor(); showToast("Tutoriel mis à jour !");
   } catch(err) {
-    fbEl.textContent = err.code === "permission-denied" ? "❌ Règles Firestore insuffisantes." : "Erreur: "+err.message;
+    fbEl.textContent = err.code==="permission-denied" ? "❌ Règles Firestore insuffisantes." : "Erreur: "+err.message;
     fbEl.className = "admin-feedback err";
-    if (err.code === "permission-denied") { const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = ""; }
+    if (err.code==="permission-denied") { const ra=document.getElementById("rules-alert"); if(ra) ra.style.display=""; }
   }
 };
 
@@ -1772,8 +2131,8 @@ window.adminSaveTuto = async function() {
 window.adminLoadPaysEditor = function() {
   if (!_pays) return;
   const p = _pays;
-  setInputVal("ape-membres",  p.membres||""); setInputVal("ape-rang",     p.rang||"");
-  setInputVal("ape-fondation",p.fondation||""); setInputVal("ape-herodesc", p.herodesc||"");
+  setInputVal("ape-membres",  p.membres||""); setInputVal("ape-rang", p.rang||"");
+  setInputVal("ape-fondation",p.fondation||""); setInputVal("ape-herodesc",p.herodesc||"");
   setInputVal("ape-paydesc",  p.paydesc||"");
   const gouvTA = document.getElementById("ape-gouv");
   if (gouvTA && p.gouv) gouvTA.value = p.gouv.map(function(m){ return m.init+"|"+m.nom+"|"+m.role+"|"+m.badge; }).join("\n");
@@ -1781,13 +2140,13 @@ window.adminLoadPaysEditor = function() {
 
 window.adminSavePays = async function() {
   const gouvRaw = (document.getElementById("ape-gouv")?.value||"").trim().split("\n").filter(Boolean);
-  const gouv = gouvRaw.map(function(line){ const p=line.split("|"); return {init:(p[0]||"").trim(), nom:(p[1]||"").trim(), role:(p[2]||"").trim(), badge:(p[3]||"").trim()}; });
+  const gouv = gouvRaw.map(function(line){ const p=line.split("|"); return {init:(p[0]||"").trim(),nom:(p[1]||"").trim(),role:(p[2]||"").trim(),badge:(p[3]||"").trim()}; });
   _pays = {
-    membres:   (document.getElementById("ape-membres")?.value||"").trim()   || _pays.membres,
-    rang:      (document.getElementById("ape-rang")?.value||"").trim()      || _pays.rang,
-    fondation: (document.getElementById("ape-fondation")?.value||"").trim() || _pays.fondation,
-    herodesc:  (document.getElementById("ape-herodesc")?.value||"").trim()  || _pays.herodesc,
-    paydesc:   (document.getElementById("ape-paydesc")?.value||"").trim()   || _pays.paydesc,
+    membres:  (document.getElementById("ape-membres")?.value||"").trim()||_pays.membres,
+    rang:     (document.getElementById("ape-rang")?.value||"").trim()||_pays.rang,
+    fondation:(document.getElementById("ape-fondation")?.value||"").trim()||_pays.fondation,
+    herodesc: (document.getElementById("ape-herodesc")?.value||"").trim()||_pays.herodesc,
+    paydesc:  (document.getElementById("ape-paydesc")?.value||"").trim()||_pays.paydesc,
     gouv: gouv.length ? gouv : _pays.gouv,
   };
   const fbEl = document.getElementById("admin-pays-feedback");
@@ -1797,10 +2156,136 @@ window.adminSavePays = async function() {
     fbEl.textContent = "✓ Infos pays sauvegardées !"; fbEl.className = "admin-feedback ok";
     renderPays(); showToast("Infos pays mises à jour !");
   } catch(err) {
-    fbEl.textContent = err.code === "permission-denied" ? "❌ Règles Firestore insuffisantes." : "Erreur: "+err.message;
+    fbEl.textContent = err.code==="permission-denied"?"❌ Règles Firestore insuffisantes.":"Erreur: "+err.message;
     fbEl.className = "admin-feedback err";
-    if (err.code === "permission-denied") { const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = ""; }
+    if (err.code==="permission-denied") { const ra=document.getElementById("rules-alert"); if(ra) ra.style.display=""; }
   }
+};
+
+/* ════ Admin : BOUTIQUE ════ */
+window._editingShopItemId = null;
+
+window.adminLoadShopEditor = function() {
+  if (!_shop) return;
+  const list = document.getElementById("admin-shop-list");
+  if (!list) return;
+  list.innerHTML = "";
+  (_shop.items||[]).forEach(function(item) {
+    const el = document.createElement("div");
+    el.className = "admin-card-item";
+    el.innerHTML =
+      '<span style="font-size:1.1rem;">'+(item.icon||'🛒')+'</span>'+
+      '<span class="admin-card-item-name">'+escHtml(item.name||'Article')+'</span>'+
+      '<span class="admin-card-item-xp">🪙 '+(item.price||0)+'</span>';
+    el.onclick = function() {
+      document.querySelectorAll("#admin-shop-list .admin-card-item").forEach(function(i){ i.classList.remove("selected"); });
+      el.classList.add("selected");
+      window._editingShopItemId = item.id;
+      document.getElementById("ase-name").value         = item.name||"";
+      document.getElementById("ase-icon").value         = item.icon||"🛒";
+      document.getElementById("ase-cat").value          = item.cat||"";
+      document.getElementById("ase-price").value        = item.price!==undefined?item.price:"";
+      document.getElementById("ase-stock").value        = item.stock!==undefined?item.stock:-1;
+      document.getElementById("ase-image").value        = item.image||"";
+      document.getElementById("ase-unique").value       = item.unique?"true":"false";
+      document.getElementById("ase-limited").value      = item.limited?"true":"false";
+      document.getElementById("ase-desc").value         = item.desc||"";
+      document.getElementById("ase-instructions").value = item.instructions||"";
+      document.getElementById("admin-shop-editor").style.display = "";
+      document.getElementById("btn-del-shop").style.display = "";
+    };
+    list.appendChild(el);
+  });
+};
+
+window.adminNewShopItem = function() {
+  window._editingShopItemId = "shop_"+Date.now();
+  ["ase-name","ase-icon","ase-cat","ase-price","ase-image","ase-desc","ase-instructions"].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=""; });
+  document.getElementById("ase-icon").value    = "🛒";
+  document.getElementById("ase-stock").value   = "-1";
+  document.getElementById("ase-unique").value  = "false";
+  document.getElementById("ase-limited").value = "false";
+  document.getElementById("admin-shop-editor").style.display = "";
+  document.getElementById("btn-del-shop").style.display = "none";
+  document.querySelectorAll("#admin-shop-list .admin-card-item").forEach(function(i){ i.classList.remove("selected"); });
+};
+
+window.adminDeleteShopItem = async function() {
+  const id = window._editingShopItemId;
+  if (!id) return;
+  if (!confirm("Supprimer cet article ?")) return;
+  _shop.items = (_shop.items||[]).filter(function(i){ return i.id !== id; });
+  try {
+    await setDoc(doc(db,"sitedata","shop"), _shop);
+    document.getElementById("admin-shop-editor").style.display = "none";
+    document.getElementById("btn-del-shop").style.display = "none";
+    renderShop(); adminLoadShopEditor(); showToast("Article supprimé.");
+  } catch(err) { showToast("Erreur: "+err.message); }
+};
+
+window.adminSaveShopItem = async function() {
+  const id = window._editingShopItemId;
+  if (!id) return;
+  const price = parseInt(document.getElementById("ase-price").value||"0", 10);
+  const stock = parseInt(document.getElementById("ase-stock").value||"-1", 10);
+  const newItem = {
+    id: id,
+    name:         (document.getElementById("ase-name").value||"").trim()||"Article",
+    icon:         (document.getElementById("ase-icon").value||"").trim()||"🛒",
+    cat:          (document.getElementById("ase-cat").value||"").trim()||"Général",
+    price:        isNaN(price) ? 0 : Math.max(0, price),
+    stock:        isNaN(stock) ? -1 : stock,
+    image:        (document.getElementById("ase-image").value||"").trim()||"",
+    unique:       document.getElementById("ase-unique").value === "true",
+    limited:      document.getElementById("ase-limited").value === "true",
+    desc:         (document.getElementById("ase-desc").value||"").trim()||"",
+    instructions: (document.getElementById("ase-instructions").value||"").trim()||"",
+  };
+  if (!newItem.image) delete newItem.image;
+  if (!newItem.instructions) delete newItem.instructions;
+  if (!_shop) _shop = {items:[]};
+  if (!_shop.items) _shop.items = [];
+  const idx = _shop.items.findIndex(function(i){ return i.id===id; });
+  if (idx >= 0) _shop.items[idx] = newItem; else _shop.items.push(newItem);
+  const fbEl = document.getElementById("admin-shop-feedback");
+  fbEl.textContent = "Sauvegarde…"; fbEl.className = "admin-feedback";
+  try {
+    await setDoc(doc(db,"sitedata","shop"), _shop);
+    fbEl.textContent = "✓ Article sauvegardé !"; fbEl.className = "admin-feedback ok";
+    renderShop(); adminLoadShopEditor(); showToast("Article boutique mis à jour !");
+    const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = "none";
+  } catch(err) {
+    fbEl.textContent = err.code==="permission-denied"?"❌ Règles Firestore insuffisantes.":"Erreur: "+err.message;
+    fbEl.className = "admin-feedback err";
+    if (err.code==="permission-denied") { const ra=document.getElementById("rules-alert"); if(ra) ra.style.display=""; }
+  }
+};
+
+window.adminLoadPurchases = async function() {
+  const el = document.getElementById("admin-purchases-list");
+  if (!el) return;
+  el.innerHTML = "Chargement…";
+  try {
+    const snap = await getDocs(collection(db,"purchases"));
+    if (snap.empty) { el.innerHTML = '<span style="color:var(--text-dim);font-style:italic;">Aucun achat pour l\'instant.</span>'; return; }
+    const rows = [];
+    snap.forEach(function(ds){ rows.push(ds.data()); });
+    rows.sort(function(a,b){ return b.purchasedAt > a.purchasedAt ? 1 : -1; });
+    el.innerHTML = rows.slice(0,20).map(function(p) {
+      const date = p.purchasedAt ? new Date(p.purchasedAt).toLocaleString("fr-FR") : "—";
+      const instructions = p.instructions || "";
+      return '<div style="background:rgba(165,74,74,0.05);border:1px solid rgba(165,74,74,0.12);border-radius:3px;padding:8px 12px;margin-bottom:6px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+
+        '<span style="font-size:1rem;">'+(p.itemIcon||'🛒')+'</span>'+
+        '<span style="font-family:\'Cinzel\',serif;font-size:0.75rem;color:var(--text);">'+escHtml(p.itemName||p.itemId)+'</span>'+
+        '<span style="color:var(--coin);font-family:\'Cinzel\',serif;font-size:0.7rem;">🪙 '+((p.price||0).toLocaleString('fr-FR'))+'</span>'+
+        '<span style="color:var(--text-dim);font-size:0.72rem;margin-left:auto;">'+escHtml(p.username||'?')+'</span>'+
+        '<span style="color:var(--text-dim);font-size:0.65rem;">'+date+'</span>'+
+        '</div>'+
+        (instructions ? '<div style="margin-top:4px;font-size:0.72rem;color:#d98080;font-style:italic;">📋 '+escHtml(instructions)+'</div>' : '')+
+        '</div>';
+    }).join("");
+  } catch(err) { el.innerHTML = '<span style="color:#d98080;">Erreur: '+escHtml(err.message)+'</span>'; }
 };
 
 /* ════ Utilitaires ════ */
@@ -1808,17 +2293,16 @@ function setAdminFeedback(msg, type) {
   const el = document.getElementById("admin-feedback");
   if (!el) return;
   el.textContent = msg;
-  el.className = "admin-feedback" + (type ? " "+type : "");
+  el.className = "admin-feedback"+(type?" "+type:"");
 }
-function setEl(id, val) { var e = document.getElementById(id); if(e) e.textContent = val; }
-function setInputVal(id, val) { var e = document.getElementById(id); if(e) e.value = val; }
+function setEl(id, val) { var e=document.getElementById(id); if(e) e.textContent=val; }
+function setInputVal(id, val) { var e=document.getElementById(id); if(e) e.value=val; }
 function escHtml(str) {
   return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
 window.Timor = { loginWithDiscord, logout, handleDiscordCallback };
 
-/* ── Callback Discord code pending ── */
 (async function() {
   const code  = sessionStorage.getItem("discord_pending_code");
   const state = sessionStorage.getItem("discord_pending_state");
@@ -1836,7 +2320,7 @@ function showSection(id) {
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
   var t = document.getElementById(id);
   if (t) t.classList.add('active');
-  var map = {accueil:0, tutoriels:1, pays:2, classement:3};
+  var map = {accueil:0, tutoriels:1, pays:2, boutique:3, classement:4};
   document.querySelectorAll('.nav-links a').forEach(function(a){ a.classList.remove('active'); });
   var links = document.querySelectorAll('.nav-links a');
   if (map[id]!==undefined && links[map[id]]) links[map[id]].classList.add('active');
@@ -1845,14 +2329,14 @@ function showSection(id) {
 function toggleTuto(card) {
   var isOpen = card.classList.contains('open');
   document.querySelectorAll('.tuto-card').forEach(function(c){ c.classList.remove('open'); });
-  document.querySelectorAll('.tuto-toggle').forEach(function(t){ t.textContent = 'Voir le guide ▾'; });
-  if (!isOpen) { card.classList.add('open'); var tg = card.querySelector('.tuto-toggle'); if(tg) tg.textContent='Fermer ▴'; }
+  document.querySelectorAll('.tuto-toggle').forEach(function(t){ t.textContent='Voir le guide ▾'; });
+  if (!isOpen) { card.classList.add('open'); var tg=card.querySelector('.tuto-toggle'); if(tg) tg.textContent='Fermer ▴'; }
 }
 function switchAdminTab(tabId, btn) {
   document.querySelectorAll('.admin-tab').forEach(function(b){ b.classList.remove('active'); });
   document.querySelectorAll('.admin-tab-panel').forEach(function(p){ p.classList.remove('active'); });
   btn.classList.add('active');
-  var panel = document.getElementById('admin-tab-' + tabId);
+  var panel = document.getElementById('admin-tab-'+tabId);
   if (panel) panel.classList.add('active');
 }
 var _toastTimer = null;
