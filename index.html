@@ -25,6 +25,7 @@
   --discord:     #5865F2;
   --border:      rgba(201,168,76,0.15);
   --border-strong:rgba(201,168,76,0.35);
+  --coin:        #f0b429;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -143,6 +144,8 @@ nav {
 .nav-avatar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--gold-dim); object-fit: cover; }
 .nav-username { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--text); }
 .nav-xp { font-family: 'Cinzel', serif; font-size: 0.68rem; color: var(--gold); background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.2); padding: 2px 8px; border-radius: 2px; }
+.nav-coins { font-family: 'Cinzel', serif; font-size: 0.68rem; color: var(--coin); background: rgba(240,180,41,0.1); border: 1px solid rgba(240,180,41,0.2); padding: 2px 8px; border-radius: 2px; }
+.nav-level { font-family: 'Cinzel', serif; font-size: 0.65rem; color: var(--dark); background: var(--gold); border: 1px solid var(--gold); padding: 2px 7px; border-radius: 2px; font-weight: 700; }
 .nav-role-badge { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 2px; }
 .role-admin { background: rgba(165,74,74,0.18); color: #d98080; border: 1px solid rgba(165,74,74,0.3); }
 .role-modo  { background: rgba(74,127,165,0.18); color: var(--accent-light); border: 1px solid rgba(74,127,165,0.3); }
@@ -157,6 +160,80 @@ nav {
   gap: 1rem; flex-wrap: wrap;
 }
 .auth-banner p { font-size: 0.95rem; color: var(--text-muted); font-style: italic; margin: 0; }
+
+/* ══ LEVEL / XP SYSTEM ══ */
+.profile-level-card {
+  background: var(--dark2); border: 1px solid var(--border-strong);
+  border-radius: 6px; padding: 1.5rem; margin-bottom: 1.5rem;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.level-header { display: flex; align-items: center; gap: 16px; }
+.level-badge-big {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700;
+  color: var(--dark); flex-shrink: 0; border: 2px solid var(--gold-light);
+  box-shadow: 0 0 16px rgba(201,168,76,0.25);
+}
+.level-info { flex: 1; }
+.level-name { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; color: var(--gold); }
+.level-xp-label { font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-top: 2px; }
+.level-coins-display { font-family: 'Cinzel', serif; font-size: 0.88rem; color: var(--coin); display: flex; align-items: center; gap: 6px; }
+.level-xp-bar { width: 100%; }
+.xp-bar-track {
+  width: 100%; height: 8px; background: rgba(201,168,76,0.12);
+  border-radius: 99px; overflow: hidden; position: relative;
+}
+.xp-bar-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 99px; transition: width 0.8s ease;
+}
+.xp-bar-labels {
+  display: flex; justify-content: space-between; margin-top: 4px;
+  font-size: 0.72rem; color: var(--text-dim); font-family: 'Cinzel', serif;
+}
+.level-milestones {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.milestone {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--text-dim); display: flex; align-items: center;
+  justify-content: center; font-family: 'Cinzel', serif; font-size: 0.6rem; color: var(--text-dim);
+  transition: all 0.3s; position: relative; cursor: default;
+}
+.milestone.reached { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.12); }
+.milestone.current { border-color: var(--gold-light); color: var(--dark); background: var(--gold); box-shadow: 0 0 8px rgba(201,168,76,0.4); }
+.milestone-tooltip {
+  position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%);
+  background: var(--dark3); border: 1px solid var(--border-strong);
+  border-radius: 3px; padding: 4px 8px; white-space: nowrap;
+  font-size: 0.65rem; color: var(--text-muted); pointer-events: none;
+  opacity: 0; transition: opacity 0.2s; z-index: 10;
+}
+.milestone:hover .milestone-tooltip { opacity: 1; }
+
+/* ══ LEVEL UP TOAST ══ */
+.levelup-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.levelup-overlay.show { opacity: 1; pointer-events: all; }
+.levelup-modal {
+  background: var(--dark2); border: 2px solid var(--gold);
+  border-radius: 8px; padding: 3rem 4rem; text-align: center;
+  transform: scale(0.8); transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  max-width: 400px;
+}
+.levelup-overlay.show .levelup-modal { transform: scale(1); }
+.levelup-emoji { font-size: 3rem; margin-bottom: 1rem; }
+.levelup-title { font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 700; color: var(--gold); margin-bottom: 0.5rem; }
+.levelup-subtitle { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.2em; color: var(--text-muted); margin-bottom: 1.5rem; }
+.levelup-coins { font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--coin); margin-bottom: 2rem; }
+.levelup-close { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--text-dim); background: none; border: 1px solid var(--border-strong); padding: 8px 24px; border-radius: 2px; cursor: pointer; transition: all 0.2s; }
+.levelup-close:hover { color: var(--gold); border-color: var(--gold); }
 
 /* ══ ADMIN PANEL ══ */
 .admin-section {
@@ -235,10 +312,10 @@ nav {
 .admin-card-item-name { flex: 1; font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--text-muted); }
 .admin-card-item-xp { font-family: 'Cinzel', serif; font-size: 0.68rem; color: var(--gold); }
 
-/* ══ XP MANUAL CONTROL ══ */
+/* ══ XP / COINS MANUAL CONTROL ══ */
 .xp-control-row {
   display: flex; gap: 8px; align-items: center; margin-top: 12px;
-  padding-top: 12px; border-top: 1px solid rgba(165,74,74,0.15);
+  padding-top: 12px; border-top: 1px solid rgba(165,74,74,0.15); flex-wrap: wrap;
 }
 .xp-control-row label { color: var(--text-dim); font-size: 0.75rem; white-space: nowrap; min-width: 80px; }
 .xp-control-row input {
@@ -250,6 +327,25 @@ nav {
 }
 .xp-control-row input:focus { border-color: rgba(165,74,74,0.6); }
 .xp-hint { font-size: 0.75rem; color: var(--text-dim); font-style: italic; }
+
+/* ══ ROLE MANAGEMENT ══ */
+.role-section {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid rgba(165,74,74,0.15);
+}
+.role-current {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.role-current-label { font-size: 0.75rem; color: var(--text-dim); }
+.role-badge-display {
+  font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.08em;
+  padding: 3px 10px; border-radius: 2px;
+}
+.btn-role { font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.08em; padding: 5px 14px; border-radius: 2px; cursor: pointer; transition: all 0.2s; border: 1px solid; }
+.btn-role-grant { color: var(--accent-light); background: rgba(74,127,165,0.1); border-color: rgba(74,127,165,0.3); }
+.btn-role-grant:hover { background: rgba(74,127,165,0.2); }
+.btn-role-revoke { color: #d98080; background: rgba(165,74,74,0.1); border-color: rgba(165,74,74,0.3); }
+.btn-role-revoke:hover { background: rgba(165,74,74,0.2); }
 
 /* ══ DISCOVERY FLOW OVERLAY ══ */
 .discovery-page { display: none; position: fixed; inset: 0; z-index: 200; background: var(--dark); overflow-y: auto; }
@@ -272,10 +368,18 @@ nav {
   background: var(--dark2); border: 1px solid var(--border);
   border-radius: 4px; padding: 1.25rem 1.5rem;
   display: flex; gap: 16px; align-items: flex-start;
-  transition: border-color 0.3s;
+  transition: all 0.35s; position: relative;
+}
+.discovery-step.locked {
+  opacity: 0.42; pointer-events: none; filter: blur(0.3px);
 }
 .discovery-step.done { border-color: rgba(74,138,90,0.4); background: rgba(74,138,90,0.05); }
-.discovery-step.pending { border-color: rgba(201,168,76,0.3); }
+.discovery-step.current { border-color: rgba(201,168,76,0.4); box-shadow: 0 0 12px rgba(201,168,76,0.08); }
+.discovery-step-lock {
+  position: absolute; top: 12px; right: 14px;
+  font-size: 0.75rem; color: var(--text-dim); font-family: 'Cinzel', serif;
+  letter-spacing: 0.06em;
+}
 .discovery-step-num {
   width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid var(--gold-dim);
@@ -284,18 +388,42 @@ nav {
   flex-shrink: 0; margin-top: 2px; transition: all 0.3s;
 }
 .discovery-step.done .discovery-step-num { background: rgba(74,138,90,0.2); border-color: rgba(74,138,90,0.5); color: #7ac98a; }
+.discovery-step.current .discovery-step-num { background: rgba(201,168,76,0.15); border-color: var(--gold); }
 .discovery-step-body { flex: 1; }
 .discovery-step-title { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .discovery-step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; font-style: italic; }
 .discovery-step-xp { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--gold); margin-top: 6px; }
-.discovery-step-status { margin-top: 10px; }
-.discovery-step-status label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: var(--text-dim); transition: color 0.2s; }
-.discovery-step-status label:hover { color: var(--text); }
-.discovery-step-status input[type=checkbox] { accent-color: var(--gold); width: 15px; height: 15px; cursor: pointer; }
-.discovery-step.done .discovery-step-status { display: none; }
+.discovery-step-action { margin-top: 12px; }
+
+/* Required link button for discovery steps */
+.disc-link-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.1em;
+  color: var(--dark); background: var(--gold); border: none;
+  padding: 10px 22px; border-radius: 2px; cursor: pointer;
+  text-decoration: none; transition: all 0.2s; font-weight: 600;
+}
+.disc-link-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+.disc-link-btn svg { flex-shrink: 0; }
+.disc-link-btn.clicked {
+  color: var(--gold); background: transparent;
+  border: 1px solid rgba(201,168,76,0.4); cursor: default;
+  pointer-events: none;
+}
+
+.disc-confirm-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.disc-confirm-btn {
+  font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.08em;
+  color: #7ac98a; background: rgba(74,138,90,0.12); border: 1px solid rgba(74,138,90,0.3);
+  padding: 8px 18px; border-radius: 2px; cursor: pointer; transition: all 0.2s;
+  display: none;
+}
+.disc-confirm-btn.visible { display: inline-block; animation: fadeUp 0.3s ease; }
+.disc-confirm-btn:hover { background: rgba(74,138,90,0.22); }
+
+.discovery-step.done .discovery-step-action { display: none; }
 .discovery-step-done-badge { display: none; margin-top: 8px; font-family: 'Cinzel', serif; font-size: 0.72rem; color: #7ac98a; }
 .discovery-step.done .discovery-step-done-badge { display: block; }
-.discovery-step.pending .discovery-step-done-badge { display: block; color: var(--gold-dim); }
 .discovery-note {
   margin-top: 1.5rem; background: var(--dark2); border: 1px solid var(--border);
   border-left: 3px solid var(--gold-dim); border-radius: 0 4px 4px 0;
@@ -312,15 +440,11 @@ nav {
 .tuto-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
 .tuto-card.open { border-color: var(--gold-dim); }
 .tuto-icon { font-size: 1.8rem; margin-bottom: 1rem; }
-
-/* Image bannière du tutoriel */
 .tuto-banner {
   width: calc(100% + 3rem); margin: -1.5rem -1.5rem 1rem -1.5rem;
   height: 140px; object-fit: cover; border-radius: 4px 4px 0 0;
   display: block;
 }
-
-/* Lien externe du tutoriel */
 .tuto-link {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.08em;
@@ -331,7 +455,6 @@ nav {
 }
 .tuto-link:hover { background: rgba(74,127,165,0.15); border-color: rgba(74,127,165,0.5); }
 .tuto-link svg { flex-shrink: 0; }
-
 .tuto-title { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600; color: var(--gold); margin-bottom: 6px; }
 .tuto-desc { font-size: 0.9rem; color: var(--text-muted); font-style: italic; line-height: 1.6; margin-bottom: 0.5rem; }
 .tuto-steps { display: none; border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.75rem; }
@@ -341,15 +464,11 @@ nav {
 .step-body { flex: 1; }
 .step-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
 .step-text strong { color: var(--text); font-weight: 600; font-style: normal; display: block; margin-bottom: 2px; }
-
-/* Image dans une étape de tutoriel */
 .step-img {
   width: 100%; max-height: 200px; object-fit: cover;
   border-radius: 3px; margin-top: 8px; border: 1px solid var(--border);
   display: block;
 }
-
-/* Lien dans une étape de tutoriel */
 .step-link {
   display: inline-flex; align-items: center; gap: 5px;
   font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.06em;
@@ -359,10 +478,8 @@ nav {
   transition: all 0.2s; background: rgba(74,127,165,0.06);
 }
 .step-link:hover { background: rgba(74,127,165,0.15); }
-
 .tuto-toggle { font-size: 0.78rem; color: var(--gold-dim); font-family: 'Cinzel', serif; letter-spacing: 0.06em; margin-top: 8px; }
 
-/* Aide format dans l'admin */
 .admin-format-hint {
   background: rgba(74,127,165,0.07); border: 1px solid rgba(74,127,165,0.2);
   border-radius: 3px; padding: 8px 12px; margin-bottom: 8px;
@@ -403,26 +520,22 @@ nav {
 .lb-name { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600; color: var(--text); }
 .lb-detail { font-size: 0.82rem; color: var(--text-dim); font-style: italic; margin-top: 1px; }
 .lb-xp { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; color: var(--gold); }
-.lb-quests { font-size: 0.75rem; color: var(--text-dim); font-family: 'Cinzel', serif; letter-spacing: 0.06em; text-align: right; }
+.lb-coins { font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--coin); }
+.lb-level-badge {
+  font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 2px;
+  background: rgba(201,168,76,0.15); color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.3);
+}
 .divider { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0; color: var(--text-dim); font-size: 0.75rem; font-family: 'Cinzel', serif; letter-spacing: 0.2em; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 2rem; text-align: center; font-size: 0.82rem; color: var(--text-dim); font-style: italic; }
 footer strong { color: var(--gold-dim); font-style: normal; font-family: 'Cinzel', serif; }
 footer a { color: var(--gold-dim); }
-#toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; background: var(--dark3); border: 1px solid var(--border-strong); border-radius: 4px; padding: 12px 20px; font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.08em; color: var(--gold); opacity: 0; pointer-events: none; transition: opacity 0.3s; max-width: 320px; }
+#toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 998; background: var(--dark3); border: 1px solid var(--border-strong); border-radius: 4px; padding: 12px 20px; font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.08em; color: var(--gold); opacity: 0; pointer-events: none; transition: opacity 0.3s; max-width: 320px; }
 #toast.show { opacity: 1; }
-@media (max-width: 640px) {
-  nav { padding: 0 1rem; }
-  .nav-links { display: none; }
-  .hero-stats { gap: 1.5rem; }
-  .pays-grid { grid-template-columns: 1fr; }
-  .tuto-grid { grid-template-columns: 1fr; }
-  .section { padding: 2rem 1rem; }
-  .hero-btns { flex-direction: column; align-items: center; }
-}
 
-/* ══ DASHBOARD PLAY BUTTON ══ */
 .play-block {
   background: var(--dark2); border: 1px solid var(--border-strong);
   border-radius: 4px; padding: 2rem; text-align: center;
@@ -430,8 +543,6 @@ footer a { color: var(--gold-dim); }
 }
 .play-block h3 { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); margin-bottom: 0.5rem; letter-spacing: 0.08em; }
 .play-block p { font-size: 0.92rem; color: var(--text-muted); font-style: italic; margin-bottom: 1.5rem; line-height: 1.7; }
-
-/* ══ FIREBASE RULES ALERT ══ */
 .rules-alert {
   background: rgba(165,74,74,0.08); border: 1px solid rgba(165,74,74,0.25);
   border-left: 3px solid #a54a4a; border-radius: 0 4px 4px 0;
@@ -440,11 +551,33 @@ footer a { color: var(--gold-dim); }
 }
 .rules-alert strong { font-family: 'Cinzel', serif; display: block; margin-bottom: 4px; letter-spacing: 0.08em; }
 .rules-alert code { font-family: monospace; background: rgba(165,74,74,0.15); padding: 1px 5px; border-radius: 2px; font-size: 0.75rem; }
+
+@media (max-width: 640px) {
+  nav { padding: 0 1rem; }
+  .nav-links { display: none; }
+  .hero-stats { gap: 1.5rem; }
+  .pays-grid { grid-template-columns: 1fr; }
+  .tuto-grid { grid-template-columns: 1fr; }
+  .section { padding: 2rem 1rem; }
+  .hero-btns { flex-direction: column; align-items: center; }
+  .xp-control-row { flex-direction: column; align-items: flex-start; }
+}
 </style>
 </head>
 <body>
 
 <div id="toast"></div>
+
+<!-- ══ LEVEL UP OVERLAY ══ -->
+<div class="levelup-overlay" id="levelup-overlay">
+  <div class="levelup-modal">
+    <div class="levelup-emoji">⚔️</div>
+    <div class="levelup-title" id="levelup-title">NIVEAU 2</div>
+    <div class="levelup-subtitle">RANG ATTEINT</div>
+    <div class="levelup-coins" id="levelup-coins">🪙 +250 pièces</div>
+    <button class="levelup-close" onclick="closeLevelUp()">Continuer</button>
+  </div>
+</div>
 
 <!-- ══ DISCOVERY FLOW OVERLAY ══ -->
 <div class="discovery-page" id="discovery-page">
@@ -457,7 +590,7 @@ footer a { color: var(--gold-dim); }
     <div class="discovery-progress-bar"><div class="discovery-progress-fill" id="disc-progress-fill" style="width:0%"></div></div>
     <div class="discovery-steps" id="disc-steps"></div>
     <div class="discovery-note" id="disc-note">
-      Une fois une étape cochée, un administrateur la validera sur Discord dans <strong style="color:var(--gold);font-style:normal;">#validation</strong>.
+      Une fois une étape accomplie, un administrateur la validera sur Discord dans <strong style="color:var(--gold);font-style:normal;">#validation</strong>.
     </div>
   </div>
 </div>
@@ -475,7 +608,7 @@ footer a { color: var(--gold-dim); }
   </ul>
   <div id="nav-auth">
     <button class="btn-discord" disabled>
-      <svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+      <svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
       Connexion…
     </button>
   </div>
@@ -507,14 +640,30 @@ footer a { color: var(--gold-dim); }
     </div>
   </div>
 
+  <!-- Carte de niveau personnelle -->
+  <div class="profile-level-card" id="profile-level-card" style="display:none;">
+    <div class="level-header">
+      <div class="level-badge-big" id="level-badge-num">1</div>
+      <div class="level-info">
+        <div class="level-name" id="level-name-display">Recrue</div>
+        <div class="level-xp-label" id="level-xp-label">0 / 300 XP pour le prochain niveau</div>
+        <div class="level-coins-display" id="level-coins-display">🪙 0 pièces</div>
+      </div>
+    </div>
+    <div class="level-xp-bar">
+      <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+      <div class="xp-bar-labels"><span id="xp-bar-min">0 XP</span><span id="xp-bar-max">300 XP</span></div>
+    </div>
+    <div class="level-milestones" id="level-milestones"></div>
+  </div>
+
   <!-- PANNEAU ADMIN FONCTIONNEL -->
   <div class="admin-section" id="admin-panel">
     <div class="admin-title">⚔ Panneau Administrateur</div>
 
-    <!-- Alerte règles Firestore -->
     <div class="rules-alert" id="rules-alert" style="display:none;">
       <strong>⚠ Règles Firestore insuffisantes détectées</strong>
-      Dans la console Firebase → Firestore → Rules, assure-toi que <code>sitedata/{docId}</code> autorise l'écriture pour les rôles <code>admin</code> et <code>modo</code>. Consulte la documentation du site pour les règles complètes.
+      Dans la console Firebase → Firestore → Rules, assure-toi que <code>sitedata/{docId}</code> autorise l'écriture pour les rôles <code>admin</code> et <code>modo</code>.
     </div>
 
     <div class="admin-tabs">
@@ -527,26 +676,55 @@ footer a { color: var(--gold-dim); }
     <!-- TAB JOUEURS -->
     <div class="admin-tab-panel active" id="admin-tab-joueurs">
       <label class="admin-label">JOUEUR CIBLE</label>
-      <select class="admin-select" id="admin-target-player">
+      <select class="admin-select" id="admin-target-player" onchange="onAdminPlayerChange()">
         <option value="">— Chargement des joueurs… —</option>
       </select>
       <div class="admin-actions">
         <button class="btn-admin" onclick="adminRefreshPlayers()">↺ Actualiser liste</button>
         <button class="btn-admin" onclick="showSection('classement')">📊 Classement</button>
       </div>
+
+      <!-- XP control -->
       <div class="xp-control-row">
         <label>Modifier XP</label>
         <input type="number" id="admin-xp-amount" placeholder="ex: 150">
         <button class="btn-admin" onclick="adminModifyXP(1)">+ Ajouter XP</button>
         <button class="btn-admin" onclick="adminModifyXP(-1)">− Retirer XP</button>
       </div>
-      <div class="xp-hint" style="margin-top:6px;">Entre un montant positif, puis clique + Ajouter ou − Retirer.</div>
+
+      <!-- Coins control -->
+      <div class="xp-control-row">
+        <label>Modifier Pièces</label>
+        <input type="number" id="admin-coins-amount" placeholder="ex: 100">
+        <button class="btn-admin" onclick="adminModifyCoins(1)">+ Ajouter</button>
+        <button class="btn-admin" onclick="adminModifyCoins(-1)">− Retirer</button>
+      </div>
+
+      <div class="xp-hint" style="margin-top:6px;">Entre un montant positif, puis clique Ajouter ou Retirer.</div>
+
+      <!-- Role management -->
+      <div class="role-section" id="admin-role-section" style="display:none;">
+        <label class="admin-label" style="margin-bottom:8px;">GESTION DU RÔLE</label>
+        <div class="role-current">
+          <span class="role-current-label">Rôle actuel :</span>
+          <span class="role-badge-display" id="admin-player-role-display">—</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-role btn-role-grant" id="btn-grant-modo" onclick="adminGrantModo()">
+            ✦ Donner rôle Modo
+          </button>
+          <button class="btn-role btn-role-revoke" id="btn-revoke-modo" onclick="adminRevokeModo()">
+            ✕ Retirer rôle Modo
+          </button>
+        </div>
+      </div>
+
       <div class="admin-feedback" id="admin-feedback"></div>
     </div>
 
     <!-- TAB DÉCOUVERTE -->
     <div class="admin-tab-panel" id="admin-tab-decouverte">
-      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Configure les étapes du flow "Commencer à jouer".</p>
+      <p style="font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem;">Configure les étapes du flow "Commencer à jouer". Chaque étape doit avoir un lien obligatoire à cliquer.</p>
 
       <label class="admin-label">TITRE DU FLOW</label>
       <input class="admin-input" id="disc-flow-title" placeholder="Titre affiché en haut du flow">
@@ -557,8 +735,12 @@ footer a { color: var(--gold-dim); }
       <label class="admin-label">NOTE DE BAS DE PAGE</label>
       <textarea class="admin-textarea" id="disc-flow-note" placeholder="Instruction pour valider, canal Discord, etc."></textarea>
 
-      <label class="admin-label" style="margin-top:4px;">ÉTAPES (une par ligne : Titre|Description|XP)</label>
-      <textarea class="admin-textarea" id="disc-flow-steps" placeholder="Rejoins le Discord|Rejoins notre serveur et présente-toi.|50&#10;Installe-toi|Construis ta première maison dans Timor.|100" style="min-height:140px;font-family:monospace;font-size:0.8rem;"></textarea>
+      <label class="admin-label" style="margin-top:4px;">ÉTAPES (une par ligne : Titre|Description|XP|URL du lien|Texte du bouton)</label>
+      <div class="admin-format-hint">
+        Format : <code>Titre|Description|XP|https://lien.com|Texte du bouton</code><br>
+        Les colonnes URL et Texte du bouton sont <strong>obligatoires</strong> — le joueur doit cliquer pour avancer.
+      </div>
+      <textarea class="admin-textarea" id="disc-flow-steps" placeholder="Rejoins le Discord|Rejoins notre serveur et présente-toi.|50|https://discord.gg/xxx|Rejoindre le Discord&#10;Installe-toi|Construis ta première maison dans Timor.|100|https://nationsglory.fr|Aller sur NationsGlory" style="min-height:160px;font-family:monospace;font-size:0.79rem;"></textarea>
 
       <div class="admin-actions" style="margin-top:8px;">
         <button class="btn-admin" onclick="adminSaveDiscovery()">💾 Sauvegarder</button>
@@ -582,14 +764,11 @@ footer a { color: var(--gold-dim); }
         <div class="admin-row"><label>Lien</label><input class="admin-input" id="ate-link" placeholder="https://… (lien externe, optionnel)"></div>
         <div class="admin-row"><label>Texte lien</label><input class="admin-input" id="ate-link-label" placeholder="Ex : Voir sur le wiki"></div>
         <div class="admin-row"><label>Desc.</label><textarea class="admin-textarea" id="ate-desc" placeholder="Description courte du tutoriel"></textarea></div>
-
         <label class="admin-label">ÉTAPES</label>
         <div class="admin-format-hint">
-          Format : <code>Titre|Description</code> — optionnellement ajouter <code>|img:URL</code> et/ou <code>|lien:URL|texte-lien</code><br>
-          Exemple : <code>Rejoindre le Discord|Clique sur invitation|img:https://i.imgur.com/xxx.png|lien:https://discord.gg/xxx|Rejoindre</code>
+          Format : <code>Titre|Description</code> — optionnellement ajouter <code>|img:URL</code> et/ou <code>|lien:URL|texte-lien</code>
         </div>
-        <textarea class="admin-textarea" id="ate-steps" placeholder="Étape 1|Description&#10;Étape 2|Description|img:https://…&#10;Étape 3|Description|lien:https://…|Voir ici" style="min-height:140px;font-family:monospace;font-size:0.79rem;"></textarea>
-
+        <textarea class="admin-textarea" id="ate-steps" placeholder="Étape 1|Description&#10;Étape 2|Description|img:https://…" style="min-height:140px;font-family:monospace;font-size:0.79rem;"></textarea>
         <div class="admin-actions" style="margin-top:8px;">
           <button class="btn-admin" onclick="adminSaveTuto()">💾 Sauvegarder</button>
           <button class="btn-admin" onclick="document.getElementById('admin-tuto-editor').style.display='none';document.getElementById('btn-del-tuto').style.display='none'">Annuler</button>
@@ -607,7 +786,7 @@ footer a { color: var(--gold-dim); }
       <div class="admin-row"><label>Desc. hero</label><textarea class="admin-textarea" id="ape-herodesc" placeholder="Texte d'intro du héros"></textarea></div>
       <div class="admin-row"><label>Présentation</label><textarea class="admin-textarea" id="ape-paydesc" placeholder="Texte de la page Pays" style="min-height:100px;"></textarea></div>
       <label class="admin-label" style="margin-top:4px;">GOUVERNEMENT (une par ligne : Initiales|Nom|Rôle|Badge)</label>
-      <textarea class="admin-textarea" id="ape-gouv" placeholder="PR|Pseudo|Président de Timor|Chef d'État&#10;VP|Pseudo|Vice-Président|Gouvernement" style="min-height:120px;font-family:monospace;font-size:0.8rem;"></textarea>
+      <textarea class="admin-textarea" id="ape-gouv" placeholder="PR|Pseudo|Président de Timor|Chef d'État" style="min-height:120px;font-family:monospace;font-size:0.8rem;"></textarea>
       <div class="admin-actions" style="margin-top:8px;">
         <button class="btn-admin" onclick="adminSavePays()">💾 Sauvegarder</button>
       </div>
@@ -618,7 +797,7 @@ footer a { color: var(--gold-dim); }
   <div class="auth-banner" id="auth-banner">
     <p>Connecte-toi avec Discord pour suivre ta progression et apparaître au classement.</p>
     <button class="btn-discord" onclick="Timor.loginWithDiscord()">
-      <svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+      <svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
       Se connecter avec Discord
     </button>
   </div>
@@ -669,6 +848,104 @@ footer a { color: var(--gold-dim); }
   <a href="#" onclick="showSection('accueil');return false;">Accueil</a>
 </footer>
 
+<!-- ════ LEVEL SYSTEM ════ -->
+<script>
+/* 20 niveaux avec XP total requis, nom de rang, et pièces reçues à l'obtention */
+var LEVELS = [
+  {level:1,  name:"Recrue",          xpMin:0,     xpMax:300,    coins:0},
+  {level:2,  name:"Éclaireur",       xpMin:300,   xpMax:700,    coins:150},
+  {level:3,  name:"Citoyen",         xpMin:700,   xpMax:1300,   coins:200},
+  {level:4,  name:"Soldat",          xpMin:1300,  xpMax:2100,   coins:250},
+  {level:5,  name:"Vétéran",         xpMin:2100,  xpMax:3200,   coins:350},
+  {level:6,  name:"Bâtisseur",       xpMin:3200,  xpMax:4700,   coins:400},
+  {level:7,  name:"Commandant",      xpMin:4700,  xpMax:6600,   coins:500},
+  {level:8,  name:"Champion",        xpMin:6600,  xpMax:9000,   coins:600},
+  {level:9,  name:"Élite",           xpMin:9000,  xpMax:12000,  coins:750},
+  {level:10, name:"Chevalier",       xpMin:12000, xpMax:16000,  coins:1000},
+  {level:11, name:"Seigneur",        xpMin:16000, xpMax:21000,  coins:1100},
+  {level:12, name:"Maître",          xpMin:21000, xpMax:27000,  coins:1250},
+  {level:13, name:"Protecteur",      xpMin:27000, xpMax:34500,  coins:1400},
+  {level:14, name:"Gardien",         xpMin:34500, xpMax:43500,  coins:1600},
+  {level:15, name:"Commandeur",      xpMin:43500, xpMax:54000,  coins:1800},
+  {level:16, name:"Maréchal",        xpMin:54000, xpMax:66500,  coins:2000},
+  {level:17, name:"Stratège",        xpMin:66500, xpMax:81000,  coins:2200},
+  {level:18, name:"Légende",         xpMin:81000, xpMax:98000,  coins:2500},
+  {level:19, name:"Héros de Timor",  xpMin:98000, xpMax:118000, coins:3000},
+  {level:20, name:"Gloire Éternelle",xpMin:118000,xpMax:118000, coins:5000},
+];
+
+function getLevelData(xp) {
+  for (var i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].xpMin) return LEVELS[i];
+  }
+  return LEVELS[0];
+}
+
+function getLevelFromXP(xp) {
+  for (var i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].xpMin) return LEVELS[i].level;
+  }
+  return 1;
+}
+
+function renderProfileLevel(xp, coins) {
+  var card = document.getElementById("profile-level-card");
+  if (!card) return;
+  card.style.display = "";
+
+  var lvl = getLevelData(xp);
+  var lvlIdx = lvl.level - 1;
+  var nextLvl = LEVELS[Math.min(lvlIdx + 1, LEVELS.length - 1)];
+  var pct = lvl.level >= 20 ? 100 : Math.round(((xp - lvl.xpMin) / (nextLvl.xpMin - lvl.xpMin)) * 100);
+
+  document.getElementById("level-badge-num").textContent = lvl.level;
+  document.getElementById("level-name-display").textContent = lvl.name;
+  document.getElementById("level-coins-display").textContent = "🪙 " + (coins||0).toLocaleString("fr-FR") + " pièces";
+
+  if (lvl.level >= 20) {
+    document.getElementById("level-xp-label").textContent = "Niveau maximum atteint — " + xp.toLocaleString("fr-FR") + " XP";
+  } else {
+    document.getElementById("level-xp-label").textContent = xp.toLocaleString("fr-FR") + " / " + nextLvl.xpMin.toLocaleString("fr-FR") + " XP pour " + nextLvl.name;
+  }
+
+  document.getElementById("xp-bar-fill").style.width = pct + "%";
+  document.getElementById("xp-bar-min").textContent = lvl.xpMin.toLocaleString("fr-FR") + " XP";
+  document.getElementById("xp-bar-max").textContent = (lvl.level >= 20 ? "" : nextLvl.xpMin.toLocaleString("fr-FR") + " XP");
+
+  // Milestones (show all 20 levels as dots, compact rows of 10)
+  var ms = document.getElementById("level-milestones");
+  if (ms) {
+    ms.innerHTML = "";
+    LEVELS.forEach(function(l) {
+      var dot = document.createElement("div");
+      dot.className = "milestone" + (l.level < lvl.level ? " reached" : "") + (l.level === lvl.level ? " current" : "");
+      dot.innerHTML = l.level + '<div class="milestone-tooltip">Niv. ' + l.level + ' — ' + l.name + (l.coins ? '<br>🪙 +' + l.coins : '') + '</div>';
+      ms.appendChild(dot);
+    });
+  }
+}
+
+window._lastKnownLevel = 1;
+window._lastKnownXP = 0;
+
+function checkLevelUp(oldXP, newXP, profile) {
+  var oldLvl = getLevelFromXP(oldXP);
+  var newLvl = getLevelFromXP(newXP);
+  if (newLvl > oldLvl) {
+    var lvlData = LEVELS[newLvl - 1];
+    document.getElementById("levelup-title").textContent = "NIVEAU " + newLvl;
+    document.getElementById("levelup-coins").textContent = "🪙 +" + lvlData.coins.toLocaleString("fr-FR") + " pièces gagnées !";
+    document.getElementById("levelup-overlay").classList.add("show");
+    return lvlData.coins;
+  }
+  return 0;
+}
+
+window.closeLevelUp = function() {
+  document.getElementById("levelup-overlay").classList.remove("show");
+};
+</script>
+
 <!-- ════ FIREBASE + DISCORD ════ -->
 <script type="module">
 import { initializeApp }                                          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -699,8 +976,8 @@ const db   = getFirestore(app);
 const DEFAULT_TUTOS = [];
 const DEFAULT_DISCOVERY = {
   title: "🗺️ Commencer à jouer",
-  desc:  "Accomplis les étapes ci-dessous pour découvrir NationsGlory et Timor. Chaque action sera validée par un administrateur qui t'attribuera l'XP correspondante.",
-  note:  "Une fois une étape cochée, contacte un administrateur sur Discord dans #validation pour recevoir ton XP.",
+  desc:  "Accomplis les étapes ci-dessous pour découvrir NationsGlory et Timor. Chaque étape requiert de cliquer sur le lien fourni.",
+  note:  "Une fois une étape accomplie, contacte un administrateur sur Discord dans **#validation** pour recevoir ton XP.",
   steps: []
 };
 const DEFAULT_PAYS = {
@@ -718,6 +995,18 @@ const DEFAULT_PAYS = {
 
 let _tutos = null, _pays = null, _discovery = null;
 let _currentUserRole = null;
+let _currentUserUID  = null;
+let _currentUserXP   = 0;
+let _currentUserCoins= 0;
+
+/* ════ Level system helpers (module scope) ════ */
+function getLevelFromXP(xp) {
+  const LEVELS_XP = [0,300,700,1300,2100,3200,4700,6600,9000,12000,16000,21000,27000,34500,43500,54000,66500,81000,98000,118000];
+  for (let i = LEVELS_XP.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS_XP[i]) return i + 1;
+  }
+  return 1;
+}
 
 /* ════ Chargement des données ════ */
 async function loadSiteData() {
@@ -748,49 +1037,25 @@ function renderTutos() {
   const grid = document.getElementById("tuto-grid");
   if (!grid) return;
   const emptyMsg = document.getElementById("tuto-empty");
-
-  if (_tutos.length === 0) {
-    if (emptyMsg) emptyMsg.style.display = "";
-    return;
-  }
+  if (_tutos.length === 0) { if (emptyMsg) emptyMsg.style.display = ""; return; }
   if (emptyMsg) emptyMsg.style.display = "none";
   Array.from(grid.children).forEach(function(c){ if(c.id !== "tuto-empty") c.remove(); });
-
   _tutos.forEach(function(t) {
-    // Bannière image (optionnel)
     const bannerHtml = t.image
       ? '<img class="tuto-banner" src="' + escHtml(t.image) + '" alt="" onerror="this.style.display=\'none\'">'
       : '';
-
-    // Lien externe principal (optionnel)
     const tutoLinkHtml = t.link
       ? '<a class="tuto-link" href="' + escHtml(t.link) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + linkIcon() + escHtml(t.linkLabel || 'Voir le lien') + '</a>'
       : '';
-
-    // Étapes avec image + lien optionnels
     let stepsHtml = (t.steps||[]).map(function(s, i) {
       const imgHtml  = s.img  ? '<img class="step-img" src="' + escHtml(s.img) + '" alt="" onerror="this.style.display=\'none\'">' : '';
       const linkHtml = s.link ? '<a class="step-link" href="' + escHtml(s.link) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + linkIcon() + escHtml(s.linkLabel || 'Voir') + '</a>' : '';
-      return '<div class="tuto-step">' +
-        '<div class="step-n">' + (i+1) + '</div>' +
-        '<div class="step-body">' +
-          '<div class="step-text"><strong>' + escHtml(s.title) + '</strong>' + escHtml(s.desc) + '</div>' +
-          imgHtml + linkHtml +
-        '</div>' +
-      '</div>';
+      return '<div class="tuto-step"><div class="step-n">' + (i+1) + '</div><div class="step-body"><div class="step-text"><strong>' + escHtml(s.title) + '</strong>' + escHtml(s.desc) + '</div>' + imgHtml + linkHtml + '</div></div>';
     }).join("");
-
     const card = document.createElement("div");
     card.className = "tuto-card";
     card.onclick = function(){ toggleTuto(card); };
-    card.innerHTML =
-      bannerHtml +
-      '<div class="tuto-icon">' + (t.icon||'📖') + '</div>' +
-      '<div class="tuto-title">' + escHtml(t.title) + '</div>' +
-      '<div class="tuto-desc">'  + escHtml(t.desc)  + '</div>' +
-      tutoLinkHtml +
-      '<div class="tuto-toggle">Voir le guide ▾</div>' +
-      '<div class="tuto-steps">' + stepsHtml + '</div>';
+    card.innerHTML = bannerHtml + '<div class="tuto-icon">' + (t.icon||'📖') + '</div><div class="tuto-title">' + escHtml(t.title) + '</div><div class="tuto-desc">' + escHtml(t.desc) + '</div>' + tutoLinkHtml + '<div class="tuto-toggle">Voir le guide ▾</div><div class="tuto-steps">' + stepsHtml + '</div>';
     grid.appendChild(card);
   });
 }
@@ -814,7 +1079,18 @@ function renderPays() {
   }
 }
 
-/* ════ Discovery ════ */
+/* ════ Discovery — forced sequential with required link clicks ════ */
+// Storage key for which steps the user has clicked the link on
+function getDiscStorageKey() {
+  return "timor_disc_links_" + (_currentUserUID || "anon");
+}
+function loadDiscLinkClicks() {
+  try { return JSON.parse(localStorage.getItem(getDiscStorageKey()) || "{}"); } catch(e) { return {}; }
+}
+function saveDiscLinkClicks(obj) {
+  try { localStorage.setItem(getDiscStorageKey(), JSON.stringify(obj)); } catch(e) {}
+}
+
 function renderDiscovery() {
   if (!_discovery) return;
   const d = _discovery;
@@ -832,33 +1108,82 @@ function renderDiscovery() {
     document.getElementById("disc-progress-fill").style.width = "0%";
     return;
   }
+
+  const clicks = loadDiscLinkClicks();
   container.innerHTML = "";
+
   d.steps.forEach(function(s, i) {
+    const isClicked = !!clicks[i];
+    // A step is "done" (link clicked & confirmed by user) if clicks[i] === "done"
+    const isDone    = clicks[i] === "done";
+    // Find the first unlocked step (first not done)
+    const firstIncomplete = d.steps.findIndex(function(_, idx) { return clicks[idx] !== "done"; });
+    const isCurrent = i === firstIncomplete;
+    const isLocked  = i > firstIncomplete;
+
+    let stateClass = "discovery-step";
+    if (isDone)        stateClass += " done";
+    else if (isCurrent) stateClass += " current";
+    else if (isLocked)  stateClass += " locked";
+
+    let actionHtml = "";
+    if (!isDone) {
+      // Link button (required)
+      let btnClass = "disc-link-btn" + (isClicked && !isDone ? " clicked" : "");
+      let btnContent = "";
+      if (s.url) {
+        btnContent = '<a class="' + btnClass + '" href="' + escHtml(s.url) + '" target="_blank" rel="noopener" id="disc-link-' + i + '" onclick="onDiscLinkClick(' + i + ')">' + linkIcon() + ' ' + escHtml(s.urlLabel || 'Ouvrir le lien') + '</a>';
+      } else {
+        btnContent = '<button class="disc-link-btn' + (isClicked ? ' clicked' : '') + '" id="disc-link-' + i + '" onclick="onDiscLinkClick(' + i + ')">✓ Marquer comme cliqué</button>';
+      }
+
+      // Confirm button (appears after link is clicked)
+      let confirmVisible = isClicked ? " visible" : "";
+      let confirmHtml = '<div class="disc-confirm-row"><button class="disc-confirm-btn' + confirmVisible + '" id="disc-confirm-' + i + '" onclick="onDiscStepConfirm(' + i + ')">✅ J\'ai accompli cette étape</button></div>';
+
+      actionHtml = '<div class="discovery-step-action">' + btnContent + confirmHtml + '</div>';
+    }
+
     container.innerHTML +=
-      '<div class="discovery-step" id="dstep-' + i + '">' +
-        '<div class="discovery-step-num">' + (i+1) + '</div>' +
+      '<div class="' + stateClass + '" id="dstep-' + i + '">' +
+        (isLocked ? '<div class="discovery-step-lock">🔒 Étape précédente requise</div>' : '') +
+        '<div class="discovery-step-num">' + (isDone ? '✓' : (i+1)) + '</div>' +
         '<div class="discovery-step-body">' +
           '<div class="discovery-step-title">' + escHtml(s.title) + '</div>' +
           '<div class="discovery-step-desc">'  + escHtml(s.desc)  + '</div>' +
           '<div class="discovery-step-xp">🏆 +' + (s.xp||0) + ' XP (si validé par un admin)</div>' +
-          '<div class="discovery-step-status"><label><input type="checkbox" data-step="' + i + '" onchange="updateDiscoveryProgress()"> J\'ai accompli cette étape</label></div>' +
-          '<div class="discovery-step-done-badge">✅ En attente de validation admin</div>' +
+          actionHtml +
+          '<div class="discovery-step-done-badge">✅ Accompli — En attente de validation admin</div>' +
         '</div>' +
       '</div>';
   });
-  updateDiscoveryProgress();
+
+  const done = d.steps.filter(function(_, i) { return clicks[i] === "done"; }).length;
+  document.getElementById("disc-progress-fill").style.width = (d.steps.length > 0 ? Math.round((done / d.steps.length) * 100) : 0) + "%";
 }
 
-window.updateDiscoveryProgress = function() {
-  const checks = document.querySelectorAll("#disc-steps input[type=checkbox]");
-  const total  = checks.length;
-  const done   = Array.from(checks).filter(function(c){ return c.checked; }).length;
-  document.getElementById("disc-progress-fill").style.width = (total > 0 ? Math.round((done/total)*100) : 0) + "%";
-  checks.forEach(function(c) {
-    const step = document.getElementById("dstep-" + c.dataset.step);
-    if (step) step.classList.toggle("pending", c.checked);
-  });
+window.onDiscLinkClick = function(stepIdx) {
+  const clicks = loadDiscLinkClicks();
+  if (clicks[stepIdx] === "done") return;
+  clicks[stepIdx] = "clicked";
+  saveDiscLinkClicks(clicks);
+  // Show confirm button
+  const confirmBtn = document.getElementById("disc-confirm-" + stepIdx);
+  if (confirmBtn) confirmBtn.classList.add("visible");
+  // Style the link button as clicked
+  const linkBtn = document.getElementById("disc-link-" + stepIdx);
+  if (linkBtn) linkBtn.classList.add("clicked");
 };
+
+window.onDiscStepConfirm = function(stepIdx) {
+  const clicks = loadDiscLinkClicks();
+  clicks[stepIdx] = "done";
+  saveDiscLinkClicks(clicks);
+  // Re-render to unlock next step with animation
+  renderDiscovery();
+  showToast("Étape notée ! Un admin validera bientôt sur Discord.");
+};
+
 window.openDiscovery  = function() { document.getElementById("discovery-page").classList.add("active"); window.scrollTo(0,0); };
 window.closeDiscovery = function() { document.getElementById("discovery-page").classList.remove("active"); };
 
@@ -905,7 +1230,7 @@ async function upsertUserProfile(uid, d, token) {
     : "https://cdn.discordapp.com/embed/avatars/" + (Number(d.discriminator||0)%5) + ".png";
   const base = { discordId:d.id, username:d.username, discriminator:d.discriminator||"0", globalName:d.global_name||d.username, avatar, discordToken:token, updatedAt:new Date().toISOString() };
   if (!snap.exists()) {
-    await setDoc(ref, {...base, xp:0, role: ADMIN_IDS.has(d.id)?"admin": MODO_IDS.has(d.id)?"modo":"citoyen", joinedAt:new Date().toISOString()});
+    await setDoc(ref, {...base, xp:0, coins:0, role: ADMIN_IDS.has(d.id)?"admin": MODO_IDS.has(d.id)?"modo":"citoyen", joinedAt:new Date().toISOString()});
   } else {
     const upd = {...base};
     if (ADMIN_IDS.has(d.id)) upd.role="admin";
@@ -921,11 +1246,18 @@ onAuthStateChanged(auth, async function(user) {
   if (user) {
     const snap    = await getDoc(doc(db, "users", user.uid));
     const profile = snap.exists() ? snap.data() : null;
-    _currentUserRole = profile?.role || "citoyen";
+    _currentUserRole  = profile?.role || "citoyen";
+    _currentUserUID   = user.uid;
+    _currentUserXP    = profile?.xp ?? 0;
+    _currentUserCoins = profile?.coins ?? 0;
+    window._lastKnownXP    = _currentUserXP;
+    window._lastKnownLevel = getLevelFromXP(_currentUserXP);
     renderConnectedState(user, profile);
+    renderProfileLevel(_currentUserXP, _currentUserCoins);
     await loadLeaderboard();
   } else {
     _currentUserRole = null;
+    _currentUserUID  = null;
     renderDisconnectedState();
     await loadLeaderboard();
   }
@@ -935,7 +1267,9 @@ function renderConnectedState(user, profile) {
   document.getElementById("auth-banner").style.display = "none";
   const name = escHtml(profile?.globalName || profile?.username || user.displayName || "Citoyen");
   const xp   = profile?.xp ?? 0;
+  const coins= profile?.coins ?? 0;
   const role = profile?.role || "citoyen";
+  const lvl  = getLevelFromXP(xp);
   document.body.classList.toggle("is-admin", role==="admin");
   document.body.classList.toggle("is-modo",  role==="modo");
   const adminPanel = document.getElementById("admin-panel");
@@ -953,7 +1287,14 @@ function renderConnectedState(user, profile) {
   else if (role==="modo") badge = '<span class="nav-role-badge role-modo">Modo</span>';
   const navAuth = document.getElementById("nav-auth");
   if (navAuth) {
-    navAuth.innerHTML = '<div class="nav-user">' + (profile?.avatar ? '<img src="'+profile.avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">' : "") + '<span class="nav-username">'+name+'</span>'+badge+'<span class="nav-xp">'+xp.toLocaleString("fr-FR")+' XP</span><button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';
+    navAuth.innerHTML = '<div class="nav-user">' +
+      (profile?.avatar ? '<img src="'+profile.avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">' : "") +
+      '<span class="nav-username">'+name+'</span>' +
+      badge +
+      '<span class="nav-level">Niv. '+lvl+'</span>' +
+      '<span class="nav-xp">'+xp.toLocaleString("fr-FR")+' XP</span>' +
+      '<span class="nav-coins">🪙 '+coins.toLocaleString("fr-FR")+'</span>' +
+      '<button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';
     document.getElementById("btn-logout").addEventListener("click", logout);
   }
   const dw = document.getElementById("dash-welcome");
@@ -965,6 +1306,8 @@ function renderDisconnectedState() {
   document.body.classList.remove("is-admin","is-modo");
   const adminPanel = document.getElementById("admin-panel");
   if (adminPanel) adminPanel.classList.remove("visible");
+  const profileCard = document.getElementById("profile-level-card");
+  if (profileCard) profileCard.style.display = "none";
   const dw = document.getElementById("dash-welcome");
   if (dw) dw.textContent = "Tableau de bord";
   const navAuth = document.getElementById("nav-auth");
@@ -986,33 +1329,108 @@ async function loadLeaderboard() {
     lbEl.innerHTML = "";
     var i = 0;
     snap.forEach(function(ds) {
-      const p = ds.data();
+      const p    = ds.data();
       const name = escHtml(p.globalName||p.username||"Inconnu");
       const xp   = p.xp??0;
+      const coins= p.coins??0;
+      const lvl  = getLevelFromXP(xp);
       const init = name.slice(0,2).toUpperCase();
       const avt  = p.avatar ? '<div class="lb-avatar"><img src="'+p.avatar+'" alt="" onerror="this.parentNode.textContent=\''+init+'\'"></div>' : '<div class="lb-avatar">'+init+'</div>';
-      lbEl.innerHTML += '<div class="lb-row '+(i<3?topCls[i]:'')+'"><div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+avt+'<div class="lb-info"><div class="lb-name">'+name+'</div></div><div style="text-align:right;"><div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div></div></div>';
+      lbEl.innerHTML +=
+        '<div class="lb-row '+(i<3?topCls[i]:'')+'">'+
+          '<div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+
+          avt+
+          '<div class="lb-info">'+
+            '<div class="lb-name">'+name+'</div>'+
+            '<div class="lb-detail">Niveau '+lvl+' · 🪙 '+coins.toLocaleString('fr-FR')+' pièces</div>'+
+          '</div>'+
+          '<div style="text-align:right;">'+
+            '<div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div>'+
+            '<div class="lb-level-badge">Niv. '+lvl+'</div>'+
+          '</div>'+
+        '</div>';
       i++;
     });
   } catch(err) { console.warn("Leaderboard error:", err.message); }
 }
 
 /* ════ Admin : joueurs ════ */
+let _adminPlayersCache = {};
+
 window.adminRefreshPlayers = async function() {
   const sel = document.getElementById("admin-target-player");
   if (!sel) return;
   setAdminFeedback("Chargement…","");
   try {
     const snap = await getDocs(collection(db,"users"));
+    _adminPlayersCache = {};
     sel.innerHTML = '<option value="">— Sélectionne un joueur ('+snap.size+') —</option>';
     snap.forEach(function(ds) {
       const p = ds.data();
+      _adminPlayersCache[ds.id] = p;
       const opt = document.createElement("option");
       opt.value = ds.id;
-      opt.textContent = (p.globalName||p.username||"Inconnu") + " — " + (p.xp||0) + " XP";
+      opt.textContent = (p.globalName||p.username||"Inconnu") + " — " + (p.xp||0) + " XP — 🪙 " + (p.coins||0) + " — [" + (p.role||"citoyen") + "]";
       sel.appendChild(opt);
     });
     setAdminFeedback(snap.size+" joueur(s) chargé(s).","ok");
+  } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
+};
+
+window.onAdminPlayerChange = function() {
+  const sel = document.getElementById("admin-target-player");
+  const uid = sel?.value;
+  const roleSection = document.getElementById("admin-role-section");
+  if (!uid || !_adminPlayersCache[uid]) {
+    if (roleSection) roleSection.style.display = "none";
+    return;
+  }
+  const p = _adminPlayersCache[uid];
+  if (roleSection) roleSection.style.display = "";
+  const roleDisplay = document.getElementById("admin-player-role-display");
+  if (roleDisplay) {
+    const r = p.role || "citoyen";
+    let cls = r === "admin" ? "role-admin" : r === "modo" ? "role-modo" : "";
+    roleDisplay.className = "role-badge-display nav-role-badge " + cls;
+    roleDisplay.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+  }
+  // Show/hide grant/revoke buttons based on role
+  const grantBtn = document.getElementById("btn-grant-modo");
+  const revokeBtn = document.getElementById("btn-revoke-modo");
+  if (grantBtn && revokeBtn) {
+    const r = p.role || "citoyen";
+    grantBtn.style.display  = (r === "admin") ? "none" : (r === "modo" ? "none" : "");
+    revokeBtn.style.display = (r === "modo" ? "" : "none");
+  }
+};
+
+window.adminGrantModo = async function() {
+  const uid = document.getElementById("admin-target-player")?.value;
+  if (!uid) { setAdminFeedback("Sélectionne un joueur.","err"); return; }
+  const p = _adminPlayersCache[uid];
+  if (!p) return;
+  if (p.role === "admin") { setAdminFeedback("Impossible de modifier un admin.","err"); return; }
+  setAdminFeedback("Attribution du rôle modo…","");
+  try {
+    await updateDoc(doc(db,"users",uid), {role:"modo"});
+    setAdminFeedback("✓ " + (p.globalName||p.username) + " est maintenant Modo.", "ok");
+    showToast("✓ Rôle modo attribué !");
+    await adminRefreshPlayers();
+  } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
+};
+
+window.adminRevokeModo = async function() {
+  const uid = document.getElementById("admin-target-player")?.value;
+  if (!uid) { setAdminFeedback("Sélectionne un joueur.","err"); return; }
+  const p = _adminPlayersCache[uid];
+  if (!p) return;
+  if (p.role === "admin") { setAdminFeedback("Impossible de modifier un admin.","err"); return; }
+  setAdminFeedback("Retrait du rôle modo…","");
+  try {
+    await updateDoc(doc(db,"users",uid), {role:"citoyen"});
+    setAdminFeedback("✓ " + (p.globalName||p.username) + " est redevenu Citoyen.", "ok");
+    showToast("✓ Rôle modo retiré.");
+    await adminRefreshPlayers();
   } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
 };
 
@@ -1028,21 +1446,74 @@ window.adminModifyXP = async function(sign) {
     const snap = await getDoc(ref);
     if (!snap.exists()) { setAdminFeedback("Joueur introuvable.","err"); return; }
     const profile = snap.data();
-    const newXp   = Math.max(0, (profile.xp||0) + delta);
-    await updateDoc(ref, {xp: newXp});
+    const oldXP   = profile.xp||0;
+    const newXP   = Math.max(0, oldXP + delta);
+    const oldLvl  = getLevelFromXP(oldXP);
+    const newLvl  = getLevelFromXP(newXP);
+
+    let coinsBonus = 0;
+    if (newLvl > oldLvl) {
+      // Sum coins for all levels gained
+      for (let l = oldLvl + 1; l <= newLvl; l++) {
+        const ld = window.LEVELS ? window.LEVELS[l-1] : null;
+        if (ld) coinsBonus += ld.coins;
+      }
+    }
+
+    const updData = {xp: newXP};
+    if (coinsBonus > 0) {
+      updData.coins = Math.max(0, (profile.coins||0) + coinsBonus);
+    }
+
+    await updateDoc(ref, updData);
+
     const pn = profile.globalName||profile.username||"Joueur";
     const label = delta >= 0 ? "+" + delta : String(delta);
-    setAdminFeedback("✓ " + pn + " : " + label + " XP → Total : " + newXp + " XP", "ok");
-    showToast("✓ " + pn + " — " + label + " XP");
+    let fb = "✓ " + pn + " : " + label + " XP → Total : " + newXP + " XP";
+    if (coinsBonus > 0) fb += " — Niveau " + newLvl + " atteint ! 🪙 +" + coinsBonus + " pièces";
+    setAdminFeedback(fb, "ok");
+    showToast("✓ " + pn + " — " + label + " XP" + (coinsBonus ? " | Niv. " + newLvl + " !" : ""));
+
+    // If editing own profile, update displayed level
+    if (targetUid === _currentUserUID) {
+      _currentUserXP = newXP;
+      if (coinsBonus > 0) _currentUserCoins = (profile.coins||0) + coinsBonus;
+      renderProfileLevel(_currentUserXP, _currentUserCoins);
+    }
+
     await adminRefreshPlayers();
     await loadLeaderboard();
   } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
 };
 
-/* ════ Admin : découverte ════
-   CORRECTION : on utilise setDoc avec merge:false pour écrire tout le document
-   et on vérifie le rôle côté client avant d'appeler Firestore.
-════ */
+window.adminModifyCoins = async function(sign) {
+  const targetUid = document.getElementById("admin-target-player")?.value;
+  if (!targetUid) { setAdminFeedback("Sélectionne un joueur.","err"); return; }
+  const rawAmount = parseInt(document.getElementById("admin-coins-amount")?.value, 10);
+  if (isNaN(rawAmount) || rawAmount <= 0) { setAdminFeedback("Entre un montant positif valide.","err"); return; }
+  const delta = sign * rawAmount;
+  setAdminFeedback("Modification des pièces…","");
+  try {
+    const ref  = doc(db,"users",targetUid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) { setAdminFeedback("Joueur introuvable.","err"); return; }
+    const profile = snap.data();
+    const newCoins = Math.max(0, (profile.coins||0) + delta);
+    await updateDoc(ref, {coins: newCoins});
+    const pn = profile.globalName||profile.username||"Joueur";
+    const label = delta >= 0 ? "+" + delta : String(delta);
+    setAdminFeedback("✓ " + pn + " : " + label + " pièces → Total : " + newCoins + " pièces", "ok");
+    showToast("✓ " + pn + " — " + label + " pièces");
+    if (targetUid === _currentUserUID) {
+      _currentUserCoins = newCoins;
+      renderProfileLevel(_currentUserXP, _currentUserCoins);
+    }
+    await adminRefreshPlayers();
+    await loadLeaderboard();
+  } catch(err) { setAdminFeedback("Erreur: "+err.message,"err"); }
+};
+
+/* ════ Admin : découverte ════ */
 window.adminLoadDiscoveryEditor = function() {
   if (!_discovery) return;
   setInputVal("disc-flow-title", _discovery.title||"");
@@ -1050,22 +1521,22 @@ window.adminLoadDiscoveryEditor = function() {
   setInputVal("disc-flow-note",  _discovery.note||"");
   const stepsTA = document.getElementById("disc-flow-steps");
   if (stepsTA && _discovery.steps) {
-    stepsTA.value = _discovery.steps.map(function(s){ return s.title+"|"+s.desc+"|"+(s.xp||0); }).join("\n");
+    stepsTA.value = _discovery.steps.map(function(s){
+      return s.title+"|"+s.desc+"|"+(s.xp||0)+"|"+(s.url||"")+"|"+(s.urlLabel||"");
+    }).join("\n");
   }
 };
 
 window.adminSaveDiscovery = async function() {
-  // Vérification côté client du rôle
   if (!_currentUserRole || (_currentUserRole !== "admin" && _currentUserRole !== "modo")) {
-    document.getElementById("admin-disc-feedback").textContent = "⚠ Accès refusé : rôle insuffisant.";
+    document.getElementById("admin-disc-feedback").textContent = "⚠ Accès refusé.";
     document.getElementById("admin-disc-feedback").className   = "admin-feedback err";
     return;
   }
-
   const stepsRaw = (document.getElementById("disc-flow-steps")?.value||"").trim().split("\n").filter(Boolean);
   const steps = stepsRaw.map(function(line){
     const p = line.split("|");
-    return {title:(p[0]||"").trim(), desc:(p[1]||"").trim(), xp:parseInt(p[2]||"0",10)||0};
+    return {title:(p[0]||"").trim(), desc:(p[1]||"").trim(), xp:parseInt(p[2]||"0",10)||0, url:(p[3]||"").trim(), urlLabel:(p[4]||"").trim()};
   });
   const newDiscovery = {
     title: (document.getElementById("disc-flow-title")?.value||"").trim() || _discovery.title,
@@ -1073,32 +1544,20 @@ window.adminSaveDiscovery = async function() {
     note:  (document.getElementById("disc-flow-note")?.value||"").trim()  || _discovery.note,
     steps: steps,
   };
-
   const fbEl = document.getElementById("admin-disc-feedback");
-  fbEl.textContent = "Sauvegarde en cours…";
-  fbEl.className   = "admin-feedback";
-
+  fbEl.textContent = "Sauvegarde en cours…"; fbEl.className = "admin-feedback";
   try {
-    // Écriture directe avec setDoc (remplace tout le document)
     await setDoc(doc(db,"sitedata","discovery"), newDiscovery);
     _discovery = newDiscovery;
-    fbEl.textContent = "✓ Flow de découverte sauvegardé !";
-    fbEl.className   = "admin-feedback ok";
-    renderDiscovery();
-    showToast("Flow de découverte mis à jour !");
-    // Cacher l'alerte si elle était affichée
-    const ra = document.getElementById("rules-alert");
-    if (ra) ra.style.display = "none";
+    fbEl.textContent = "✓ Flow de découverte sauvegardé !"; fbEl.className = "admin-feedback ok";
+    renderDiscovery(); showToast("Flow de découverte mis à jour !");
+    const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = "none";
   } catch(err) {
-    console.error("adminSaveDiscovery:", err);
-    fbEl.className = "admin-feedback err";
+    console.error(err); fbEl.className = "admin-feedback err";
     if (err.code === "permission-denied" || err.message.includes("Missing or insufficient")) {
-      fbEl.textContent = "❌ Règles Firestore insuffisantes. Vérifie les Security Rules dans la console Firebase (voir l'alerte ci-dessus).";
-      const ra = document.getElementById("rules-alert");
-      if (ra) ra.style.display = "";
-    } else {
-      fbEl.textContent = "Erreur: " + err.message;
-    }
+      fbEl.textContent = "❌ Règles Firestore insuffisantes.";
+      const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = "";
+    } else { fbEl.textContent = "Erreur: " + err.message; }
   }
 };
 
@@ -1126,7 +1585,6 @@ window.adminLoadTutoEditor = function() {
       document.getElementById("ate-link").value  = t.link||"";
       document.getElementById("ate-link-label").value = t.linkLabel||"";
       document.getElementById("ate-desc").value  = t.desc||"";
-      // Sérialiser les étapes avec img et lien
       document.getElementById("ate-steps").value = (t.steps||[]).map(function(s){
         let line = s.title+"|"+s.desc;
         if (s.img)  line += "|img:"+s.img;
@@ -1160,30 +1618,21 @@ window.adminDeleteTuto = async function() {
     await setDoc(doc(db,"sitedata","tutos"), {list:_tutos});
     document.getElementById("admin-tuto-editor").style.display = "none";
     document.getElementById("btn-del-tuto").style.display = "none";
-    renderTutos(); adminLoadTutoEditor();
-    showToast("Tutoriel supprimé.");
+    renderTutos(); adminLoadTutoEditor(); showToast("Tutoriel supprimé.");
   } catch(err) { showToast("Erreur: "+err.message); }
 };
 
-/* Parseur d'étapes enrichies : Titre|Desc[|img:URL][|lien:URL|texte] */
 function parseTutoSteps(raw) {
   return raw.trim().split("\n").filter(Boolean).map(function(line) {
-    // On split sur | mais on fait attention à récupérer les segments
     const parts = line.split("|");
     const step = { title: (parts[0]||"").trim(), desc: (parts[1]||"").trim() };
     for (var i = 2; i < parts.length; i++) {
       const seg = parts[i].trim();
-      if (seg.startsWith("img:")) {
-        step.img = seg.slice(4).trim();
-      } else if (seg.startsWith("lien:")) {
+      if (seg.startsWith("img:")) { step.img = seg.slice(4).trim(); }
+      else if (seg.startsWith("lien:")) {
         step.link = seg.slice(5).trim();
-        // Le label du lien est le segment suivant (si existant)
-        if (parts[i+1] !== undefined) {
-          step.linkLabel = parts[i+1].trim();
-          i++; // on saute le segment label
-        } else {
-          step.linkLabel = "Voir";
-        }
+        if (parts[i+1] !== undefined) { step.linkLabel = parts[i+1].trim(); i++; }
+        else { step.linkLabel = "Voir"; }
       }
     }
     return step;
@@ -1195,41 +1644,29 @@ window.adminSaveTuto = async function() {
   if (!tid) return;
   const steps = parseTutoSteps(document.getElementById("ate-steps").value || "");
   const newTuto = {
-    id:        tid,
-    icon:      (document.getElementById("ate-icon").value||"").trim()       || "📖",
-    title:     (document.getElementById("ate-title").value||"").trim()      || "Tutoriel",
-    desc:      (document.getElementById("ate-desc").value||"").trim()       || "",
-    image:     (document.getElementById("ate-image").value||"").trim()      || "",
-    link:      (document.getElementById("ate-link").value||"").trim()       || "",
-    linkLabel: (document.getElementById("ate-link-label").value||"").trim() || "",
-    steps:     steps,
+    id: tid, icon: (document.getElementById("ate-icon").value||"").trim()||"📖",
+    title: (document.getElementById("ate-title").value||"").trim()||"Tutoriel",
+    desc:  (document.getElementById("ate-desc").value||"").trim()||"",
+    image: (document.getElementById("ate-image").value||"").trim()||"",
+    link:  (document.getElementById("ate-link").value||"").trim()||"",
+    linkLabel: (document.getElementById("ate-link-label").value||"").trim()||"",
+    steps: steps,
   };
-  // Nettoyer les champs vides pour ne pas stocker des strings vides inutiles
   if (!newTuto.image)     delete newTuto.image;
   if (!newTuto.link)      { delete newTuto.link; delete newTuto.linkLabel; }
   if (!newTuto.linkLabel) delete newTuto.linkLabel;
-
   const idx = _tutos.findIndex(function(t){ return t.id===tid; });
-  if (idx >= 0) _tutos[idx] = newTuto;
-  else _tutos.push(newTuto);
-
+  if (idx >= 0) _tutos[idx] = newTuto; else _tutos.push(newTuto);
   const fbEl = document.getElementById("admin-tuto-feedback");
   fbEl.textContent = "Sauvegarde…"; fbEl.className = "admin-feedback";
   try {
     await setDoc(doc(db,"sitedata","tutos"), {list:_tutos});
-    fbEl.textContent = "✓ Tutoriel sauvegardé !";
-    fbEl.className   = "admin-feedback ok";
-    renderTutos(); adminLoadTutoEditor();
-    showToast("Tutoriel mis à jour !");
+    fbEl.textContent = "✓ Tutoriel sauvegardé !"; fbEl.className = "admin-feedback ok";
+    renderTutos(); adminLoadTutoEditor(); showToast("Tutoriel mis à jour !");
   } catch(err) {
-    fbEl.textContent = err.code === "permission-denied"
-      ? "❌ Règles Firestore insuffisantes. Vérifie la console Firebase."
-      : "Erreur: "+err.message;
+    fbEl.textContent = err.code === "permission-denied" ? "❌ Règles Firestore insuffisantes." : "Erreur: "+err.message;
     fbEl.className = "admin-feedback err";
-    if (err.code === "permission-denied") {
-      const ra = document.getElementById("rules-alert");
-      if (ra) ra.style.display = "";
-    }
+    if (err.code === "permission-denied") { const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = ""; }
   }
 };
 
@@ -1237,10 +1674,8 @@ window.adminSaveTuto = async function() {
 window.adminLoadPaysEditor = function() {
   if (!_pays) return;
   const p = _pays;
-  setInputVal("ape-membres",  p.membres||"");
-  setInputVal("ape-rang",     p.rang||"");
-  setInputVal("ape-fondation",p.fondation||"");
-  setInputVal("ape-herodesc", p.herodesc||"");
+  setInputVal("ape-membres",  p.membres||""); setInputVal("ape-rang",     p.rang||"");
+  setInputVal("ape-fondation",p.fondation||""); setInputVal("ape-herodesc", p.herodesc||"");
   setInputVal("ape-paydesc",  p.paydesc||"");
   const gouvTA = document.getElementById("ape-gouv");
   if (gouvTA && p.gouv) gouvTA.value = p.gouv.map(function(m){ return m.init+"|"+m.nom+"|"+m.role+"|"+m.badge; }).join("\n");
@@ -1261,19 +1696,12 @@ window.adminSavePays = async function() {
   fbEl.textContent = "Sauvegarde…"; fbEl.className = "admin-feedback";
   try {
     await setDoc(doc(db,"sitedata","pays"), _pays);
-    fbEl.textContent = "✓ Infos pays sauvegardées !";
-    fbEl.className   = "admin-feedback ok";
-    renderPays();
-    showToast("Infos pays mises à jour !");
+    fbEl.textContent = "✓ Infos pays sauvegardées !"; fbEl.className = "admin-feedback ok";
+    renderPays(); showToast("Infos pays mises à jour !");
   } catch(err) {
-    fbEl.textContent = err.code === "permission-denied"
-      ? "❌ Règles Firestore insuffisantes. Vérifie la console Firebase."
-      : "Erreur: "+err.message;
+    fbEl.textContent = err.code === "permission-denied" ? "❌ Règles Firestore insuffisantes." : "Erreur: "+err.message;
     fbEl.className = "admin-feedback err";
-    if (err.code === "permission-denied") {
-      const ra = document.getElementById("rules-alert");
-      if (ra) ra.style.display = "";
-    }
+    if (err.code === "permission-denied") { const ra = document.getElementById("rules-alert"); if (ra) ra.style.display = ""; }
   }
 };
 
