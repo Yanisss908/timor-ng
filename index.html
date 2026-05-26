@@ -1314,6 +1314,10 @@ function checkLevelUp(oldXP,newXP){
 
 <!-- ════ SPIN WHEEL ENGINE ════ -->
 <script>
+  // ── Utilitaire global ──
+function escHtml(str){
+  return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
 // ── Default prizes ──
 var DEFAULT_SPIN_PRIZES = [
   {label:"+50 XP",    type:"xp",      value:50,   color:"#c9a84c", weight:25, icon:"⚡"},
