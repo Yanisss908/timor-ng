@@ -653,7 +653,7 @@ let _currentUserRole=null,_currentUserUID=null,_currentUserXP=0,_currentUserCoin
 let _pendingPurchaseItem=null;
 let _allOrders=[],_ordersFilter='pending';
 let _lbCache=null,_lbTs=0;
-const LB_CACHE_TTL=30_000;
+const LB_CACHE_TTL=6*60*60*1000;
 
 function getLevelFromXP(xp){for(let i=19;i>=0;i--){const XPS=[0,300,700,1300,2100,3200,4700,6600,9000,12000,16000,21000,27000,34500,43500,54000,66500,81000,98000,118000];if(xp>=XPS[i])return i+1;}return 1;}
 
