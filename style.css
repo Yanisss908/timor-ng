@@ -660,6 +660,19 @@ nav {
   line-height: 1.55; margin-bottom: 12px;
 }
 
+.quest-desc-link {
+  color: var(--accent-light);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(106,163,204,0.35);
+  transition: color 0.15s, border-color 0.15s;
+  word-break: break-all;
+}
+
+.quest-desc-link:hover {
+  color: var(--text);
+  border-color: rgba(106,163,204,0.7);
+}
+
 .quest-card-footer {
   display: flex; align-items: center;
   justify-content: space-between; gap: 10px; flex-wrap: wrap;
