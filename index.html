@@ -482,7 +482,7 @@ const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     detectSessionInUrl: true,
     autoRefreshToken: true,
-    flowType: 'implicit'
+    flowType: 'pkce'
   }
 });
 window._sb = _sb;
@@ -828,7 +828,10 @@ async function syncSpinCooldown(uid) {
 function loginWithDiscord() {
   sb.auth.signInWithOAuth({
     provider: 'discord',
-    options: { redirectTo: 'https://yanisss908.github.io/timor-ng/' }
+    options: { 
+      redirectTo: 'https://yanisss908.github.io/timor-ng/',
+      skipBrowserRedirect: false
+    }
   });
 }
 
