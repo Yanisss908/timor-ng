@@ -780,6 +780,29 @@ async function upsertUserProfile(supabaseUser){
 // ─── FIX AUTH : onAuthStateChange ────────────────────────────────────────────
 // SIGNED_IN se déclenche automatiquement quand Supabase lit le token injecté
 // dans localStorage par interceptOAuthToken().
+// Fallback si le storage est bloqué par le navigateur
+setTimeout(async () => {
+  if (_currentUserUID) return;
+  try {
+    const { data: { user } } = await _sb.auth.getUser();
+    if (!user) return;
+    console.log('[Timor] Fallback getUser:', user.id);
+    await upsertUserProfile(user);
+    const profile = await userGet(user.id);
+    _currentUserRole = profile?.role || 'citoyen';
+    _currentUserUID = user.id;
+    _currentUserXP = profile?.xp ?? 0;
+    _currentUserCoins = profile?.coins ?? 0;
+    _currentUserDiscordId = profile?.discord_id || '';
+    window._spinCurrentUID = user.id;
+    await loadUserPurchases(user.id);
+    await syncSpinCooldown(user.id);
+    renderConnectedState(user, profile);
+    renderProfileLevel(_currentUserXP, _currentUserCoins);
+    renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
+    await loadLeaderboard();
+  } catch(e) { console.warn('[Timor] Fallback error:', e); }
+}, 2000);
 sb.auth.onAuthStateChange(async(event,session)=>{
   console.log('[Timor] Auth event:',event,session?'session OK':'no session');
   if(session?.user){
