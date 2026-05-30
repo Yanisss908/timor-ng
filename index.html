@@ -290,6 +290,7 @@
           <button class="orders-filter-tab active" onclick="filterOrders('pending',this)">⏳ En attente</button>
           <button class="orders-filter-tab" onclick="filterOrders('fulfilled',this)">✅ Traitées</button>
           <button class="orders-filter-tab" onclick="filterOrders('cancelled',this)">✕ Annulées</button>
+          <button class="orders-filter-tab" onclick="filterOrders('proof_pending',this)">📸 Preuves</button>
           <button class="orders-filter-tab" onclick="filterOrders('all',this)">Toutes</button>
         </div>
         <button class="btn-admin" onclick="adminLoadOrders()">↺ Actualiser</button>
@@ -1749,8 +1750,8 @@ function renderOrders() {
   list.innerHTML = filtered.map(o => {
     const s = o.status || 'pending';
     const date = o.purchased_at ? new Date(o.purchased_at).toLocaleString('fr-FR') : '—';
-    const sl = s === 'pending' ? '⏳ En attente' : s === 'fulfilled' ? '✅ Traité' : '✕ Annulé';
-    const sc = s === 'pending' ? 'status-pending' : s === 'fulfilled' ? 'status-fulfilled' : 'status-cancelled';
+    const sl = s === 'pending' ? '⏳ En attente' : s === 'fulfilled' ? '✅ Traité' : s === 'proof_pending' ? '📸 Preuve à vérifier' : '✕ Annulé';
+const sc = s === 'pending' ? 'status-pending' : s === 'fulfilled' ? 'status-fulfilled' : s === 'proof_pending' ? 'status-pending' : 'status-cancelled';
     const instr = o.instructions ? `<div class="order-instructions"><strong>📋 Instructions</strong>${esc(o.instructions)}</div>` : '';
     const actions = s === 'pending'
       ? `<div class="order-actions"><button class="btn-fulfill" onclick="adminFulfillOrder('${o.id}')">✅ Valider</button><button class="btn-cancel-order" onclick="adminCancelOrder('${o.id}')">✕</button></div>`
