@@ -896,21 +896,23 @@ function renderQuestsList(quests,cat,done){
   if(filtered.length===0){container.innerHTML='<div class="quests-empty">Aucune quête dans cette catégorie.</div>';return;}
   const catColors={"Débutant":"#52c97a","Intermédiaire":"#c9a84c","Avancé":"#e05252","Spéciale":"#a855f7","Générale":"#4a7fa5"};
   container.innerHTML=filtered.map(q=>{const isDone=done.includes(q.id),col=catColors[q.cat||'Générale']||'#4a7fa5';const rewardCoins=q.coins>0?'<span class="quest-reward-coins">🪙 +'+q.coins+'</span>':'';const actionHtml=isDone?'<div class="quest-done-badge">✅ Accomplie</div>':'<button class="quest-claim-btn" onclick="claimQuest(\''+escHtml(q.id)+'\','+parseInt(q.xp||0)+','+parseInt(q.coins||0)+')">Réclamer +'+q.xp+' XP</button>';return '<div class="quest-card'+(isDone?' done':'')+'">'+
-  '<div class="quest-card-icon" style="background:'+col+'22;color:'+col+';margin:0 auto 10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;font-size:1.4rem;">'+escHtml(q.icon||'⚔️')+'</div>'+
-  '<div class="quest-card-title" style="font-size:0.82rem;font-weight:600;text-align:center;margin-bottom:6px;color:var(--text-main);">'+escHtml(q.title)+'</div>'+
-  '<div class="quest-cat-badge" style="background:'+col+'22;color:'+col+';display:block;text-align:center;margin:0 auto 8px;font-size:0.65rem;padding:2px 8px;border-radius:20px;width:fit-content;">'+escHtml(q.cat||'Générale')+'</div>'+
-  '<div class="quest-card-desc" style="font-size:0.72rem;color:var(--text-dim);text-align:center;margin-bottom:10px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'+linkifyDesc(q.desc)+'</div>'+
-  '<div style="text-align:center;margin-bottom:6px;font-size:0.72rem;font-weight:600;color:'+col+'">⚡ +'+q.xp+' XP'+(q.coins>0?' · 🪙 +'+q.coins:'')+'</div>'+
+  '<div style="width:38px;height:38px;border-radius:10px;background:'+col+'22;color:'+col+';display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin:0 auto 8px;">'+escHtml(q.icon||'⚔️')+'</div>'+
+  '<div style="font-size:0.75rem;font-weight:600;text-align:center;color:var(--text);margin-bottom:4px;line-height:1.3;">'+escHtml(q.title)+'</div>'+
+  '<div style="font-size:0.6rem;font-weight:700;text-align:center;color:'+col+';background:'+col+'18;border-radius:4px;padding:2px 6px;margin:0 auto 6px;width:fit-content;">'+escHtml(q.cat||'Générale')+'</div>'+
+  '<div style="font-size:0.65rem;color:var(--text-dim);text-align:center;margin-bottom:8px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">'+linkifyDesc(q.desc)+'</div>'+
+  '<div style="text-align:center;font-size:0.65rem;font-weight:700;color:'+col+';margin-bottom:6px;">⚡ +'+q.xp+' XP'+(q.coins>0?' · 🪙 +'+q.coins:'')+'</div>'+
   (isDone
-    ? '<div class="quest-done-badge" style="display:block;text-align:center;font-size:0.72rem;">✅ Accomplie</div>'
-    : '<button class="quest-claim-btn" style="width:100%;font-size:0.72rem;padding:6px;" onclick="claimQuest(\''+escHtml(q.id)+'\','+parseInt(q.xp||0)+','+parseInt(q.coins||0)+')">Réclamer +'+q.xp+' XP</button>'
+    ? '<div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--success);">✅ Accomplie</div>'
+    : '<button class="quest-claim-btn" style="width:100%;font-size:0.65rem;padding:5px 4px;" onclick="claimQuest(\''+escHtml(q.id)+'\','+parseInt(q.xp||0)+','+parseInt(q.coins||0)+')">+'+q.xp+' XP</button>'
   )+
 '</div>';
   }).join('');
 }
 window.filterQuestsCat=function(cat,btn){document.querySelectorAll('.quest-cat-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');const quests=_quests?_quests.quests||[]:[];const done=loadQuestsDone();renderQuestsList(quests,cat,done);};
 window.claimQuest=async function(questId,xpAmount,coinsAmount){
-  const done=loadQuestsDone();if(done.includes(questId))return;
+  c
+    
+  onst done=loadQuestsDone();if(done.includes(questId))return;
   const btn=document.querySelector('[onclick*="\''+questId+'\'"]');if(btn){btn.disabled=true;btn.textContent='Attribution…';}
   if(_currentUserUID&&(xpAmount>0||coinsAmount>0)){try{const profile=await userGet(_currentUserUID);if(profile){const oldXP=profile.xp||0,newXP=oldXP+(xpAmount||0);const oldLvl=getLevelFromXP(oldXP),newLvl=getLevelFromXP(newXP);let bonusCoins=coinsAmount||0;if(newLvl>oldLvl){for(let l=oldLvl+1;l<=newLvl;l++){const ld=window.LEVELS?window.LEVELS[l-1]:null;if(ld)bonusCoins+=ld.coins;}}const updData={xp:newXP};if(bonusCoins>0)updData.coins=Math.max(0,(profile.coins||0)+bonusCoins);await userUpdate(_currentUserUID,updData);_currentUserXP=newXP;if(bonusCoins>0)_currentUserCoins=(profile.coins||0)+bonusCoins;renderProfileLevel(_currentUserXP,_currentUserCoins);if(newLvl>oldLvl)checkLevelUp(oldXP,newXP);await loadLeaderboard(true);const navXpEl=document.querySelector('.nav-xp');if(navXpEl)navXpEl.textContent=newXP.toLocaleString('fr-FR')+' XP';const navLvlEl=document.querySelector('.nav-level');if(navLvlEl)navLvlEl.textContent='Niv. '+newLvl;const navCoinsEl=document.querySelector('.nav-coins');if(navCoinsEl)navCoinsEl.textContent='🪙 '+_currentUserCoins.toLocaleString('fr-FR');const shopNum=document.getElementById('shop-balance-num');if(shopNum)shopNum.textContent=_currentUserCoins.toLocaleString('fr-FR');launchConfetti();showToast('⚔️ Quête accomplie ! +'+xpAmount+' XP'+(coinsAmount>0?' · 🪙 +'+coinsAmount:''));}}catch(err){console.error(err);showToast('⚠ Erreur lors de l\'attribution.');if(btn){btn.disabled=false;btn.textContent='Réclamer +'+xpAmount+' XP';}return;}}
   else if(!_currentUserUID){showToast('⚠ Connecte-toi pour recevoir les récompenses !');}
