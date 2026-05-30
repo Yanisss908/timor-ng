@@ -469,6 +469,7 @@ const ADMIN_IDS = new Set(['1407099669271810159']);
 const MODO_IDS  = new Set([]);
 
 const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window._sb = _sb;
 </script>
 
 <!-- ════ LEVEL SYSTEM ════ -->
@@ -1559,6 +1560,12 @@ document.addEventListener('click',function(e){var sb=document.getElementById('ql
 document.getElementById('spin-overlay').addEventListener('click',function(e){if(e.target===this)closeSpinModal();});
 var _toastTimer=null;
 function showToast(msg){var el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},3500);}
+</script>
+<script>
+window.Timor = window.Timor || {
+  loginWithDiscord: function() { console.warn('Module pas encore chargé'); },
+  logout: function() {}
+};
 </script>
 </body>
 </html>
