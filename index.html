@@ -981,13 +981,16 @@ window.Timor = { loginWithDiscord, logout };
 
 // ══ INITIALISATION ══
 (async () => {
+  try {
+    const maintenanceVal = await sdGet('maintenance');
+    if (maintenanceVal?.active) applyMaintenanceState(true);
+  } catch(e) {}
+
   await loadSiteData();
 
-  // 1. Vérifier si Discord redirige avec un ?code=
   const handled = await handleDiscordCallback();
-  if (handled) return; // session déjà chargée
+  if (handled) return;
 
-  // 2. Sinon, restaurer la session depuis localStorage
   const savedSession = loadSession();
   if (savedSession?.uid) {
     console.log('[Timor] Session restaurée depuis localStorage:', savedSession.uid);
@@ -997,8 +1000,7 @@ window.Timor = { loginWithDiscord, logout };
     await loadLeaderboard();
   }
 })();
-</script>
-
+  
 <!-- ════ UI HELPERS ════ -->
 <script>
 function showSection(id){
