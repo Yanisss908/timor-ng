@@ -460,7 +460,7 @@
 <!-- ════ SUPABASE CLIENT ════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ─── CONFIGURATION — remplace par tes vraies valeurs ───────────────────────
+// ─── CONFIGURATION ──────────────────────────────────────────────────────────
 const SUPABASE_URL      = 'https://hhirhrvyqzkdezjenpdr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoaXJocnZ5cXprZGV6amVucGRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTI1NzYsImV4cCI6MjA5NTY2ODU3Nn0.4AbQlyhoZPOWMTgzLCSL-8590ZuOhF8uKP2Wp9SGGZc';
 // ────────────────────────────────────────────────────────────────────────────
@@ -468,43 +468,70 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const ADMIN_IDS = new Set(['1407099669271810159']);
 const MODO_IDS  = new Set([]);
 
-// Storage custom qui ne plante pas si localStorage est bloqué
+// ─── Storage robuste : sessionStorage + localStorage + mémoire ───────────────
 const _safeStorage = {
   _data: {},
-  getItem(k) { try { return localStorage.getItem(k); } catch(e) { return this._data[k] ?? null; } },
-  setItem(k, v) { try { localStorage.setItem(k, v); } catch(e) { this._data[k] = v; } },
-  removeItem(k) { try { localStorage.removeItem(k); } catch(e) { delete this._data[k]; } },
+  getItem(k) {
+    try { const v = sessionStorage.getItem(k); if (v !== null) return v; } catch(e) {}
+    try { const v = localStorage.getItem(k);   if (v !== null) return v; } catch(e) {}
+    return this._data[k] ?? null;
+  },
+  setItem(k, v) {
+    try { sessionStorage.setItem(k, v); } catch(e) {}
+    try { localStorage.setItem(k, v);   } catch(e) {}
+    this._data[k] = v;
+  },
+  removeItem(k) {
+    try { sessionStorage.removeItem(k); } catch(e) {}
+    try { localStorage.removeItem(k);   } catch(e) {}
+    delete this._data[k];
+  },
 };
 
+// ─── Intercepter le #access_token AVANT que Supabase s'initialise ────────────
+// Le flow implicite d'OAuth renvoie le token dans le hash de l'URL.
+// On le lit manuellement et on l'injecte dans le storage pour que Supabase
+// le trouve immédiatement à l'initialisation.
+(function patchHashTokenIntoStorage() {
+  try {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token')) return;
+    const params = new URLSearchParams(hash.substring(1));
+    const at  = params.get('access_token');
+    const rt  = params.get('refresh_token') || '';
+    const exp = parseInt(params.get('expires_at') || '0', 10) || Math.floor(Date.now() / 1000) + 3600;
+    if (!at) return;
+    const sessionKey = 'sb-hhirhrvyqzkdezjenpdr-auth-token';
+    const sessionData = JSON.stringify({
+      access_token:  at,
+      refresh_token: rt,
+      expires_at:    exp,
+      token_type:    'bearer',
+      user:          null
+    });
+    // Écrire dans tous les storages disponibles
+    try { localStorage.setItem(sessionKey, sessionData);   } catch(e) {}
+    try { sessionStorage.setItem(sessionKey, sessionData); } catch(e) {}
+    _safeStorage._data[sessionKey] = sessionData;
+    // Nettoyer le hash de l'URL sans rechargement de page
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    console.log('[Timor] Token OAuth intercepté et injecté dans le storage ✓');
+  } catch(e) {
+    console.warn('[Timor] patchHashToken error:', e);
+  }
+})();
+
+// ─── Initialisation Supabase (flow implicit, storage robuste) ─────────────────
 const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storage: _safeStorage,
-    persistSession: true,
+    storage:           _safeStorage,
+    persistSession:    true,
     detectSessionInUrl: true,
-    autoRefreshToken: true,
-    flowType: 'pkce'
+    autoRefreshToken:  true,
+    flowType:          'implicit'
   }
 });
 window._sb = _sb;
-// Lire le token dans le hash URL après redirect OAuth
-const hash = window.location.hash;
-if (hash && hash.includes('access_token')) {
-  const params = new URLSearchParams(hash.substring(1));
-  const access_token = params.get('access_token');
-  const refresh_token = params.get('refresh_token');
-  if (access_token) {
-    _sb.auth.setSession({ access_token, refresh_token }).then(() => {
-      // Nettoyer le hash de l'URL
-      window.history.replaceState(null, '', window.location.pathname);
-    });
-  }
-} else {
-  _sb.auth.getSession().then(({ data }) => {
-    if (data?.session) {
-      _sb.auth.setSession(data.session);
-    }
-  });
-}
 </script>
 
 <!-- ════ LEVEL SYSTEM ════ -->
@@ -828,7 +855,7 @@ async function syncSpinCooldown(uid) {
 function loginWithDiscord() {
   sb.auth.signInWithOAuth({
     provider: 'discord',
-    options: { 
+    options: {
       redirectTo: 'https://yanisss908.github.io/timor-ng/',
       skipBrowserRedirect: false
     }
@@ -871,6 +898,7 @@ async function upsertUserProfile(supabaseUser) {
 
 // ─── Auth listener ────────────────────────────────────────────────────────
 sb.auth.onAuthStateChange(async (event, session) => {
+  console.log('[Timor] Auth event:', event, session ? 'session OK' : 'no session');
   if (session?.user) {
     const user = session.user;
     await upsertUserProfile(user);
