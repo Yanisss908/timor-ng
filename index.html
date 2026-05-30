@@ -531,6 +531,15 @@ const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 });
 window._sb = _sb;
+// Forcer la lecture de session après callback OAuth
+window.addEventListener('load', async function() {
+  try {
+    const { data } = await _sb.auth.getSession();
+    if (!data?.session) {
+      await _sb.auth.refreshSession();
+    }
+  } catch(e) {}
+});
 </script>
 
 <!-- ════ LEVEL SYSTEM ════ -->
