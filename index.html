@@ -111,7 +111,7 @@
   <div id="nav-auth">
     <button class="btn-discord" onclick="Timor.loginWithDiscord()">
       <svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
-      Connexion…
+      Connexion Discord
     </button>
   </div>
 </nav>
@@ -434,13 +434,11 @@
 <!-- ════ SUPABASE CLIENT ════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ─── CONFIGURATION ───────────────────────────────────────────────────────────
 const SUPABASE_URL      = 'https://hhirhrvyqzkdezjenpdr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoaXJocnZ5cXprZGV6amVucGRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTI1NzYsImV4cCI6MjA5NTY2ODU3Nn0.4AbQlyhoZPOWMTgzLCSL-8590ZuOhF8uKP2Wp9SGGZc';
 const ADMIN_IDS = new Set(['1407099669271810159']);
 const MODO_IDS  = new Set([]);
 
-// ─── Storage robuste (sessionStorage + localStorage + mémoire) ───────────────
 const _safeStorage = {
   _data: {},
   getItem(k) {
@@ -460,64 +458,47 @@ const _safeStorage = {
   },
 };
 
-// ─── FIX AUTH : intercepter le #access_token du callback OAuth ───────────────
-// Discord redirige vers cette page avec le token dans le hash (#access_token=...).
-// On doit l'injecter dans localStorage AVANT que Supabase s'initialise,
-// sinon il ne le voit pas et la session n'est jamais créée.
 (function interceptOAuthToken() {
   try {
     const hash = window.location.hash;
     if (!hash || !hash.includes('access_token')) return;
-
     const params = new URLSearchParams(hash.substring(1));
     const at  = params.get('access_token');
     const rt  = params.get('refresh_token') || '';
     const exp = parseInt(params.get('expires_at') || '0', 10) || Math.floor(Date.now() / 1000) + 3600;
     if (!at) return;
-
-    // Clé exacte utilisée par Supabase JS v2 pour stocker la session
     const sessionKey = 'sb-hhirhrvyqzkdezjenpdr-auth-token';
     const sessionData = JSON.stringify({
       access_token:  at,
       refresh_token: rt,
       expires_at:    exp,
       token_type:    'bearer',
-      user:          null   // Supabase le reconstruira via getUser()
+      user:          null
     });
-
-    // Écrire dans tous les storages disponibles
     try { localStorage.setItem(sessionKey, sessionData);   } catch(e) {}
     try { sessionStorage.setItem(sessionKey, sessionData); } catch(e) {}
     _safeStorage._data[sessionKey] = sessionData;
-
-    // Supprimer le hash de l'URL (propre, sans rechargement)
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
-
     console.log('[Timor] ✅ Token OAuth intercepté et injecté');
   } catch(e) {
     console.warn('[Timor] interceptOAuthToken error:', e);
   }
 })();
 
-// ─── Initialisation Supabase ─────────────────────────────────────────────────
 const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage:            _safeStorage,
     persistSession:     true,
-    detectSessionInUrl: true,   // Supabase lit aussi le hash lui-même en fallback
+    detectSessionInUrl: true,
     autoRefreshToken:   true,
     flowType:           'implicit'
   }
 });
 window._sb = _sb;
 
-// ─── FIX : forcer getSession() au chargement pour déclencher onAuthStateChange
-// Sans ça, si Supabase a déjà lu le token dans son storage interne,
-// il ne réémet pas l'événement SIGNED_IN automatiquement.
 window.addEventListener('load', async function() {
   try {
     const { data: { session } } = await _sb.auth.getSession();
-    // Si pas de session mais qu'un refresh_token existe, on tente un refresh
     if (!session) {
       const key = 'sb-hhirhrvyqzkdezjenpdr-auth-token';
       const stored = _safeStorage.getItem(key);
@@ -745,31 +726,8 @@ window._adminSaveSpinPrizesSupabase=async function(prizes){await sdSet('spinpriz
 async function loadSpinPrizes(){try{const val=await sdGet('spinprizes');if(val?.prizes?.length>=2)window._spinPrizes=val.prizes;}catch(e){}window.drawWheel(window._spinCurrentAngle||0);window.buildPrizeLegend();}
 async function syncSpinCooldown(uid){try{const profile=await userGet(uid);if(profile?.last_spin_at){const fsTs=new Date(profile.last_spin_at).getTime();const localTs=window.getLastSpinTime?window.getLastSpinTime():0;if(fsTs>localTs)window.setLastSpinTime(fsTs);}}catch(e){}window.updateSpinUI();window.startCooldownTimer();}
 
-// ─── FIX AUTH : loginWithDiscord sans page callback séparée ─────────────────
-// On redirige directement vers index.html (la même page).
-// Le token arrive dans le hash, interceptOAuthToken() l'injecte avant init Supabase.
+// ── Fonction appelée par le bouton connexion ──
 function loginWithDiscord(){
-  setTimeout(async () => {
-  if (_currentUserUID) return;
-  try {
-    const { data: { user } } = await _sb.auth.getUser();
-    if (!user) return;
-    await upsertUserProfile(user);
-    const profile = await userGet(user.id);
-    _currentUserRole = profile?.role || 'citoyen';
-    _currentUserUID = user.id;
-    _currentUserXP = profile?.xp ?? 0;
-    _currentUserCoins = profile?.coins ?? 0;
-    _currentUserDiscordId = profile?.discord_id || '';
-    window._spinCurrentUID = user.id;
-    await loadUserPurchases(user.id);
-    await syncSpinCooldown(user.id);
-    renderConnectedState(user, profile);
-    renderProfileLevel(_currentUserXP, _currentUserCoins);
-    renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
-    await loadLeaderboard();
-  } catch(e) { console.warn('[Timor] Fallback error:', e); }
-}, 2000);
   sb.auth.signInWithOAuth({
     provider:'discord',
     options:{
@@ -781,7 +739,9 @@ function loginWithDiscord(){
 
 async function logout(){
   await sb.auth.signOut();
+  _currentUserUID=null;_currentUserRole=null;_currentUserPurchases=[];window._spinCurrentUID=null;
   document.body.classList.remove('is-admin','is-modo');
+  renderDisconnectedState();
   showToast('Déconnecté.');
 }
 
@@ -798,58 +758,51 @@ async function upsertUserProfile(supabaseUser){
   await userUpsert(supabaseUser.id,base);
 }
 
-// ─── FIX AUTH : onAuthStateChange ────────────────────────────────────────────
-// SIGNED_IN se déclenche automatiquement quand Supabase lit le token injecté
-// dans localStorage par interceptOAuthToken().
-// Fallback si le storage est bloqué par le navigateur
-setTimeout(async () => {
-  if (_currentUserUID) return;
-  try {
-    const { data: { user } } = await _sb.auth.getUser();
-    if (!user) return;
-    console.log('[Timor] Fallback getUser:', user.id);
-    await upsertUserProfile(user);
-    const profile = await userGet(user.id);
-    _currentUserRole = profile?.role || 'citoyen';
-    _currentUserUID = user.id;
-    _currentUserXP = profile?.xp ?? 0;
-    _currentUserCoins = profile?.coins ?? 0;
-    _currentUserDiscordId = profile?.discord_id || '';
-    window._spinCurrentUID = user.id;
-    await loadUserPurchases(user.id);
-    await syncSpinCooldown(user.id);
-    renderConnectedState(user, profile);
-    renderProfileLevel(_currentUserXP, _currentUserCoins);
-    renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
-    await loadLeaderboard();
-  } catch(e) { console.warn('[Timor] Fallback error:', e); }
-}, 2000);
-sb.auth.onAuthStateChange(async(event,session)=>{
-  console.log('[Timor] Auth event:',event,session?'session OK':'no session');
-  if(session?.user){
-    const user=session.user;
-    await upsertUserProfile(user);
-    const profile=await userGet(user.id);
-    _currentUserRole=profile?.role||'citoyen';
-    _currentUserUID=user.id;
-    _currentUserXP=profile?.xp??0;
-    _currentUserCoins=profile?.coins??0;
-    _currentUserDiscordId=profile?.discord_id||'';
-    window._spinCurrentUID=user.id;
-    await loadUserPurchases(user.id);
-    await syncSpinCooldown(user.id);
-    renderConnectedState(user,profile);
-    renderProfileLevel(_currentUserXP,_currentUserCoins);
-    renderQuests();renderShop();renderQuickLinks(_quickLinks);
-    await loadLeaderboard();
-  }else{
-    _currentUserRole=null;_currentUserUID=null;_currentUserPurchases=[];window._spinCurrentUID=null;
+async function handleUserSession(user) {
+  if (!user) return;
+  await upsertUserProfile(user);
+  const profile = await userGet(user.id);
+  _currentUserRole = profile?.role || 'citoyen';
+  _currentUserUID = user.id;
+  _currentUserXP = profile?.xp ?? 0;
+  _currentUserCoins = profile?.coins ?? 0;
+  _currentUserDiscordId = profile?.discord_id || '';
+  window._spinCurrentUID = user.id;
+  await loadUserPurchases(user.id);
+  await syncSpinCooldown(user.id);
+  renderConnectedState(user, profile);
+  renderProfileLevel(_currentUserXP, _currentUserCoins);
+  renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
+  await loadLeaderboard();
+}
+
+// ── Écoute les changements d'auth ──
+sb.auth.onAuthStateChange(async(event, session) => {
+  console.log('[Timor] Auth event:', event, session?.user?.id ?? 'no user');
+  if (session?.user) {
+    await handleUserSession(session.user);
+  } else {
+    _currentUserRole=null; _currentUserUID=null; _currentUserPurchases=[]; window._spinCurrentUID=null;
     renderDisconnectedState();
-    renderQuests();renderShop();renderQuickLinks(_quickLinks);
+    renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
     window.updateSpinUI();
     await loadLeaderboard();
   }
 });
+
+// ── Fallback : si onAuthStateChange rate la session (storage bloqué par Edge) ──
+setTimeout(async () => {
+  if (_currentUserUID) return;
+  try {
+    console.log('[Timor] Fallback: tentative getUser...');
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { console.log('[Timor] Fallback: pas d\'utilisateur'); return; }
+    console.log('[Timor] Fallback: utilisateur trouvé', user.id);
+    await handleUserSession(user);
+  } catch(e) {
+    console.warn('[Timor] Fallback error:', e);
+  }
+}, 2500);
 
 loadSiteData();
 
@@ -872,7 +825,7 @@ function renderConnectedState(user,profile){
 }
 
 function renderDisconnectedState(){
-  document.getElementById('auth-banner').style.display='';
+  const ab=document.getElementById('auth-banner');if(ab)ab.style.display='';
   document.body.classList.remove('is-admin','is-modo');
   const adminPanel=document.getElementById('admin-panel');if(adminPanel)adminPanel.classList.remove('visible');
   const profileCard=document.getElementById('profile-level-card');if(profileCard)profileCard.style.display='none';
@@ -1058,31 +1011,10 @@ var _toastTimer=null;
 function showToast(msg){var el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},3500);}
 </script>
 <script>
-// Fallback au cas où le module ES6 ne se charge pas encore
 window.Timor = window.Timor || {
   loginWithDiscord: function() { console.warn('Module pas encore chargé'); },
   logout: function() {}
 };
-</script>
-<script type="module">
-setTimeout(async () => {
-  if (window._currentUserUID) return;
-  try {
-    const sb = window._sb;
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) return;
-    const { data: profile } = await sb.from('users').select('*').eq('id', user.id).single();
-    if (!profile) return;
-    document.getElementById('auth-banner').style.display = 'none';
-    document.getElementById('admin-panel')?.classList.remove('visible');
-    const name = profile.global_name || profile.username || 'Citoyen';
-    const navAuth = document.getElementById('nav-auth');
-    if (navAuth) {
-      navAuth.innerHTML = '<div class="nav-user"><span class="nav-username">' + name + '</span><span class="nav-pill nav-xp">' + (profile.xp||0) + ' XP</span><span class="nav-pill nav-coins">🪙 ' + (profile.coins||0) + '</span><button class="btn-nav-logout" onclick="Timor.logout()">✕</button></div>';
-    }
-    window.renderProfileLevel(profile.xp||0, profile.coins||0);
-  } catch(e) { console.warn('Fallback error:', e); }
-}, 3000);
 </script>
 </body>
 </html>
