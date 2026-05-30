@@ -1018,7 +1018,7 @@ footer a { color: var(--gold-dim); text-decoration: none; }
 .btn-maintenance.active { background: #52c97a !important; }
 #quests-list {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 @media (max-width: 1200px) { #quests-list { grid-template-columns: repeat(4, 1fr); } }
