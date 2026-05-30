@@ -58,22 +58,30 @@
 </div>
 <div class="spinner"></div>
 <div class="title">AUTHENTIFICATION EN COURS</div>
-<div class="msg" id="status">Échange du code Discord…</div>
+<div class="msg" id="status">Finalisation de la connexion Discord…</div>
 
+<!--
+  Supabase gère automatiquement le token OAuth depuis le hash de l'URL (#access_token=…).
+  Il suffit d'importer le client Supabase, puis de rediriger vers index.html.
+  Supabase intercepte le fragment avant la redirection et stocke la session.
+-->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  (function() {
-    var statusEl = document.getElementById('status');
-    var params = new URLSearchParams(window.location.search);
-    var code   = params.get('code');
-    var state  = params.get('state');
-    var error  = params.get('error');
+  // ─── CONFIGURATION — remplace par tes vraies valeurs ───
+  const SUPABASE_URL = 'https://hhirhrvyqzkdezjenpdr.supabase.co';
+  const SUPABASE_ANON_KEY = 'REMPLACE_PAR_TA_PUBLISHABLE_KEY';
+  // ────────────────────────────────────────────────────────
 
-    function redirect(msg, delay) {
-      statusEl.textContent = msg || 'Redirection…';
-      setTimeout(function() {
-        window.location.replace('index.html');
-      }, delay || 1200);
-    }
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  (async function () {
+    var statusEl = document.getElementById('status');
+
+    // Vérifier s'il y a une erreur OAuth dans l'URL
+    var hashParams = new URLSearchParams(window.location.hash.slice(1));
+    var queryParams = new URLSearchParams(window.location.search);
+    var error = hashParams.get('error') || queryParams.get('error');
 
     if (error) {
       statusEl.textContent = '';
@@ -81,32 +89,22 @@
       errDiv.className = 'error';
       errDiv.textContent = 'Connexion annulée — retour au site…';
       statusEl.parentNode.insertBefore(errDiv, statusEl);
-      setTimeout(function() { window.location.replace('index.html'); }, 2500);
+      setTimeout(function () { window.location.replace('index.html'); }, 2500);
       return;
     }
 
-    if (!code) {
-      redirect('Paramètre manquant — redirection…', 1500);
-      return;
+    // Supabase récupère automatiquement la session depuis le hash #access_token
+    // On attend juste que la session soit établie
+    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+
+    if (sessionError) {
+      console.warn('Session error:', sessionError.message);
     }
 
-    // Vérifie le state CSRF avant de stocker quoi que ce soit
-    var savedState = sessionStorage.getItem('discord_oauth_state');
-    if (savedState && state && state !== savedState) {
-      statusEl.textContent = '';
-      var errDiv2 = document.createElement('div');
-      errDiv2.className = 'error';
-      errDiv2.textContent = 'Erreur de sécurité (state mismatch) — retour au site…';
-      statusEl.parentNode.insertBefore(errDiv2, statusEl);
-      sessionStorage.removeItem('discord_oauth_state');
-      setTimeout(function() { window.location.replace('index.html'); }, 3000);
-      return;
-    }
-
-    // Stocke le code pour traitement dans index.html
-    sessionStorage.setItem('discord_pending_code',  code);
-    sessionStorage.setItem('discord_pending_state', state || '');
-    redirect('Redirection vers Timor…', 800);
+    statusEl.textContent = 'Redirection vers Timor…';
+    setTimeout(function () {
+      window.location.replace('index.html');
+    }, 800);
   })();
 </script>
 </body>
