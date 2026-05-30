@@ -734,9 +734,12 @@ async function handleUserSession(user) {
 // ══ CORRECTIF PRINCIPAL : onAuthStateChange gère la session restaurée ══
 sb.auth.onAuthStateChange(async(event, session) => {
   console.log('[Timor] Auth event:', event, session?.user?.id ?? 'no user');
+
+  if (event === 'INITIAL_SESSION' && !session) return; // ← la seule vraie correction
+
   if (session?.user) {
     await handleUserSession(session.user);
-  } else {
+  } else if (event === 'SIGNED_OUT') {
     _currentUserRole=null; _currentUserUID=null; _currentUserPurchases=[]; window._spinCurrentUID=null;
     renderDisconnectedState();
     renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
