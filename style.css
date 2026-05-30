@@ -1016,3 +1016,12 @@ footer a { color: var(--gold-dim); text-decoration: none; }
 #maintenance-status-label { font-size: 0.85rem; color: #a0a0b8; flex: 1; }
 .btn-maintenance { background: #e05252 !important; }
 .btn-maintenance.active { background: #52c97a !important; }
+#quests-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1200px) { #quests-list { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 900px)  { #quests-list { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px)  { #quests-list { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 400px)  { #quests-list { grid-template-columns: 1fr; } }
