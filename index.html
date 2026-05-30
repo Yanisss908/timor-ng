@@ -439,34 +439,31 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const ADMIN_IDS = new Set(['1407099669271810159']);
 const MODO_IDS  = new Set([]);
 
-// ══ Stockage robuste : sessionStorage + localStorage + mémoire ══
+// ══ CORRECTIF PRINCIPAL : storage UNIQUEMENT localStorage ══
+// sessionStorage est isolée par onglet, donc si Discord ouvre/redirige
+// vers un nouvel onglet, la session écrite dans callback.html est perdue.
+// localStorage est partagé entre tous les onglets du même domaine.
 const _safeStorage = {
   _data: {},
   getItem(k) {
-    try { const v = sessionStorage.getItem(k); if (v !== null) return v; } catch(e) {}
-    try { const v = localStorage.getItem(k);   if (v !== null) return v; } catch(e) {}
+    try { const v = localStorage.getItem(k); if (v !== null) return v; } catch(e) {}
     return this._data[k] ?? null;
   },
   setItem(k, v) {
-    try { sessionStorage.setItem(k, v); } catch(e) {}
-    try { localStorage.setItem(k, v);   } catch(e) {}
+    try { localStorage.setItem(k, v); } catch(e) {}
     this._data[k] = v;
   },
   removeItem(k) {
-    try { sessionStorage.removeItem(k); } catch(e) {}
-    try { localStorage.removeItem(k);   } catch(e) {}
+    try { localStorage.removeItem(k); } catch(e) {}
     delete this._data[k];
   },
 };
 
-// ══ Client Supabase — PKCE flow ══
-// CHANGEMENT CLÉ : flowType 'implicit' → 'pkce'
-// Le redirect passe désormais par callback.html qui échange le ?code=
 const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage:            _safeStorage,
     persistSession:     true,
-    detectSessionInUrl: false,  // false ici : c'est callback.html qui gère le ?code=
+    detectSessionInUrl: false,
     autoRefreshToken:   true,
     flowType:           'pkce'
   }
@@ -663,11 +660,11 @@ async function userUpsert(uid,fields){const{error}=await sb.from('users').upsert
 async function userUpdate(uid,fields){const{error}=await sb.from('users').update({...fields,updated_at:new Date().toISOString()}).eq('id',uid);if(error)throw error;}
 
 const SITEDATA_CACHE_KEY='timor_sitedata_v3_supabase';
-function invalidateSitedataCache(){try{sessionStorage.removeItem(SITEDATA_CACHE_KEY);}catch(e){}}
+function invalidateSitedataCache(){try{localStorage.removeItem(SITEDATA_CACHE_KEY);}catch(e){}}
 
 async function loadSiteData(){
-  try{const cached=sessionStorage.getItem(SITEDATA_CACHE_KEY);if(cached){const d=JSON.parse(cached);_tutos=d.tutos;_pays=d.pays;_quests=d.quests;_shop=d.shop;_quickLinks=d.quickLinks||[];renderTutos();renderPays();renderQuests();renderShop();renderQuickLinks(_quickLinks);await loadSpinPrizes();return;}}catch(e){}
-  try{const[tVal,pVal,qVal,sVal,qlVal]=await Promise.all([sdGet('tutos'),sdGet('pays'),sdGet('quests'),sdGet('shop'),sdGet('quicklinks')]);_tutos=tVal?.list??DEFAULT_TUTOS;_pays=pVal??DEFAULT_PAYS;_quests=qVal??DEFAULT_QUESTS;_shop=sVal??DEFAULT_SHOP;_quickLinks=qlVal?.links??[];try{sessionStorage.setItem(SITEDATA_CACHE_KEY,JSON.stringify({tutos:_tutos,pays:_pays,quests:_quests,shop:_shop,quickLinks:_quickLinks}));}catch(e){}}
+  try{const cached=localStorage.getItem(SITEDATA_CACHE_KEY);if(cached){const d=JSON.parse(cached);_tutos=d.tutos;_pays=d.pays;_quests=d.quests;_shop=d.shop;_quickLinks=d.quickLinks||[];renderTutos();renderPays();renderQuests();renderShop();renderQuickLinks(_quickLinks);await loadSpinPrizes();return;}}catch(e){}
+  try{const[tVal,pVal,qVal,sVal,qlVal]=await Promise.all([sdGet('tutos'),sdGet('pays'),sdGet('quests'),sdGet('shop'),sdGet('quicklinks')]);_tutos=tVal?.list??DEFAULT_TUTOS;_pays=pVal??DEFAULT_PAYS;_quests=qVal??DEFAULT_QUESTS;_shop=sVal??DEFAULT_SHOP;_quickLinks=qlVal?.links??[];try{localStorage.setItem(SITEDATA_CACHE_KEY,JSON.stringify({tutos:_tutos,pays:_pays,quests:_quests,shop:_shop,quickLinks:_quickLinks}));}catch(e){}}
   catch(e){console.warn('loadSiteData error:',e.message);_tutos=DEFAULT_TUTOS;_pays=DEFAULT_PAYS;_quests=DEFAULT_QUESTS;_shop=DEFAULT_SHOP;_quickLinks=[];}
   renderTutos();renderPays();renderQuests();renderShop();renderQuickLinks(_quickLinks);
   await loadSpinPrizes();
@@ -685,7 +682,6 @@ window._adminSaveSpinPrizesSupabase=async function(prizes){await sdSet('spinpriz
 async function loadSpinPrizes(){try{const val=await sdGet('spinprizes');if(val?.prizes?.length>=2)window._spinPrizes=val.prizes;}catch(e){}window.drawWheel(window._spinCurrentAngle||0);window.buildPrizeLegend();}
 async function syncSpinCooldown(uid){try{const profile=await userGet(uid);if(profile?.last_spin_at){const fsTs=new Date(profile.last_spin_at).getTime();const localTs=window.getLastSpinTime?window.getLastSpinTime():0;if(fsTs>localTs)window.setLastSpinTime(fsTs);}}catch(e){}window.updateSpinUI();window.startCooldownTimer();}
 
-// ══ CHANGEMENT CLÉ : redirectTo pointe vers callback.html ══
 function loginWithDiscord(){
   sb.auth.signInWithOAuth({
     provider: 'discord',
@@ -735,7 +731,7 @@ async function handleUserSession(user) {
   await loadLeaderboard();
 }
 
-// ══ onAuthStateChange : détecte la session restaurée depuis callback.html ══
+// ══ CORRECTIF PRINCIPAL : onAuthStateChange gère la session restaurée ══
 sb.auth.onAuthStateChange(async(event, session) => {
   console.log('[Timor] Auth event:', event, session?.user?.id ?? 'no user');
   if (session?.user) {
@@ -749,13 +745,20 @@ sb.auth.onAuthStateChange(async(event, session) => {
   }
 });
 
-// ══ Fallback getSession au chargement (si storage accessible) ══
+// ══ CORRECTIF PRINCIPAL : getSession() au chargement de la page ══
+// Lit la session depuis localStorage (écrite par callback.html)
+// et déclenche handleUserSession si une session valide existe.
 (async () => {
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session?.user && !_currentUserUID) {
-      console.log('[Timor] Session restaurée via getSession()');
+    const { data: { session }, error } = await sb.auth.getSession();
+    if (error) { console.warn('[Timor] getSession error:', error.message); return; }
+    if (session?.user) {
+      console.log('[Timor] Session restaurée via getSession():', session.user.id);
+      // onAuthStateChange sera aussi déclenché, mais handleUserSession
+      // est idempotent donc un double appel est sans danger.
       await handleUserSession(session.user);
+    } else {
+      console.log('[Timor] Aucune session active.');
     }
   } catch(e) {
     console.warn('[Timor] getSession fallback error:', e);
@@ -935,7 +938,8 @@ function setAdminFeedback(msg,type){const el=document.getElementById('admin-feed
 function setEl(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
 function setInputVal(id,val){var e=document.getElementById(id);if(e)e.value=val;}
 
-window.Timor={loginWithDiscord,logout};
+// ══ Exposer loginWithDiscord et logout globalement ══
+window.Timor = { loginWithDiscord, logout };
 </script>
 
 <!-- ════ UI HELPERS ════ -->
@@ -967,12 +971,6 @@ document.addEventListener('click',function(e){var sb=document.getElementById('ql
 document.getElementById('spin-overlay').addEventListener('click',function(e){if(e.target===this)closeSpinModal();});
 var _toastTimer=null;
 function showToast(msg){var el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},3500);}
-</script>
-<script>
-window.Timor = window.Timor || {
-  loginWithDiscord: function() { console.warn('Module pas encore chargé'); },
-  logout: function() {}
-};
 </script>
 </body>
 </html>
