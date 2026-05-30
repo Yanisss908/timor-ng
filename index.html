@@ -478,6 +478,11 @@ const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 });
 window._sb = _sb;
+_sb.auth.getSession().then(({ data }) => {
+  if (data?.session) {
+    _sb.auth.setSession(data.session);
+  }
+});
 </script>
 
 <!-- ════ LEVEL SYSTEM ════ -->
