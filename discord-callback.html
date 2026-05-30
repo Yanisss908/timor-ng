@@ -24,26 +24,42 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 });
 
+const msgEl = document.getElementById('msg');
+
 (async function() {
   const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
   const access_token = params.get('access_token');
   const refresh_token = params.get('refresh_token');
 
-  if (access_token && refresh_token) {
-    const { error } = await _sb.auth.setSession({ access_token, refresh_token });
-    if (error) {
-      document.getElementById('msg').textContent = '❌ Erreur : ' + error.message;
-      return;
-    }
-    document.getElementById('msg').textContent = '✅ Connecté ! Redirection…';
-  } else {
-    document.getElementById('msg').textContent = '⚠️ Aucun token trouvé, redirection…';
+  if (!access_token || !refresh_token) {
+    msgEl.textContent = '⚠️ Tokens manquants dans l\'URL. Hash reçu : ' + (window.location.hash || '(vide)');
+    setTimeout(() => window.location.replace('./index.html'), 3000);
+    return;
   }
 
-  setTimeout(function() {
-    window.location.replace('./index.html');
-  }, 800);
+  msgEl.textContent = '🔄 Tokens trouvés, création de la session…';
+
+  const { data, error } = await _sb.auth.setSession({ access_token, refresh_token });
+
+  if (error) {
+    msgEl.textContent = '❌ Erreur setSession : ' + error.message;
+    setTimeout(() => window.location.replace('./index.html'), 3000);
+    return;
+  }
+
+  if (!data?.session) {
+    msgEl.textContent = '❌ Session nulle après setSession.';
+    setTimeout(() => window.location.replace('./index.html'), 3000);
+    return;
+  }
+
+  // Vérifier que le localStorage a bien été écrit
+  const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+  msgEl.textContent = '✅ Session créée (' + (data.session.user?.email || data.session.user?.id || '?') + '). Redirection…';
+
+  // Attendre que le localStorage soit bien persisté avant de rediriger
+  setTimeout(() => window.location.replace('./index.html'), 1200);
 })();
 </script>
 </body>
