@@ -431,43 +431,24 @@
   <a href="#" onclick="showSection('accueil');return false;">Accueil</a>
 </footer>
 
-<!-- ════ SUPABASE CLIENT ════ -->
+<!-- ════ SUPABASE CLIENT (BDD uniquement, pas d'auth) ════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL      = 'https://hhirhrvyqzkdezjenpdr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoaXJocnZ5cXprZGV6amVucGRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTI1NzYsImV4cCI6MjA5NTY2ODU3Nn0.4AbQlyhoZPOWMTgzLCSL-8590ZuOhF8uKP2Wp9SGGZc';
+
+// ══ URL du Cloudflare Worker ══
+const WORKER_URL = 'https://timor-discord-auth.yanismanca66.workers.dev';
+
+// ══ Discord OAuth ══
+const DISCORD_CLIENT_ID  = '1508123459782443260';
+const DISCORD_REDIRECT   = 'https://yanisss908.github.io/timor-ng/';
+
 const ADMIN_IDS = new Set(['1407099669271810159']);
 const MODO_IDS  = new Set([]);
 
-// ══ CORRECTIF PRINCIPAL : storage UNIQUEMENT localStorage ══
-// sessionStorage est isolée par onglet, donc si Discord ouvre/redirige
-// vers un nouvel onglet, la session écrite dans callback.html est perdue.
-// localStorage est partagé entre tous les onglets du même domaine.
-const _safeStorage = {
-  _data: {},
-  getItem(k) {
-    try { const v = localStorage.getItem(k); if (v !== null) return v; } catch(e) {}
-    return this._data[k] ?? null;
-  },
-  setItem(k, v) {
-    try { localStorage.setItem(k, v); } catch(e) {}
-    this._data[k] = v;
-  },
-  removeItem(k) {
-    try { localStorage.removeItem(k); } catch(e) {}
-    delete this._data[k];
-  },
-};
-
-const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    storage:            _safeStorage,
-    persistSession:     true,
-    detectSessionInUrl: true,
-    autoRefreshToken:   true,
-    flowType: 'implicit'
-  }
-});
+// Supabase utilisé UNIQUEMENT pour la base de données (pas d'auth)
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window._sb = _sb;
 </script>
 
@@ -626,11 +607,16 @@ window.adminResetSpinDefault=function(){_spinPrizes=DEFAULT_SPIN_PRIZES.slice();
 window.addEventListener("DOMContentLoaded",function(){updateSpinUI();startCooldownTimer();drawWheel(0);});
 </script>
 
-<!-- ════ SUPABASE + DISCORD ════ -->
+<!-- ════ AUTH DISCORD via Cloudflare Worker ════ -->
 <script type="module">
 const sb = window._sb;
-const ADMIN_IDS = window.ADMIN_IDS || new Set(['1407099669271810159']);
-const MODO_IDS  = window.MODO_IDS  || new Set([]);
+const WORKER_URL       = window.WORKER_URL;
+const DISCORD_CLIENT_ID = window.DISCORD_CLIENT_ID;
+const DISCORD_REDIRECT  = window.DISCORD_REDIRECT;
+const ADMIN_IDS = new Set(['1407099669271810159']);
+const MODO_IDS  = new Set([]);
+
+const SESSION_KEY = 'timor_session_v1';
 
 const DEFAULT_TUTOS   = [];
 const DEFAULT_PAYS    = {membres:"142",rang:"#3",fondation:"[Année]",herodesc:"Nation fondée sur la discipline, le commerce et la solidarité.",paydesc:"Timor est une nation bâtie sur trois piliers : la discipline, le commerce et la fraternité.",gouv:[{init:"PR",nom:"[Président]",role:"Président de Timor",badge:"Chef d'État"},{init:"VP",nom:"[Vice-Président]",role:"Vice-Président",badge:"Gouvernement"}]};
@@ -653,10 +639,79 @@ let _allOrders=[],_ordersFilter='pending';
 let _lbCache=null,_lbTs=0;
 const LB_CACHE_TTL=6*60*60*1000;
 
+// ══ Session helpers (localStorage, pas de Supabase Auth) ══
+function saveSession(profile) {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(profile)); } catch(e) {}
+}
+function loadSession() {
+  try { const s = localStorage.getItem(SESSION_KEY); return s ? JSON.parse(s) : null; } catch(e) { return null; }
+}
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+// ══ Auth Discord ══
+function loginWithDiscord() {
+  const params = new URLSearchParams({
+    client_id:     DISCORD_CLIENT_ID,
+    redirect_uri:  DISCORD_REDIRECT,
+    response_type: 'code',
+    scope:         'identify',
+  });
+  window.location.href = 'https://discord.com/oauth2/authorize?' + params.toString();
+}
+
+async function logout() {
+  clearSession();
+  _currentUserUID=null; _currentUserRole=null; _currentUserPurchases=[]; window._spinCurrentUID=null;
+  document.body.classList.remove('is-admin','is-modo');
+  renderDisconnectedState();
+  renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
+  window.updateSpinUI();
+  await loadLeaderboard();
+  showToast('Déconnecté.');
+}
+
+// ══ Gérer le ?code= retourné par Discord après login ══
+async function handleDiscordCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (!code) return false;
+
+  // Nettoyer l'URL immédiatement
+  window.history.replaceState({}, document.title, window.location.pathname);
+
+  showToast('⏳ Connexion en cours…');
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, redirect_uri: DISCORD_REDIRECT }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+
+    const profile = await res.json();
+    // profile = { uid, discord_id, username, global_name, avatar, role }
+
+    saveSession(profile);
+    await handleUserSession(profile);
+    return true;
+  } catch(err) {
+    console.error('[Timor] Callback error:', err);
+    showToast('⚠ Erreur de connexion : ' + err.message);
+    return false;
+  }
+}
+
+// ══ Supabase BDD helpers ══
 async function sdGet(key){const{data,error}=await sb.from('sitedata').select('value').eq('key',key).single();if(error)return null;return data?.value??null;}
 async function sdSet(key,value){const{error}=await sb.from('sitedata').upsert({key,value,updated_at:new Date().toISOString()},{onConflict:'key'});if(error)throw error;}
 async function userGet(uid){const{data,error}=await sb.from('users').select('*').eq('id',uid).single();if(error)return null;return data;}
-async function userUpsert(uid,fields){const{error}=await sb.from('users').upsert({id:uid,...fields,updated_at:new Date().toISOString()},{onConflict:'id'});if(error)throw error;}
 async function userUpdate(uid,fields){const{error}=await sb.from('users').update({...fields,updated_at:new Date().toISOString()}).eq('id',uid);if(error)throw error;}
 
 const SITEDATA_CACHE_KEY='timor_sitedata_v3_supabase';
@@ -682,104 +737,30 @@ window._adminSaveSpinPrizesSupabase=async function(prizes){await sdSet('spinpriz
 async function loadSpinPrizes(){try{const val=await sdGet('spinprizes');if(val?.prizes?.length>=2)window._spinPrizes=val.prizes;}catch(e){}window.drawWheel(window._spinCurrentAngle||0);window.buildPrizeLegend();}
 async function syncSpinCooldown(uid){try{const profile=await userGet(uid);if(profile?.last_spin_at){const fsTs=new Date(profile.last_spin_at).getTime();const localTs=window.getLastSpinTime?window.getLastSpinTime():0;if(fsTs>localTs)window.setLastSpinTime(fsTs);}}catch(e){}window.updateSpinUI();window.startCooldownTimer();}
 
-function loginWithDiscord(){
-  sb.auth.signInWithOAuth({
-    provider: 'discord',
-    options: {
-      redirectTo: 'https://yanisss908.github.io/timor-ng/',
-      skipBrowserRedirect: false
-    }
-  });
-}
+// ══ handleUserSession — même logique qu'avant ══
+async function handleUserSession(profile) {
+  // profile vient soit du Worker (login), soit du localStorage (session restaurée)
+  const uid = profile.uid;
+  _currentUserUID  = uid;
+  _currentUserRole = profile.role || 'citoyen';
+  _currentUserDiscordId = profile.discord_id || '';
+  window._spinCurrentUID = uid;
 
-async function logout(){
-  await sb.auth.signOut();
-  _currentUserUID=null;_currentUserRole=null;_currentUserPurchases=[];window._spinCurrentUID=null;
-  document.body.classList.remove('is-admin','is-modo');
-  renderDisconnectedState();
-  showToast('Déconnecté.');
-}
+  // Charger les données fraîches depuis Supabase BDD
+  const dbProfile = await userGet(uid);
+  _currentUserXP    = dbProfile?.xp    ?? 0;
+  _currentUserCoins = dbProfile?.coins  ?? 0;
+  if (dbProfile?.role) _currentUserRole = dbProfile.role;
 
-async function upsertUserProfile(supabaseUser){
-  const meta=supabaseUser.user_metadata||{};
-  const discordId=meta.provider_id||meta.sub||'';
-  const avatar=meta.avatar_url||'';
-  const username=meta.full_name||meta.name||meta.user_name||'Citoyen';
-  const globalName=meta.full_name||meta.name||username;
-  const existing=await userGet(supabaseUser.id);
-  const base={discord_id:discordId,username,global_name:globalName,avatar,updated_at:new Date().toISOString()};
-  if(!existing){base.xp=0;base.coins=0;base.role=ADMIN_IDS.has(discordId)?'admin':MODO_IDS.has(discordId)?'modo':'citoyen';base.joined_at=new Date().toISOString();}
-  else{if(ADMIN_IDS.has(discordId))base.role='admin';else if(MODO_IDS.has(discordId)&&existing.role!=='admin')base.role='modo';}
-  await userUpsert(supabaseUser.id,base);
-}
+  // Mettre à jour la session locale avec le rôle à jour
+  saveSession({ ...profile, role: _currentUserRole });
 
-async function handleUserSession(user) {
-  if (!user) return;
-  await upsertUserProfile(user);
-  const profile = await userGet(user.id);
-  _currentUserRole = profile?.role || 'citoyen';
-  _currentUserUID = user.id;
-  _currentUserXP = profile?.xp ?? 0;
-  _currentUserCoins = profile?.coins ?? 0;
-  _currentUserDiscordId = profile?.discord_id || '';
-  window._spinCurrentUID = user.id;
-  await loadUserPurchases(user.id);
-  await syncSpinCooldown(user.id);
-  renderConnectedState(user, profile);
+  await loadUserPurchases(uid);
+  await syncSpinCooldown(uid);
+  renderConnectedState(profile, dbProfile || profile);
   renderProfileLevel(_currentUserXP, _currentUserCoins);
   renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
   await loadLeaderboard();
-}
-
-// ══ CORRECTIF PRINCIPAL : onAuthStateChange gère la session restaurée ══
-sb.auth.onAuthStateChange(async(event, session) => {
-  console.log('[Timor] Auth event:', event, session?.user?.id ?? 'no user');
-
-  if (event === 'INITIAL_SESSION' && !session) return; // ← la seule vraie correction
-
-  if (session?.user) {
-    await handleUserSession(session.user);
-  } else if (event === 'SIGNED_OUT') {
-    _currentUserRole=null; _currentUserUID=null; _currentUserPurchases=[]; window._spinCurrentUID=null;
-    renderDisconnectedState();
-    renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
-    window.updateSpinUI();
-    await loadLeaderboard();
-  }
-});
-
-// ══ CORRECTIF PRINCIPAL : getSession() au chargement de la page ══
-// Lit la session depuis localStorage (écrite par callback.html)
-// et déclenche handleUserSession si une session valide existe.
-
-loadSiteData();
-
-function renderConnectedState(user,profile){
-  document.getElementById('auth-banner').style.display='none';
-  const name=escHtml(profile?.global_name||profile?.username||'Citoyen');
-  const xp=profile?.xp??0,coins=profile?.coins??0;
-  const role=profile?.role||'citoyen';
-  const lvl=getLevelFromXP(xp);
-  document.body.classList.toggle('is-admin',role==='admin');
-  document.body.classList.toggle('is-modo',role==='modo');
-  const adminPanel=document.getElementById('admin-panel');
-  if(adminPanel){adminPanel.classList.toggle('visible',role==='admin'||role==='modo');if(role==='admin'||role==='modo'){adminRefreshPlayers();adminLoadTutoEditor();adminLoadPaysEditor();adminLoadQuestsEditor();adminLoadShopEditor();adminLoadOrders();adminLoadLinksEditor();window.adminLoadSpinEditor();}}
-  let badge='';
-  if(role==='admin')badge='<span class="nav-role-badge role-admin">Admin</span>';
-  else if(role==='modo')badge='<span class="nav-role-badge role-modo">Modo</span>';
-  const navAuth=document.getElementById('nav-auth');
-  if(navAuth){navAuth.innerHTML='<div class="nav-user">'+(profile?.avatar?'<img src="'+profile.avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">':``)+'<span class="nav-username">'+name+'</span>'+badge+'<span class="nav-pill nav-level">Niv. '+lvl+'</span><span class="nav-pill nav-xp">'+xp.toLocaleString('fr-FR')+' XP</span><span class="nav-pill nav-coins">🪙 '+coins.toLocaleString('fr-FR')+'</span><button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';document.getElementById('btn-logout').addEventListener('click',logout);}
-  const dw=document.getElementById('dash-welcome');if(dw)dw.textContent='Bienvenue, '+(profile?.global_name||profile?.username||'Citoyen')+' !';
-}
-
-function renderDisconnectedState(){
-  const ab=document.getElementById('auth-banner');if(ab)ab.style.display='';
-  document.body.classList.remove('is-admin','is-modo');
-  const adminPanel=document.getElementById('admin-panel');if(adminPanel)adminPanel.classList.remove('visible');
-  const profileCard=document.getElementById('profile-level-card');if(profileCard)profileCard.style.display='none';
-  const dw=document.getElementById('dash-welcome');if(dw)dw.textContent='Tableau de bord';
-  const navAuth=document.getElementById('nav-auth');
-  if(navAuth){navAuth.innerHTML='<button class="btn-discord" id="btn-login"><svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>Connexion Discord</button>';document.getElementById('btn-login').addEventListener('click',loginWithDiscord);}
 }
 
 async function loadLeaderboard(force=false){
@@ -796,6 +777,35 @@ function _renderLeaderboard(rows){
 }
 
 async function loadUserPurchases(uid){try{const{data,error}=await sb.from('purchases').select('*').eq('uid',uid);if(error)throw error;_currentUserPurchases=data||[];}catch(e){_currentUserPurchases=[];}}
+
+function renderConnectedState(profile, dbProfile){
+  document.getElementById('auth-banner').style.display='none';
+  const name=escHtml(dbProfile?.global_name||dbProfile?.username||profile.global_name||profile.username||'Citoyen');
+  const xp=dbProfile?.xp??0, coins=dbProfile?.coins??0;
+  const role=dbProfile?.role||profile.role||'citoyen';
+  const lvl=getLevelFromXP(xp);
+  document.body.classList.toggle('is-admin',role==='admin');
+  document.body.classList.toggle('is-modo',role==='modo');
+  const adminPanel=document.getElementById('admin-panel');
+  if(adminPanel){adminPanel.classList.toggle('visible',role==='admin'||role==='modo');if(role==='admin'||role==='modo'){adminRefreshPlayers();adminLoadTutoEditor();adminLoadPaysEditor();adminLoadQuestsEditor();adminLoadShopEditor();adminLoadOrders();adminLoadLinksEditor();window.adminLoadSpinEditor();}}
+  let badge='';
+  if(role==='admin')badge='<span class="nav-role-badge role-admin">Admin</span>';
+  else if(role==='modo')badge='<span class="nav-role-badge role-modo">Modo</span>';
+  const avatar = dbProfile?.avatar || profile.avatar || '';
+  const navAuth=document.getElementById('nav-auth');
+  if(navAuth){navAuth.innerHTML='<div class="nav-user">'+(avatar?'<img src="'+avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">':``)+'<span class="nav-username">'+name+'</span>'+badge+'<span class="nav-pill nav-level">Niv. '+lvl+'</span><span class="nav-pill nav-xp">'+xp.toLocaleString('fr-FR')+' XP</span><span class="nav-pill nav-coins">🪙 '+coins.toLocaleString('fr-FR')+'</span><button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';document.getElementById('btn-logout').addEventListener('click',logout);}
+  const dw=document.getElementById('dash-welcome');if(dw)dw.textContent='Bienvenue, '+(dbProfile?.global_name||profile.global_name||'Citoyen')+' !';
+}
+
+function renderDisconnectedState(){
+  const ab=document.getElementById('auth-banner');if(ab)ab.style.display='';
+  document.body.classList.remove('is-admin','is-modo');
+  const adminPanel=document.getElementById('admin-panel');if(adminPanel)adminPanel.classList.remove('visible');
+  const profileCard=document.getElementById('profile-level-card');if(profileCard)profileCard.style.display='none';
+  const dw=document.getElementById('dash-welcome');if(dw)dw.textContent='Tableau de bord';
+  const navAuth=document.getElementById('nav-auth');
+  if(navAuth){navAuth.innerHTML='<button class="btn-discord" id="btn-login"><svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>Connexion Discord</button>';document.getElementById('btn-login').addEventListener('click',loginWithDiscord);}
+}
 
 window.openPurchaseModal=function(itemId){if(!_shop||!_currentUserUID)return;const item=(_shop.items||[]).find(i=>i.id===itemId);if(!item)return;_pendingPurchaseItem=item;document.getElementById('pm-icon').textContent=item.icon||'🛒';document.getElementById('pm-title').textContent=item.name||'Article';document.getElementById('pm-desc').textContent=item.desc||'';document.getElementById('pm-price').textContent=item.price===0?'🆓 Gratuit':'🪙 '+(item.price||0).toLocaleString('fr-FR')+' pièces';document.getElementById('pm-balance').textContent='Ton solde : 🪙 '+_currentUserCoins.toLocaleString('fr-FR')+' pièces';document.getElementById('pm-error').textContent='';document.getElementById('pm-confirm-btn').disabled=_currentUserCoins<(item.price||0);document.getElementById('purchase-overlay').classList.add('show');};
 window.closePurchaseModal=function(){document.getElementById('purchase-overlay').classList.remove('show');_pendingPurchaseItem=null;};
@@ -925,8 +935,26 @@ function setAdminFeedback(msg,type){const el=document.getElementById('admin-feed
 function setEl(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
 function setInputVal(id,val){var e=document.getElementById(id);if(e)e.value=val;}
 
-// ══ Exposer loginWithDiscord et logout globalement ══
 window.Timor = { loginWithDiscord, logout };
+
+// ══ INITIALISATION ══
+(async () => {
+  await loadSiteData();
+
+  // 1. Vérifier si Discord redirige avec un ?code=
+  const handled = await handleDiscordCallback();
+  if (handled) return; // session déjà chargée
+
+  // 2. Sinon, restaurer la session depuis localStorage
+  const savedSession = loadSession();
+  if (savedSession?.uid) {
+    console.log('[Timor] Session restaurée depuis localStorage:', savedSession.uid);
+    await handleUserSession(savedSession);
+  } else {
+    renderDisconnectedState();
+    await loadLeaderboard();
+  }
+})();
 </script>
 
 <!-- ════ UI HELPERS ════ -->
