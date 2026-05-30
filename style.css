@@ -561,7 +561,7 @@ nav {
   visibility: visible;
   animation: fadeUp 0.3s ease;
 }
-.quests-inner { max-width: 760px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+.quests-inner { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 4rem;}
 
 .quests-back {
   font-size: 0.78rem; font-weight: 600; color: var(--text-dim);
@@ -634,12 +634,12 @@ nav {
 /* Carte de quête */
 .quest-card {
   background: var(--dark2); border: 1px solid var(--border);
-  border-radius: 16px; padding: 1.25rem 1.5rem;
-  display: flex; align-items: flex-start; gap: 1rem;
+  border-radius: 14px; padding: 10px 8px;
+  display: flex; flex-direction: column; align-items: center;
   transition: all 0.25s;
   animation: questSlideIn 0.3s ease both;
 }
-.quest-card:hover { border-color: var(--border-md); transform: translateX(3px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+.quest-card:hover { border-color: var(--border-md); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
 .quest-card.done {
   border-color: rgba(82,201,122,0.25);
   background: rgba(82,201,122,0.03);
