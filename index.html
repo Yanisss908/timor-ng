@@ -1340,9 +1340,12 @@ function renderQuestsList(quests, cat, done) {
   el.innerHTML = filtered.map(q => {
     const isDone = done.includes(q.id);
     const col = CAT_COLORS[q.cat] || '#4a7fa5';
-    const btn = isDone
-      ? `<div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--success);">✅ Accomplie</div>`
-      : `<button class="quest-claim-btn" style="width:100%;font-size:0.65rem;padding:5px 4px;" onclick="claimQuest('${esc(q.id)}',${parseInt(q.xp)||0},${parseInt(q.coins)||0})">+${q.xp} XP</button>`;
+    const needsProof = q.proof === 'proof';
+const btn = isDone
+  ? `<div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--success);">✅ Accomplie</div>`
+  : needsProof
+    ? `<button class="quest-claim-btn" style="width:100%;font-size:0.65rem;padding:5px 4px;background:rgba(74,127,165,0.85);" onclick="openProofModal('${esc(q.id)}',${parseInt(q.xp)||0},${parseInt(q.coins)||0})">📸 Preuve</button>`
+    : `<button class="quest-claim-btn" style="width:100%;font-size:0.65rem;padding:5px 4px;" onclick="claimQuest('${esc(q.id)}',${parseInt(q.xp)||0},${parseInt(q.coins)||0})">+${q.xp} XP</button>`;
     return `<div class="quest-card${isDone ? ' done' : ''}">
       <div style="width:38px;height:38px;border-radius:10px;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin:0 auto 8px;">${esc(q.icon || '⚔️')}</div>
       <div style="font-size:0.75rem;font-weight:600;text-align:center;color:var(--text);margin-bottom:4px;line-height:1.3;">${esc(q.title)}</div>
