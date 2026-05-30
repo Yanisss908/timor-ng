@@ -473,8 +473,7 @@ const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage: window.localStorage,
     persistSession: true,
     detectSessionInUrl: true,
-    autoRefreshToken: true,
-    storageKey: 'timor-auth'
+    autoRefreshToken: true
   }
 });
 window._sb = _sb;
