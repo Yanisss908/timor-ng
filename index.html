@@ -470,7 +470,7 @@ const MODO_IDS  = new Set([]);
 
 const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storage: window.sessionStorage,
+    storage: window.localStorage,
     persistSession: true,
     detectSessionInUrl: true,
     autoRefreshToken: true,
