@@ -468,13 +468,21 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const ADMIN_IDS = new Set(['1407099669271810159']);
 const MODO_IDS  = new Set([]);
 
+// Storage custom qui ne plante pas si localStorage est bloqué
+const _safeStorage = {
+  _data: {},
+  getItem(k) { try { return localStorage.getItem(k); } catch(e) { return this._data[k] ?? null; } },
+  setItem(k, v) { try { localStorage.setItem(k, v); } catch(e) { this._data[k] = v; } },
+  removeItem(k) { try { localStorage.removeItem(k); } catch(e) { delete this._data[k]; } },
+};
+
 const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storage: window.localStorage,
+    storage: _safeStorage,
     persistSession: true,
     detectSessionInUrl: true,
     autoRefreshToken: true,
-    flowType: 'implicit'   
+    flowType: 'implicit'
   }
 });
 window._sb = _sb;
