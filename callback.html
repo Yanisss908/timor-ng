@@ -64,7 +64,7 @@
 <body>
   <div class="logo">TI<span>MOR</span></div>
   <div class="status" id="status">
-    <div class="spinner"></div>
+    <div class="spinner" id="spinner"></div>
     <span id="status-text">Connexion en cours…</span>
   </div>
   <div class="error" id="error-box"></div>
@@ -75,64 +75,72 @@
     const SUPABASE_URL      = 'https://hhirhrvyqzkdezjenpdr.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoaXJocnZ5cXprZGV6amVucGRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTI1NzYsImV4cCI6MjA5NTY2ODU3Nn0.4AbQlyhoZPOWMTgzLCSL-8590ZuOhF8uKP2Wp9SGGZc';
 
-    // Stockage robuste : sessionStorage + mémoire en fallback
+    // ══ Storage UNIQUEMENT localStorage — partagé entre tous les onglets du même domaine ══
     const _store = {
       _mem: {},
-      getItem(k)    { try { return sessionStorage.getItem(k); } catch(e) {} return this._mem[k] ?? null; },
-      setItem(k, v) { try { sessionStorage.setItem(k, v); } catch(e) {} try { localStorage.setItem(k, v); } catch(e) {} this._mem[k] = v; },
-      removeItem(k) { try { sessionStorage.removeItem(k); } catch(e) {} try { localStorage.removeItem(k); } catch(e) {} delete this._mem[k]; },
+      getItem(k) {
+        try { const v = localStorage.getItem(k); if (v !== null) return v; } catch(e) {}
+        return this._mem[k] ?? null;
+      },
+      setItem(k, v) {
+        try { localStorage.setItem(k, v); } catch(e) {}
+        this._mem[k] = v;
+      },
+      removeItem(k) {
+        try { localStorage.removeItem(k); } catch(e) {}
+        delete this._mem[k];
+      },
     };
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         storage:            _store,
         persistSession:     true,
-        detectSessionInUrl: true,   // <-- détecte le ?code= dans l'URL
+        detectSessionInUrl: true,   // détecte le ?code= dans l'URL et échange automatiquement
         autoRefreshToken:   true,
-        flowType:           'pkce'  // <-- PKCE, pas implicit
+        flowType:           'pkce'
       }
     });
 
     async function handleCallback() {
       const statusText = document.getElementById('status-text');
-      const errorBox   = document.getElementById('error-box');
-      const btnRetry   = document.getElementById('btn-retry');
 
       try {
         statusText.textContent = 'Échange du code OAuth…';
 
-        // Supabase detectSessionInUrl=true va automatiquement échanger le ?code=
-        // On attend juste que la session soit prête
+        // Supabase avec detectSessionInUrl=true échange automatiquement le ?code=
+        // getSession() attend que cet échange soit terminé
         const { data, error } = await sb.auth.getSession();
 
         if (error) throw error;
 
         if (data?.session) {
           statusText.textContent = 'Connecté ! Redirection…';
-          // Légère pause pour que le storage soit bien écrit
           setTimeout(() => {
-            window.location.href = 'https://yanisss908.github.io/timor-ng/';
-          }, 600);
+            window.location.replace('https://yanisss908.github.io/timor-ng/');
+          }, 500);
           return;
         }
 
-        // Pas de session immédiate → écouter l'événement
+        // Pas de session immédiate → écouter l'événement SIGNED_IN
         statusText.textContent = 'Finalisation…';
-        sb.auth.onAuthStateChange((event, session) => {
+
+        const { data: { subscription } } = sb.auth.onAuthStateChange((event, session) => {
           if (event === 'SIGNED_IN' && session) {
+            subscription.unsubscribe();
             statusText.textContent = 'Connecté ! Redirection…';
             setTimeout(() => {
-              window.location.href = 'https://yanisss908.github.io/timor-ng/';
-            }, 600);
+              window.location.replace('https://yanisss908.github.io/timor-ng/');
+            }, 500);
           }
         });
 
-        // Timeout de sécurité
+        // Timeout de sécurité : 12 secondes
         setTimeout(() => {
-          if (document.getElementById('status-text').textContent !== 'Connecté ! Redirection…') {
+          if (!statusText.textContent.includes('Redirection')) {
             showError('La connexion a pris trop de temps. Essaie de te reconnecter.');
           }
-        }, 10000);
+        }, 12000);
 
       } catch (err) {
         console.error('[Callback] Erreur:', err);
@@ -141,7 +149,7 @@
     }
 
     function showError(msg) {
-      document.getElementById('spinner') && (document.querySelector('.spinner').style.display = 'none');
+      document.getElementById('spinner').style.display = 'none';
       const errorBox = document.getElementById('error-box');
       const btnRetry = document.getElementById('btn-retry');
       errorBox.textContent = msg;
