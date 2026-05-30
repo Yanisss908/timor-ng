@@ -499,7 +499,8 @@ const _safeStorage = {
     const params = new URLSearchParams(hash.substring(1));
     const at  = params.get('access_token');
     const rt  = params.get('refresh_token') || '';
-    const exp = parseInt(params.get('expires_at') || '0', 10) || Math.floor(Date.now() / 1000) + 3600;
+    const exp = parseInt(params.get('expires_at') || '0', 10)
+                || Math.floor(Date.now() / 1000) + 3600;
     if (!at) return;
     const sessionKey = 'sb-hhirhrvyqzkdezjenpdr-auth-token';
     const sessionData = JSON.stringify({
@@ -509,18 +510,16 @@ const _safeStorage = {
       token_type:    'bearer',
       user:          null
     });
-    // Écrire dans tous les storages disponibles
     try { localStorage.setItem(sessionKey, sessionData);   } catch(e) {}
     try { sessionStorage.setItem(sessionKey, sessionData); } catch(e) {}
     _safeStorage._data[sessionKey] = sessionData;
-    // Nettoyer le hash de l'URL sans rechargement de page
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    console.log('[Timor] Token OAuth intercepté et injecté dans le storage ✓');
+    // Nettoyer l'URL
+    window.history.replaceState(null, '', window.location.pathname);
+    console.log('[Timor] Token OAuth intercepté ✓');
   } catch(e) {
     console.warn('[Timor] patchHashToken error:', e);
   }
 })();
-
 // ─── Initialisation Supabase (flow implicit, storage robuste) ─────────────────
 const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
