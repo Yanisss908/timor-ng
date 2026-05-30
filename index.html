@@ -181,10 +181,6 @@
   <!-- ADMIN PANEL -->
   <div class="admin-section" id="admin-panel">
     <div class="admin-title">⚔ Panneau Administrateur</div>
-    <div class="rules-alert" id="rules-alert" style="display:none;">
-      <strong>⚠ Règles Firestore insuffisantes</strong>
-      Vérifie les règles Firestore pour <code>sitedata/{docId}</code>.
-    </div>
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="switchAdminTab('joueurs',this)">👤 Joueurs</button>
       <button class="admin-tab has-notif" id="tab-orders-btn" onclick="switchAdminTab('orders',this)">📦 Commandes <span class="orders-count-badge" id="orders-pending-count" style="display:none;">0</span></button>
@@ -461,6 +457,20 @@
   <a href="#" onclick="showSection('accueil');return false;">Accueil</a>
 </footer>
 
+<!-- ════ SUPABASE CLIENT ════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ─── CONFIGURATION — remplace par tes vraies valeurs ───────────────────────
+const SUPABASE_URL      = 'https://hhirhrvyqzkdezjenpdr.supabase.co';
+const SUPABASE_ANON_KEY = 'REMPLACE_PAR_TA_PUBLISHABLE_KEY';
+// ────────────────────────────────────────────────────────────────────────────
+
+const ADMIN_IDS = new Set(['1407099669271810159']);
+const MODO_IDS  = new Set([]);
+
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
 <!-- ════ LEVEL SYSTEM ════ -->
 <script>
 var LEVELS = [
@@ -593,7 +603,7 @@ async function onSpinEnd(winner){
   if(resultBanner)resultBanner.classList.add("show");
   showToast(winner.type==="nothing"?"😶 Pas de chance aujourd'hui !":winner.icon+" "+winner.label+" gagné !");
 }
-window.grantSpinReward=async function(winner){};
+window.grantSpinReward=async function(){};// override dans le module principal
 function launchConfetti(){
   var canvas=document.getElementById("confetti-canvas");if(!canvas)return;
   canvas.width=window.innerWidth;canvas.height=window.innerHeight;
@@ -610,36 +620,27 @@ window.adminSaveSpinPrizes=async function(){
   var prizes=raw.map(function(line){var p=line.split("|");return{label:(p[0]||"Lot").trim(),type:(p[1]||"nothing").trim(),value:parseInt(p[2]||"0",10)||0,color:(p[3]||"#252538").trim(),weight:parseInt(p[4]||"10",10)||10,icon:(p[5]||"🎁").trim()};});
   if(prizes.length<2){if(fbEl){fbEl.textContent="Minimum 2 lots requis.";fbEl.className="admin-feedback err";}return;}
   fbEl.textContent="Sauvegarde…";fbEl.className="admin-feedback";
-  try{await window._adminSaveSpinPrizesFirebase(prizes);_spinPrizes=prizes;drawWheel(_spinCurrentAngle);buildPrizeLegend();fbEl.textContent="✓ Lots sauvegardés !";fbEl.className="admin-feedback ok";showToast("Roulette mise à jour !");}
+  try{await window._adminSaveSpinPrizesSupabase(prizes);_spinPrizes=prizes;drawWheel(_spinCurrentAngle);buildPrizeLegend();fbEl.textContent="✓ Lots sauvegardés !";fbEl.className="admin-feedback ok";showToast("Roulette mise à jour !");}
   catch(err){fbEl.textContent="Erreur: "+err.message;fbEl.className="admin-feedback err";}
 };
 window.adminResetSpinDefault=function(){_spinPrizes=DEFAULT_SPIN_PRIZES.slice();adminLoadSpinEditor();drawWheel(_spinCurrentAngle);buildPrizeLegend();showToast("Lots réinitialisés (non sauvegardé).");};
 window.addEventListener("DOMContentLoaded",function(){updateSpinUI();startCooldownTimer();drawWheel(0);});
 </script>
 
-<!-- ════ FIREBASE + DISCORD ════ -->
+<!-- ════ SUPABASE + DISCORD ════ -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithCustomToken, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, orderBy, query, limit, addDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// ─── Helpers Supabase (raccourcis) ────────────────────────────────────────
+const sb = window._sb;
 
-const FIREBASE_CONFIG={apiKey:"AIzaSyCuJB4TvWad3_7hpKHpIYAlcjYKrNdt49U",authDomain:"timor-ng-5f6f7.firebaseapp.com",projectId:"timor-ng-5f6f7",storageBucket:"timor-ng-5f6f7.firebasestorage.app",messagingSenderId:"827878800488",appId:"1:827878800488:web:bebd23cc03139bfd0ecfdd"};
-const DISCORD_CLIENT_ID="1508123459782443260";
-const DISCORD_REDIRECT_URI="https://yanisss908.github.io/timor-ng/discord-callback.html";
-const DISCORD_SCOPES="identify guilds.members.read";
-const EXCHANGE_URL="https://timor-discord-auth.yanismanca66.workers.dev/";
-const ADMIN_IDS=new Set(["1407099669271810159"]);
-const MODO_IDS=new Set([]);
+const ADMIN_IDS = window.ADMIN_IDS || new Set(['1407099669271810159']);
+const MODO_IDS  = window.MODO_IDS  || new Set([]);
 
-const app=initializeApp(FIREBASE_CONFIG);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-const DEFAULT_TUTOS=[];
-const DEFAULT_PAYS={membres:"142",rang:"#3",fondation:"[Année]",herodesc:"Nation fondée sur la discipline, le commerce et la solidarité.",paydesc:"Timor est une nation bâtie sur trois piliers : la discipline, le commerce et la fraternité.",gouv:[{init:"PR",nom:"[Président]",role:"Président de Timor",badge:"Chef d'État"},{init:"VP",nom:"[Vice-Président]",role:"Vice-Président",badge:"Gouvernement"}]};
-const DEFAULT_SHOP={items:[]};
-const DEFAULT_QUESTS={title:"⚔️ Quêtes",desc:"Accomplis des missions pour gagner de l'XP et des récompenses.",quests:[]};
-const DEFAULT_QUESTS_EXAMPLES=[
+// Valeurs par défaut (même qu'avant)
+const DEFAULT_TUTOS   = [];
+const DEFAULT_PAYS    = {membres:"142",rang:"#3",fondation:"[Année]",herodesc:"Nation fondée sur la discipline, le commerce et la solidarité.",paydesc:"Timor est une nation bâtie sur trois piliers : la discipline, le commerce et la fraternité.",gouv:[{init:"PR",nom:"[Président]",role:"Président de Timor",badge:"Chef d'État"},{init:"VP",nom:"[Vice-Président]",role:"Vice-Président",badge:"Gouvernement"}]};
+const DEFAULT_SHOP    = {items:[]};
+const DEFAULT_QUESTS  = {title:"⚔️ Quêtes",desc:"Accomplis des missions pour gagner de l'XP et des récompenses.",quests:[]};
+const DEFAULT_QUESTS_EXAMPLES = [
   "Rejoindre le Discord|Rejoins le serveur Discord officiel de Timor|100|50|Débutant|💬",
   "Se présenter|Présente-toi dans le canal #présentations|150|75|Débutant|📝",
   "Premier achat|Achète un article dans la boutique|200|100|Intermédiaire|🛒",
@@ -648,463 +649,885 @@ const DEFAULT_QUESTS_EXAMPLES=[
   "Recruter un membre|Amène un nouveau joueur à rejoindre Timor|1000|500|Avancé|🤝",
 ];
 
-let _tutos=null,_pays=null,_quests=null,_shop=null,_quickLinks=null;
-let _currentUserRole=null,_currentUserUID=null,_currentUserXP=0,_currentUserCoins=0,_currentUserPurchases=[];
+// ─── État global ──────────────────────────────────────────────────────────
+let _tutos=null, _pays=null, _quests=null, _shop=null, _quickLinks=null;
+let _currentUserRole=null, _currentUserUID=null, _currentUserXP=0, _currentUserCoins=0;
+let _currentUserPurchases=[], _currentUserDiscordId=null;
 let _pendingPurchaseItem=null;
-let _allOrders=[],_ordersFilter='pending';
-let _lbCache=null,_lbTs=0;
-const LB_CACHE_TTL=6*60*60*1000;
+let _allOrders=[], _ordersFilter='pending';
+let _lbCache=null, _lbTs=0;
+const LB_CACHE_TTL = 6*60*60*1000;
 
-function getLevelFromXP(xp){for(let i=19;i>=0;i--){const XPS=[0,300,700,1300,2100,3200,4700,6600,9000,12000,16000,21000,27000,34500,43500,54000,66500,81000,98000,118000];if(xp>=XPS[i])return i+1;}return 1;}
+// ─── Helpers DB Supabase ──────────────────────────────────────────────────
 
-/* ════ SPIN Firebase ════ */
-window._spinCurrentUID=null;
-window.grantSpinReward=async function(winner){
-  const uid=_currentUserUID;if(!uid||winner.type==="nothing")return;
-  try{
-    const ref=doc(db,"users",uid),snap=await getDoc(ref);if(!snap.exists())return;
-    const profile=snap.data(),oldXP=profile.xp||0,oldCoins=profile.coins||0;
-    const updData={lastSpinAt:new Date().toISOString()};
-    if(winner.type==="xp"){
-      const newXP=oldXP+winner.value;updData.xp=newXP;
-      const oldLvl=getLevelFromXP(oldXP),newLvl=getLevelFromXP(newXP);
-      let coinsBonus=0;if(newLvl>oldLvl){for(let l=oldLvl+1;l<=newLvl;l++){const ld=window.LEVELS?window.LEVELS[l-1]:null;if(ld)coinsBonus+=ld.coins;}updData.coins=oldCoins+coinsBonus;}
-      await updateDoc(ref,updData);_currentUserXP=newXP;if(coinsBonus>0)_currentUserCoins=oldCoins+coinsBonus;
-      renderProfileLevel(_currentUserXP,_currentUserCoins);if(newLvl>oldLvl)checkLevelUp(oldXP,newXP);
-      const navXpEl=document.querySelector(".nav-xp");if(navXpEl)navXpEl.textContent=_currentUserXP.toLocaleString("fr-FR")+" XP";
-      const navLvlEl=document.querySelector(".nav-level");if(navLvlEl)navLvlEl.textContent="Niv. "+getLevelFromXP(_currentUserXP);
-    }else if(winner.type==="coins"){
-      const newCoins=oldCoins+winner.value;updData.coins=newCoins;await updateDoc(ref,updData);_currentUserCoins=newCoins;
-      renderProfileLevel(_currentUserXP,_currentUserCoins);
-      const navCoinsEl=document.querySelector(".nav-coins");if(navCoinsEl)navCoinsEl.textContent="🪙 "+newCoins.toLocaleString("fr-FR");
-      const shopNum=document.getElementById("shop-balance-num");if(shopNum)shopNum.textContent=newCoins.toLocaleString("fr-FR");
+/** Lire une clé dans sitedata */
+async function sdGet(key) {
+  const { data, error } = await sb.from('sitedata').select('value').eq('key', key).single();
+  if (error) return null;
+  return data?.value ?? null;
+}
+
+/** Écrire une clé dans sitedata (upsert) */
+async function sdSet(key, value) {
+  const { error } = await sb.from('sitedata').upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (error) throw error;
+}
+
+/** Lire le profil utilisateur */
+async function userGet(uid) {
+  const { data, error } = await sb.from('users').select('*').eq('id', uid).single();
+  if (error) return null;
+  return data;
+}
+
+/** Créer ou mettre à jour le profil utilisateur */
+async function userUpsert(uid, fields) {
+  const { error } = await sb.from('users').upsert({ id: uid, ...fields, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+  if (error) throw error;
+}
+
+/** Mettre à jour certains champs utilisateur */
+async function userUpdate(uid, fields) {
+  const { error } = await sb.from('users').update({ ...fields, updated_at: new Date().toISOString() }).eq('id', uid);
+  if (error) throw error;
+}
+
+// ─── Cache sitedata ───────────────────────────────────────────────────────
+const SITEDATA_CACHE_KEY = 'timor_sitedata_v3_supabase';
+function invalidateSitedataCache() { try { sessionStorage.removeItem(SITEDATA_CACHE_KEY); } catch(e) {} }
+
+async function loadSiteData() {
+  try {
+    const cached = sessionStorage.getItem(SITEDATA_CACHE_KEY);
+    if (cached) {
+      const d = JSON.parse(cached);
+      _tutos=d.tutos; _pays=d.pays; _quests=d.quests; _shop=d.shop; _quickLinks=d.quickLinks||[];
+      renderTutos(); renderPays(); renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
+      await loadSpinPrizes();
+      return;
     }
-    window.setLastSpinTime(Date.now());await loadLeaderboard(true);
-  }catch(err){console.error("Spin reward error:",err.message);}
-};
-window._adminSaveSpinPrizesFirebase=async function(prizes){await setDoc(doc(db,"sitedata","spinprizes"),{prizes});};
-async function loadSpinPrizes(){try{const snap=await getDoc(doc(db,"sitedata","spinprizes"));if(snap.exists()&&snap.data().prizes&&snap.data().prizes.length>=2)window._spinPrizes=snap.data().prizes;}catch(e){}window.drawWheel(window._spinCurrentAngle||0);window.buildPrizeLegend();}
-async function syncSpinCooldown(uid){try{const snap=await getDoc(doc(db,"users",uid));if(snap.exists()&&snap.data().lastSpinAt){const fsTs=new Date(snap.data().lastSpinAt).getTime(),localTs=window.getLastSpinTime?window.getLastSpinTime():0;if(fsTs>localTs)window.setLastSpinTime(fsTs);}}catch(e){}window.updateSpinUI();window.startCooldownTimer();}
+  } catch(e) {}
 
-/* ════ Cache sitedata ════ */
-const SITEDATA_CACHE_KEY="timor_sitedata_v2";
-async function loadSiteData(){
-  try{const cached=sessionStorage.getItem(SITEDATA_CACHE_KEY);if(cached){const d=JSON.parse(cached);_tutos=d.tutos;_pays=d.pays;_quests=d.quests;_shop=d.shop;_quickLinks=d.quickLinks||[];renderTutos();renderPays();renderQuests();renderShop();renderQuickLinks(_quickLinks);await loadSpinPrizes();return;}}catch(e){}
-  try{
-    const[tS,pS,qS,sS,qlS]=await Promise.all([getDoc(doc(db,"sitedata","tutos")),getDoc(doc(db,"sitedata","pays")),getDoc(doc(db,"sitedata","quests")),getDoc(doc(db,"sitedata","shop")),getDoc(doc(db,"sitedata","quicklinks"))]);
-    _tutos=tS.exists()?tS.data().list:DEFAULT_TUTOS;
-    _pays=pS.exists()?pS.data():DEFAULT_PAYS;
-    _quests=qS.exists()?qS.data():DEFAULT_QUESTS;
-    _shop=sS.exists()?sS.data():DEFAULT_SHOP;
-    _quickLinks=qlS.exists()?(qlS.data().links||[]):[];
-    try{sessionStorage.setItem(SITEDATA_CACHE_KEY,JSON.stringify({tutos:_tutos,pays:_pays,quests:_quests,shop:_shop,quickLinks:_quickLinks}));}catch(e){}
-  }catch(e){console.warn(e.message);_tutos=DEFAULT_TUTOS;_pays=DEFAULT_PAYS;_quests=DEFAULT_QUESTS;_shop=DEFAULT_SHOP;_quickLinks=[];}
-  renderTutos();renderPays();renderQuests();renderShop();renderQuickLinks(_quickLinks);
+  try {
+    const [tVal, pVal, qVal, sVal, qlVal] = await Promise.all([
+      sdGet('tutos'), sdGet('pays'), sdGet('quests'), sdGet('shop'), sdGet('quicklinks')
+    ]);
+    _tutos      = tVal?.list     ?? DEFAULT_TUTOS;
+    _pays       = pVal           ?? DEFAULT_PAYS;
+    _quests     = qVal           ?? DEFAULT_QUESTS;
+    _shop       = sVal           ?? DEFAULT_SHOP;
+    _quickLinks = qlVal?.links   ?? [];
+    try { sessionStorage.setItem(SITEDATA_CACHE_KEY, JSON.stringify({tutos:_tutos,pays:_pays,quests:_quests,shop:_shop,quickLinks:_quickLinks})); } catch(e) {}
+  } catch(e) {
+    console.warn('loadSiteData error:', e.message);
+    _tutos=DEFAULT_TUTOS; _pays=DEFAULT_PAYS; _quests=DEFAULT_QUESTS; _shop=DEFAULT_SHOP; _quickLinks=[];
+  }
+  renderTutos(); renderPays(); renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
   await loadSpinPrizes();
 }
-function invalidateSitedataCache(){try{sessionStorage.removeItem(SITEDATA_CACHE_KEY);}catch(e){}}
 
-/* ════ QUÊTES ════ */
-function getQuestStorageKey(){return"timor_quests_done_"+(_currentUserUID||"anon");}
-function loadQuestsDone(){try{return JSON.parse(localStorage.getItem(getQuestStorageKey())||"[]");}catch(e){return[];}}
-function saveQuestsDone(arr){try{localStorage.setItem(getQuestStorageKey(),JSON.stringify(arr));}catch(e){}}
+// ─── SPIN Supabase ────────────────────────────────────────────────────────
+window._spinCurrentUID = null;
 
-function renderQuests(){
-  if(!_quests)return;
-  const d=_quests;
-  setEl("quests-main-title",d.title||DEFAULT_QUESTS.title);
-  setEl("quests-subtitle",d.desc||DEFAULT_QUESTS.desc);
-  const authNotice=document.getElementById("quests-auth-notice");
-  if(authNotice)authNotice.classList.toggle("visible",!_currentUserUID);
-  const quests=d.quests||[];
-  const done=loadQuestsDone();
-  const doneCount=quests.filter(q=>done.includes(q.id)).length;
-  const pct=quests.length>0?Math.round((doneCount/quests.length)*100):0;
-  const fillEl=document.getElementById("quests-progress-fill");if(fillEl)fillEl.style.width=pct+"%";
-  const labelEl=document.getElementById("quests-progress-label");if(labelEl)labelEl.textContent=doneCount+" / "+quests.length+" quêtes accomplies";
-  // Teaser stats
-  const teaserStats=document.getElementById("quests-teaser-stats");
-  if(teaserStats)teaserStats.textContent=doneCount+" / "+quests.length+" accomplies · "+pct+"% complété";
-  // Categories
-  const cats=[...new Set(quests.map(q=>q.cat||"Générale"))];
-  const catsEl=document.getElementById("quests-categories");
-  if(catsEl){
-    catsEl.innerHTML='<button class="quest-cat-btn active" onclick="filterQuestsCat(\'Toutes\',this)">Toutes</button>'+
-      cats.map(c=>'<button class="quest-cat-btn" onclick="filterQuestsCat(\''+escHtml(c)+'\',this)">'+escHtml(c)+'</button>').join("");
+window.grantSpinReward = async function(winner) {
+  const uid = _currentUserUID;
+  if (!uid || winner.type === 'nothing') return;
+  try {
+    const profile = await userGet(uid);
+    if (!profile) return;
+    const oldXP = profile.xp || 0, oldCoins = profile.coins || 0;
+    const upd = { last_spin_at: new Date().toISOString() };
+    if (winner.type === 'xp') {
+      const newXP = oldXP + winner.value;
+      upd.xp = newXP;
+      const oldLvl = getLevelFromXP(oldXP), newLvl = getLevelFromXP(newXP);
+      let bonus = 0;
+      if (newLvl > oldLvl) { for (let l=oldLvl+1;l<=newLvl;l++) { const ld=window.LEVELS?window.LEVELS[l-1]:null; if(ld) bonus+=ld.coins; } upd.coins = oldCoins + bonus; }
+      await userUpdate(uid, upd);
+      _currentUserXP = newXP;
+      if (bonus > 0) _currentUserCoins = oldCoins + bonus;
+      renderProfileLevel(_currentUserXP, _currentUserCoins);
+      if (newLvl > oldLvl) checkLevelUp(oldXP, newXP);
+    } else if (winner.type === 'coins') {
+      const newCoins = oldCoins + winner.value;
+      upd.coins = newCoins;
+      await userUpdate(uid, upd);
+      _currentUserCoins = newCoins;
+      renderProfileLevel(_currentUserXP, _currentUserCoins);
+      const shopNum = document.getElementById('shop-balance-num'); if (shopNum) shopNum.textContent = newCoins.toLocaleString('fr-FR');
+      const navC = document.querySelector('.nav-coins'); if (navC) navC.textContent = '🪙 '+newCoins.toLocaleString('fr-FR');
+    }
+    window.setLastSpinTime(Date.now());
+    await loadLeaderboard(true);
+  } catch(err) { console.error('Spin reward error:', err.message); }
+};
+
+window._adminSaveSpinPrizesSupabase = async function(prizes) {
+  await sdSet('spinprizes', { prizes });
+};
+
+async function loadSpinPrizes() {
+  try {
+    const val = await sdGet('spinprizes');
+    if (val?.prizes?.length >= 2) window._spinPrizes = val.prizes;
+  } catch(e) {}
+  window.drawWheel(window._spinCurrentAngle || 0);
+  window.buildPrizeLegend();
+}
+
+async function syncSpinCooldown(uid) {
+  try {
+    const profile = await userGet(uid);
+    if (profile?.last_spin_at) {
+      const fsTs = new Date(profile.last_spin_at).getTime();
+      const localTs = window.getLastSpinTime ? window.getLastSpinTime() : 0;
+      if (fsTs > localTs) window.setLastSpinTime(fsTs);
+    }
+  } catch(e) {}
+  window.updateSpinUI();
+  window.startCooldownTimer();
+}
+
+// ─── Discord OAuth via Supabase ───────────────────────────────────────────
+function loginWithDiscord() {
+  sb.auth.signInWithOAuth({
+    provider: 'discord',
+    options: { redirectTo: 'https://yanisss908.github.io/timor-ng/discord-callback.html' }
+  });
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  document.body.classList.remove('is-admin', 'is-modo');
+  showToast('Déconnecté.');
+}
+
+/** Créer/mettre à jour le profil dans la table users depuis les metadata Supabase */
+async function upsertUserProfile(supabaseUser) {
+  const meta = supabaseUser.user_metadata || {};
+  const discordId = meta.provider_id || meta.sub || '';
+  const avatar = meta.avatar_url || '';
+  const username = meta.full_name || meta.name || meta.user_name || 'Citoyen';
+  const globalName = meta.full_name || meta.name || username;
+
+  const existing = await userGet(supabaseUser.id);
+  const base = {
+    discord_id: discordId,
+    username,
+    global_name: globalName,
+    avatar,
+    updated_at: new Date().toISOString(),
+  };
+  if (!existing) {
+    base.xp = 0;
+    base.coins = 0;
+    base.role = ADMIN_IDS.has(discordId) ? 'admin' : MODO_IDS.has(discordId) ? 'modo' : 'citoyen';
+    base.joined_at = new Date().toISOString();
+  } else {
+    if (ADMIN_IDS.has(discordId)) base.role = 'admin';
+    else if (MODO_IDS.has(discordId) && existing.role !== 'admin') base.role = 'modo';
   }
-  renderQuestsList(quests,"Toutes",done);
+  await userUpsert(supabaseUser.id, base);
+}
+
+// ─── Auth listener ────────────────────────────────────────────────────────
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    const user = session.user;
+    await upsertUserProfile(user);
+    const profile = await userGet(user.id);
+    _currentUserRole    = profile?.role    || 'citoyen';
+    _currentUserUID     = user.id;
+    _currentUserXP      = profile?.xp      ?? 0;
+    _currentUserCoins   = profile?.coins   ?? 0;
+    _currentUserDiscordId = profile?.discord_id || '';
+    window._spinCurrentUID = user.id;
+
+    await loadUserPurchases(user.id);
+    await syncSpinCooldown(user.id);
+    renderConnectedState(user, profile);
+    renderProfileLevel(_currentUserXP, _currentUserCoins);
+    renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
+    await loadLeaderboard();
+  } else {
+    _currentUserRole = null; _currentUserUID = null;
+    _currentUserPurchases = []; window._spinCurrentUID = null;
+    renderDisconnectedState();
+    renderQuests(); renderShop(); renderQuickLinks(_quickLinks);
+    window.updateSpinUI();
+    await loadLeaderboard();
+  }
+});
+
+// Lancer le chargement des données publiques
+loadSiteData();
+
+// ─── UI : connecté / déconnecté ───────────────────────────────────────────
+function renderConnectedState(user, profile) {
+  document.getElementById('auth-banner').style.display = 'none';
+  const name = escHtml(profile?.global_name || profile?.username || 'Citoyen');
+  const xp = profile?.xp ?? 0, coins = profile?.coins ?? 0;
+  const role = profile?.role || 'citoyen';
+  const lvl = getLevelFromXP(xp);
+  document.body.classList.toggle('is-admin', role === 'admin');
+  document.body.classList.toggle('is-modo',  role === 'modo');
+
+  const adminPanel = document.getElementById('admin-panel');
+  if (adminPanel) {
+    adminPanel.classList.toggle('visible', role === 'admin' || role === 'modo');
+    if (role === 'admin' || role === 'modo') {
+      adminRefreshPlayers(); adminLoadTutoEditor(); adminLoadPaysEditor();
+      adminLoadQuestsEditor(); adminLoadShopEditor(); adminLoadOrders();
+      adminLoadLinksEditor(); window.adminLoadSpinEditor();
+    }
+  }
+  let badge = '';
+  if (role === 'admin') badge = '<span class="nav-role-badge role-admin">Admin</span>';
+  else if (role === 'modo') badge = '<span class="nav-role-badge role-modo">Modo</span>';
+
+  const navAuth = document.getElementById('nav-auth');
+  if (navAuth) {
+    navAuth.innerHTML = '<div class="nav-user">'+(profile?.avatar ? '<img src="'+profile.avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">' : '')+
+      '<span class="nav-username">'+name+'</span>'+badge+
+      '<span class="nav-pill nav-level">Niv. '+lvl+'</span>'+
+      '<span class="nav-pill nav-xp">'+xp.toLocaleString('fr-FR')+' XP</span>'+
+      '<span class="nav-pill nav-coins">🪙 '+coins.toLocaleString('fr-FR')+'</span>'+
+      '<button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';
+    document.getElementById('btn-logout').addEventListener('click', logout);
+  }
+  const dw = document.getElementById('dash-welcome');
+  if (dw) dw.textContent = 'Bienvenue, '+(profile?.global_name || profile?.username || 'Citoyen')+' !';
+}
+
+function renderDisconnectedState() {
+  document.getElementById('auth-banner').style.display = '';
+  document.body.classList.remove('is-admin', 'is-modo');
+  const adminPanel = document.getElementById('admin-panel'); if (adminPanel) adminPanel.classList.remove('visible');
+  const profileCard = document.getElementById('profile-level-card'); if (profileCard) profileCard.style.display = 'none';
+  const dw = document.getElementById('dash-welcome'); if (dw) dw.textContent = 'Tableau de bord';
+  const navAuth = document.getElementById('nav-auth');
+  if (navAuth) {
+    navAuth.innerHTML = '<button class="btn-discord" id="btn-login"><svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>Connexion Discord</button>';
+    document.getElementById('btn-login').addEventListener('click', loginWithDiscord);
+  }
+}
+
+// ─── Classement ───────────────────────────────────────────────────────────
+async function loadLeaderboard(force=false) {
+  const lbEl = document.getElementById('leaderboard-dynamic'); if (!lbEl) return;
+  if (!force && _lbCache && (Date.now()-_lbTs) < LB_CACHE_TTL) { _renderLeaderboard(_lbCache); return; }
+  try {
+    const { data, error } = await sb.from('users').select('id,global_name,username,xp,coins,avatar').order('xp', { ascending: false }).limit(10);
+    if (error) throw error;
+    _lbCache = data; _lbTs = Date.now();
+    _renderLeaderboard(data);
+  } catch(err) { console.warn('LB error:', err.message); }
+}
+function _renderLeaderboard(rows) {
+  const lbEl = document.getElementById('leaderboard-dynamic'); if (!lbEl) return;
+  if (!rows || rows.length === 0) { lbEl.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-dim);">Aucun joueur classé.</div>'; return; }
+  const medals=['🥇','🥈','🥉'], topCls=['top1','top2','top3'], rkCls=['rank-1','rank-2','rank-3'];
+  lbEl.innerHTML = '';
+  rows.forEach((p, i) => {
+    const name = escHtml(p.global_name || p.username || 'Inconnu');
+    const xp = p.xp ?? 0, coins = p.coins ?? 0, lvl = getLevelFromXP(xp);
+    const init = name.slice(0,2).toUpperCase();
+    const avt = p.avatar ? '<div class="lb-avatar"><img src="'+p.avatar+'" alt="" onerror="this.parentNode.textContent=\''+init+'\'"></div>' : '<div class="lb-avatar">'+init+'</div>';
+    lbEl.innerHTML += '<div class="lb-row '+(i<3?topCls[i]:'')+'"><div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+avt+'<div class="lb-info"><div class="lb-name">'+name+'</div><div class="lb-detail">Niveau '+lvl+' · 🪙 '+coins.toLocaleString('fr-FR')+'</div></div><div style="text-align:right;"><div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div><div class="lb-level-badge">Niv. '+lvl+'</div></div></div>';
+  });
+}
+
+// ─── Achats utilisateur ───────────────────────────────────────────────────
+async function loadUserPurchases(uid) {
+  try {
+    const { data, error } = await sb.from('purchases').select('*').eq('uid', uid);
+    if (error) throw error;
+    _currentUserPurchases = data || [];
+  } catch(e) { _currentUserPurchases = []; }
+}
+
+// ─── Purchase modal ───────────────────────────────────────────────────────
+window.openPurchaseModal = function(itemId) {
+  if (!_shop || !_currentUserUID) return;
+  const item = (_shop.items||[]).find(i => i.id === itemId); if (!item) return;
+  _pendingPurchaseItem = item;
+  document.getElementById('pm-icon').textContent = item.icon || '🛒';
+  document.getElementById('pm-title').textContent = item.name || 'Article';
+  document.getElementById('pm-desc').textContent  = item.desc || '';
+  document.getElementById('pm-price').textContent = item.price === 0 ? '🆓 Gratuit' : '🪙 '+(item.price||0).toLocaleString('fr-FR')+' pièces';
+  document.getElementById('pm-balance').textContent = 'Ton solde : 🪙 '+_currentUserCoins.toLocaleString('fr-FR')+' pièces';
+  document.getElementById('pm-error').textContent = '';
+  document.getElementById('pm-confirm-btn').disabled = _currentUserCoins < (item.price||0);
+  document.getElementById('purchase-overlay').classList.add('show');
+};
+window.closePurchaseModal = function() { document.getElementById('purchase-overlay').classList.remove('show'); _pendingPurchaseItem = null; };
+
+window.confirmPurchase = async function() {
+  const item = _pendingPurchaseItem; if (!item || !_currentUserUID) return;
+  const confirmBtn = document.getElementById('pm-confirm-btn'), errorEl = document.getElementById('pm-error');
+  confirmBtn.disabled = true; confirmBtn.textContent = 'Traitement…'; errorEl.textContent = '';
+  try {
+    const profile = await userGet(_currentUserUID); if (!profile) throw new Error('Profil introuvable.');
+    const currentCoins = profile.coins || 0, price = item.price || 0;
+    if (currentCoins < price) { errorEl.textContent = 'Pièces insuffisantes.'; confirmBtn.disabled=false; confirmBtn.textContent='Acheter'; return; }
+    if (item.unique) { const already = _currentUserPurchases.some(p => p.item_id === item.id); if (already) { errorEl.textContent = 'Tu possèdes déjà cet article.'; confirmBtn.disabled=false; confirmBtn.textContent='Acheter'; return; } }
+    if (item.stock !== undefined && item.stock !== -1 && item.stock <= 0) { errorEl.textContent = 'Article épuisé.'; confirmBtn.disabled=false; confirmBtn.textContent='Acheter'; return; }
+
+    const newCoins = currentCoins - price;
+    await userUpdate(_currentUserUID, { coins: newCoins });
+    _currentUserCoins = newCoins;
+
+    const purchaseData = {
+      uid: _currentUserUID,
+      username: profile.global_name || profile.username || 'Inconnu',
+      item_id: item.id, item_name: item.name||'Article', item_icon: item.icon||'🛒',
+      item_cat: item.cat||'Général', price,
+      instructions: item.instructions||'', status: 'pending',
+      purchased_at: new Date().toISOString()
+    };
+    const { error: insertErr } = await sb.from('purchases').insert(purchaseData);
+    if (insertErr) throw insertErr;
+    _currentUserPurchases.push(purchaseData);
+
+    // Décrémenter stock si limité
+    if (item.stock !== undefined && item.stock !== -1) {
+      const shopVal = await sdGet('shop');
+      if (shopVal?.items) {
+        const upd = shopVal.items.map(i => i.id === item.id ? {...i, stock: Math.max(0,(i.stock||0)-1)} : i);
+        await sdSet('shop', {items: upd});
+        _shop = {items: upd}; invalidateSitedataCache();
+      }
+    }
+    renderShop(); renderProfileLevel(_currentUserXP, _currentUserCoins);
+    const navC = document.querySelector('.nav-coins'); if (navC) navC.textContent = '🪙 '+newCoins.toLocaleString('fr-FR');
+    await loadLeaderboard(true);
+    closePurchaseModal(); showToast('✅ '+escHtml(item.name)+' commandé !');
+  } catch(err) {
+    console.error(err); errorEl.textContent = 'Erreur : '+err.message;
+    confirmBtn.disabled = false; confirmBtn.textContent = 'Acheter';
+  }
+};
+
+// ─── Admin Orders ─────────────────────────────────────────────────────────
+window.adminLoadOrders = async function() {
+  const listEl = document.getElementById('orders-list'); if (!listEl) return;
+  listEl.innerHTML = '<div class="orders-empty">Chargement…</div>';
+  try {
+    const { data, error } = await sb.from('purchases').select('*').order('purchased_at', { ascending: false });
+    if (error) throw error;
+    _allOrders = data || [];
+    _updateOrdersBadge(); renderOrdersList(_ordersFilter);
+  } catch(err) {
+    listEl.innerHTML = '<div class="orders-empty" style="color:var(--danger);">Erreur : '+escHtml(err.message)+'</div>';
+  }
+};
+function _updateOrdersBadge() {
+  const pending = _allOrders.filter(o => (o.status||'pending') === 'pending');
+  const countEl = document.getElementById('orders-pending-count'), tabBtn = document.getElementById('tab-orders-btn');
+  if (countEl) { countEl.textContent = pending.length; countEl.style.display = pending.length > 0 ? '' : 'none'; }
+  if (tabBtn) tabBtn.classList.toggle('has-notif', pending.length > 0);
+  const nb = document.getElementById('orders-notify-banner'), nt = document.getElementById('orders-notify-text');
+  if (nb && nt) { if (pending.length > 0) { nb.style.display=''; nt.textContent=pending.length+' commande'+(pending.length>1?'s':'')+' en attente.'; } else nb.style.display='none'; }
+}
+function renderOrdersList(filter) {
+  _ordersFilter = filter;
+  const listEl = document.getElementById('orders-list'); if (!listEl) return;
+  let filtered = filter === 'all' ? _allOrders : _allOrders.filter(o => (o.status||'pending') === filter);
+  if (filtered.length === 0) { listEl.innerHTML = '<div class="orders-empty">Aucune commande dans cette catégorie.</div>'; return; }
+  listEl.innerHTML = filtered.map(o => {
+    const status = o.status||'pending', date = o.purchased_at ? new Date(o.purchased_at).toLocaleString('fr-FR') : '—';
+    let statusLabel='', statusClass='';
+    if (status==='pending') { statusLabel='⏳ En attente'; statusClass='status-pending'; }
+    else if (status==='fulfilled') { statusLabel='✅ Traité'; statusClass='status-fulfilled'; }
+    else { statusLabel='✕ Annulé'; statusClass='status-cancelled'; }
+    const instrHtml = o.instructions ? '<div class="order-instructions"><strong>📋 Instructions</strong>'+escHtml(o.instructions)+'</div>' : '';
+    const actionsHtml = status==='pending'
+      ? '<div class="order-actions"><button class="btn-fulfill" onclick="adminFulfillOrder(\''+o.id+'\')">✅ Valider</button><button class="btn-cancel-order" onclick="adminCancelOrder(\''+o.id+'\')">✕</button></div>'
+      : '<div class="order-actions" style="font-size:0.72rem;color:var(--text-dim);">'+statusLabel+'</div>';
+    return '<div class="order-card '+status+'" id="order-'+o.id+'"><div class="order-card-header"><span class="order-icon">'+(o.item_icon||'🛒')+'</span><span class="order-item-name">'+escHtml(o.item_name||o.item_id)+'</span><span class="order-price">🪙 '+((o.price||0).toLocaleString('fr-FR'))+'</span><span class="order-status-badge '+statusClass+'">'+statusLabel+'</span></div><div class="order-card-body"><div class="order-info"><div class="order-buyer">Acheteur : <span>'+escHtml(o.username||'?')+'</span></div><div class="order-date">'+date+'</div></div>'+instrHtml+actionsHtml+'</div></div>';
+  }).join('');
+}
+window.filterOrders = function(filter, btn) { document.querySelectorAll('.orders-filter-tab').forEach(b=>b.classList.remove('active')); if(btn)btn.classList.add('active'); renderOrdersList(filter); };
+window.adminFulfillOrder = async function(id) {
+  const btn = document.querySelector('#order-'+id+' .btn-fulfill'); if(btn){btn.disabled=true;btn.textContent='Validation…';}
+  try {
+    const { error } = await sb.from('purchases').update({ status:'fulfilled', fulfilled_at:new Date().toISOString(), fulfilled_by:_currentUserUID }).eq('id', id);
+    if (error) throw error;
+    const idx = _allOrders.findIndex(o=>o.id===id); if(idx>=0) _allOrders[idx].status='fulfilled';
+    _updateOrdersBadge(); renderOrdersList(_ordersFilter); showToast('✅ Commande validée !');
+    document.getElementById('admin-orders-feedback').textContent='✓ Traitée.';
+    document.getElementById('admin-orders-feedback').className='admin-feedback ok';
+  } catch(err) { if(btn){btn.disabled=false;btn.textContent='✅ Valider';} document.getElementById('admin-orders-feedback').textContent='Erreur: '+err.message; document.getElementById('admin-orders-feedback').className='admin-feedback err'; }
+};
+window.adminCancelOrder = async function(id) {
+  if (!confirm('Annuler cette commande ?')) return;
+  try {
+    const { error } = await sb.from('purchases').update({ status:'cancelled', cancelled_at:new Date().toISOString(), cancelled_by:_currentUserUID }).eq('id', id);
+    if (error) throw error;
+    const idx = _allOrders.findIndex(o=>o.id===id); if(idx>=0) _allOrders[idx].status='cancelled';
+    _updateOrdersBadge(); renderOrdersList(_ordersFilter); showToast('Commande annulée.');
+  } catch(err) { showToast('Erreur: '+err.message); }
+};
+
+// ─── Quêtes ───────────────────────────────────────────────────────────────
+function getQuestStorageKey() { return 'timor_quests_done_'+(_currentUserUID||'anon'); }
+function loadQuestsDone() { try { return JSON.parse(localStorage.getItem(getQuestStorageKey())||'[]'); } catch(e) { return []; } }
+function saveQuestsDone(arr) { try { localStorage.setItem(getQuestStorageKey(), JSON.stringify(arr)); } catch(e) {} }
+
+function renderQuests() {
+  if (!_quests) return;
+  const d = _quests;
+  setEl('quests-main-title', d.title || DEFAULT_QUESTS.title);
+  setEl('quests-subtitle', d.desc || DEFAULT_QUESTS.desc);
+  const authNotice = document.getElementById('quests-auth-notice');
+  if (authNotice) authNotice.classList.toggle('visible', !_currentUserUID);
+  const quests = d.quests || [];
+  const done = loadQuestsDone();
+  const doneCount = quests.filter(q => done.includes(q.id)).length;
+  const pct = quests.length > 0 ? Math.round((doneCount/quests.length)*100) : 0;
+  const fillEl = document.getElementById('quests-progress-fill'); if(fillEl) fillEl.style.width = pct+'%';
+  const labelEl = document.getElementById('quests-progress-label'); if(labelEl) labelEl.textContent = doneCount+' / '+quests.length+' quêtes accomplies';
+  const teaserStats = document.getElementById('quests-teaser-stats');
+  if (teaserStats) teaserStats.textContent = doneCount+' / '+quests.length+' accomplies · '+pct+'% complété';
+  const cats = [...new Set(quests.map(q => q.cat || 'Générale'))];
+  const catsEl = document.getElementById('quests-categories');
+  if (catsEl) {
+    catsEl.innerHTML = '<button class="quest-cat-btn active" onclick="filterQuestsCat(\'Toutes\',this)">Toutes</button>'+
+      cats.map(c => '<button class="quest-cat-btn" onclick="filterQuestsCat(\''+escHtml(c)+'\',this)">'+escHtml(c)+'</button>').join('');
+  }
+  renderQuestsList(quests, 'Toutes', done);
 }
 
 function linkifyDesc(text) {
-  const escaped = escHtml(text);
-  return escaped.replace(
-    /(https?:\/\/[^\s&]+)/g,
-    '<a href="$1" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="quest-desc-link">$1</a>'
-  );
-
+  return escHtml(text).replace(/(https?:\/\/[^\s&]+)/g, '<a href="$1" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="quest-desc-link">$1</a>');
 }
-function renderQuestsList(quests,cat,done){
-  const container=document.getElementById("quests-list");if(!container)return;
-  const filtered=cat==="Toutes"?quests:quests.filter(q=>(q.cat||"Générale")===cat);
-  if(filtered.length===0){container.innerHTML='<div class="quests-empty">Aucune quête dans cette catégorie.</div>';return;}
-  const catColors={"Débutant":"#52c97a","Intermédiaire":"#c9a84c","Avancé":"#e05252","Spéciale":"#a855f7","Générale":"#4a7fa5"};
-  container.innerHTML=filtered.map(q=>{
-    const isDone=done.includes(q.id);
-    const col=catColors[q.cat||"Générale"]||"#4a7fa5";
-    const rewardCoins=q.coins>0?'<span class="quest-reward-coins">🪙 +'+q.coins+'</span>':'';
-    const actionHtml=isDone
-      ?'<div class="quest-done-badge">✅ Accomplie</div>'
-      :'<button class="quest-claim-btn" onclick="claimQuest(\''+escHtml(q.id)+'\','+parseInt(q.xp||0)+','+parseInt(q.coins||0)+')">Réclamer +'+q.xp+' XP</button>';
-    return'<div class="quest-card'+(isDone?' done':'')+'">'+
+
+function renderQuestsList(quests, cat, done) {
+  const container = document.getElementById('quests-list'); if (!container) return;
+  const filtered = cat === 'Toutes' ? quests : quests.filter(q => (q.cat||'Générale') === cat);
+  if (filtered.length === 0) { container.innerHTML = '<div class="quests-empty">Aucune quête dans cette catégorie.</div>'; return; }
+  const catColors = {"Débutant":"#52c97a","Intermédiaire":"#c9a84c","Avancé":"#e05252","Spéciale":"#a855f7","Générale":"#4a7fa5"};
+  container.innerHTML = filtered.map(q => {
+    const isDone = done.includes(q.id), col = catColors[q.cat||'Générale']||'#4a7fa5';
+    const rewardCoins = q.coins > 0 ? '<span class="quest-reward-coins">🪙 +'+q.coins+'</span>' : '';
+    const actionHtml = isDone
+      ? '<div class="quest-done-badge">✅ Accomplie</div>'
+      : '<button class="quest-claim-btn" onclick="claimQuest(\''+escHtml(q.id)+'\','+parseInt(q.xp||0)+','+parseInt(q.coins||0)+')">Réclamer +'+q.xp+' XP</button>';
+    return '<div class="quest-card'+(isDone?' done':'')+'">'+
       '<div class="quest-card-icon" style="background:'+col+'22;color:'+col+'">'+escHtml(q.icon||'⚔️')+'</div>'+
       '<div class="quest-card-body">'+
-        '<div class="quest-card-header">'+
-          '<span class="quest-card-title">'+escHtml(q.title)+'</span>'+
-          '<span class="quest-cat-badge" style="background:'+col+'22;color:'+col+'">'+escHtml(q.cat||'Générale')+'</span>'+
-        '</div>'+
+        '<div class="quest-card-header"><span class="quest-card-title">'+escHtml(q.title)+'</span><span class="quest-cat-badge" style="background:'+col+'22;color:'+col+'">'+escHtml(q.cat||'Générale')+'</span></div>'+
         '<div class="quest-card-desc">'+linkifyDesc(q.desc)+'</div>'+
-        '<div class="quest-card-footer">'+
-          '<div class="quest-rewards"><span class="quest-reward-xp">⚡ +'+q.xp+' XP</span>'+rewardCoins+'</div>'+
-          actionHtml+
-        '</div>'+
-      '</div>'+
-    '</div>';
-  }).join("");
+        '<div class="quest-card-footer"><div class="quest-rewards"><span class="quest-reward-xp">⚡ +'+q.xp+' XP</span>'+rewardCoins+'</div>'+actionHtml+'</div>'+
+      '</div></div>';
+  }).join('');
 }
 
-window.filterQuestsCat=function(cat,btn){
-  document.querySelectorAll(".quest-cat-btn").forEach(b=>b.classList.remove("active"));
-  if(btn)btn.classList.add("active");
-  const quests=_quests?_quests.quests||[]:[];
-  const done=loadQuestsDone();
-  renderQuestsList(quests,cat,done);
+window.filterQuestsCat = function(cat, btn) {
+  document.querySelectorAll('.quest-cat-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const quests = _quests ? _quests.quests||[] : [];
+  const done = loadQuestsDone();
+  renderQuestsList(quests, cat, done);
 };
 
-window.claimQuest=async function(questId,xpAmount,coinsAmount){
-  const done=loadQuestsDone();if(done.includes(questId))return;
-  const btn=document.querySelector('[onclick*="\''+questId+'\'"]');
-  if(btn){btn.disabled=true;btn.textContent="Attribution…";}
-  if(_currentUserUID&&(xpAmount>0||coinsAmount>0)){
-    try{
-      const ref=doc(db,"users",_currentUserUID),snap=await getDoc(ref);
-      if(snap.exists()){
-        const profile=snap.data(),oldXP=profile.xp||0,newXP=oldXP+(xpAmount||0);
-        const oldLvl=getLevelFromXP(oldXP),newLvl=getLevelFromXP(newXP);
-        let bonusCoins=coinsAmount||0;
-        if(newLvl>oldLvl){for(let l=oldLvl+1;l<=newLvl;l++){const ld=window.LEVELS?window.LEVELS[l-1]:null;if(ld)bonusCoins+=ld.coins;}}
-        const updData={xp:newXP};
-        if(bonusCoins>0)updData.coins=Math.max(0,(profile.coins||0)+bonusCoins);
-        await updateDoc(ref,updData);
-        _currentUserXP=newXP;if(bonusCoins>0)_currentUserCoins=(profile.coins||0)+bonusCoins;
-        renderProfileLevel(_currentUserXP,_currentUserCoins);
-        if(newLvl>oldLvl)checkLevelUp(oldXP,newXP);
+window.claimQuest = async function(questId, xpAmount, coinsAmount) {
+  const done = loadQuestsDone(); if (done.includes(questId)) return;
+  const btn = document.querySelector('[onclick*="\''+questId+'\'"]');
+  if (btn) { btn.disabled=true; btn.textContent='Attribution…'; }
+  if (_currentUserUID && (xpAmount > 0 || coinsAmount > 0)) {
+    try {
+      const profile = await userGet(_currentUserUID);
+      if (profile) {
+        const oldXP = profile.xp||0, newXP = oldXP + (xpAmount||0);
+        const oldLvl = getLevelFromXP(oldXP), newLvl = getLevelFromXP(newXP);
+        let bonusCoins = coinsAmount||0;
+        if (newLvl > oldLvl) { for(let l=oldLvl+1;l<=newLvl;l++) { const ld=window.LEVELS?window.LEVELS[l-1]:null; if(ld) bonusCoins+=ld.coins; } }
+        const updData = { xp: newXP };
+        if (bonusCoins > 0) updData.coins = Math.max(0, (profile.coins||0) + bonusCoins);
+        await userUpdate(_currentUserUID, updData);
+        _currentUserXP = newXP;
+        if (bonusCoins > 0) _currentUserCoins = (profile.coins||0) + bonusCoins;
+        renderProfileLevel(_currentUserXP, _currentUserCoins);
+        if (newLvl > oldLvl) checkLevelUp(oldXP, newXP);
         await loadLeaderboard(true);
-        const navXpEl=document.querySelector(".nav-xp");if(navXpEl)navXpEl.textContent=newXP.toLocaleString("fr-FR")+" XP";
-        const navLvlEl=document.querySelector(".nav-level");if(navLvlEl)navLvlEl.textContent="Niv. "+newLvl;
-        const navCoinsEl=document.querySelector(".nav-coins");if(navCoinsEl)navCoinsEl.textContent="🪙 "+_currentUserCoins.toLocaleString("fr-FR");
-        const shopNum=document.getElementById("shop-balance-num");if(shopNum)shopNum.textContent=_currentUserCoins.toLocaleString("fr-FR");
+        const navXpEl=document.querySelector('.nav-xp'); if(navXpEl)navXpEl.textContent=newXP.toLocaleString('fr-FR')+' XP';
+        const navLvlEl=document.querySelector('.nav-level'); if(navLvlEl)navLvlEl.textContent='Niv. '+newLvl;
+        const navCoinsEl=document.querySelector('.nav-coins'); if(navCoinsEl)navCoinsEl.textContent='🪙 '+_currentUserCoins.toLocaleString('fr-FR');
+        const shopNum=document.getElementById('shop-balance-num'); if(shopNum)shopNum.textContent=_currentUserCoins.toLocaleString('fr-FR');
         launchConfetti();
-        showToast("⚔️ Quête accomplie ! +"+xpAmount+" XP"+(coinsAmount>0?" · 🪙 +"+coinsAmount:""));
+        showToast('⚔️ Quête accomplie ! +'+xpAmount+' XP'+(coinsAmount>0?' · 🪙 +'+coinsAmount:''));
       }
-    }catch(err){console.error(err);showToast("⚠ Erreur lors de l'attribution.");if(btn){btn.disabled=false;btn.textContent="Réclamer +"+xpAmount+" XP";}return;}
-  }else if(!_currentUserUID){showToast("⚠ Connecte-toi pour recevoir les récompenses !");}
-  else{showToast("⚔️ Quête marquée comme accomplie !");}
-  done.push(questId);saveQuestsDone(done);renderQuests();
+    } catch(err) {
+      console.error(err); showToast('⚠ Erreur lors de l\'attribution.');
+      if (btn) { btn.disabled=false; btn.textContent='Réclamer +'+xpAmount+' XP'; } return;
+    }
+  } else if (!_currentUserUID) { showToast('⚠ Connecte-toi pour recevoir les récompenses !'); }
+  else { showToast('⚔️ Quête marquée comme accomplie !'); }
+  done.push(questId); saveQuestsDone(done); renderQuests();
 };
 
-window.openQuests=function(){document.getElementById("quests-page").classList.add("active");window.scrollTo(0,0);};
-window.closeQuests=function(){document.getElementById("quests-page").classList.remove("active");};
+window.openQuests  = function() { document.getElementById('quests-page').classList.add('active'); window.scrollTo(0,0); };
+window.closeQuests = function() { document.getElementById('quests-page').classList.remove('active'); };
 
-/* ════ Admin : Quêtes ════ */
-window.adminLoadQuestsEditor=function(){
-  if(!_quests)return;
-  setInputVal("quest-page-title",_quests.title||"");
-  setInputVal("quest-page-desc",_quests.desc||"");
-  const ta=document.getElementById("quest-admin-list");
-  if(ta&&_quests.quests)ta.value=_quests.quests.map(q=>q.title+"|"+q.desc+"|"+(q.xp||0)+"|"+(q.coins||0)+"|"+(q.cat||"Débutant")+"|"+(q.icon||"⚔️")).join("\n");
+// ─── Admin Quêtes ─────────────────────────────────────────────────────────
+window.adminLoadQuestsEditor = function() {
+  if (!_quests) return;
+  setInputVal('quest-page-title', _quests.title||'');
+  setInputVal('quest-page-desc', _quests.desc||'');
+  const ta = document.getElementById('quest-admin-list');
+  if (ta && _quests.quests) ta.value = _quests.quests.map(q => q.title+'|'+q.desc+'|'+(q.xp||0)+'|'+(q.coins||0)+'|'+(q.cat||'Débutant')+'|'+(q.icon||'⚔️')).join('\n');
 };
-window.adminSaveQuests=async function(){
-  const fbEl=document.getElementById("admin-quests-feedback");
-  const raw=(document.getElementById("quest-admin-list")?.value||"").trim().split("\n").filter(Boolean);
-  const quests=raw.map((line,i)=>{const p=line.split("|");return{id:"q_"+i+"_"+Date.now()%10000,title:(p[0]||"").trim(),desc:(p[1]||"").trim(),xp:parseInt(p[2]||"0",10)||0,coins:parseInt(p[3]||"0",10)||0,cat:(p[4]||"Débutant").trim(),icon:(p[5]||"⚔️").trim()};});
-  const newQuests={title:(document.getElementById("quest-page-title")?.value||"").trim()||_quests.title,desc:(document.getElementById("quest-page-desc")?.value||"").trim()||_quests.desc,quests};
-  fbEl.textContent="Sauvegarde…";fbEl.className="admin-feedback";
-  try{
-    await setDoc(doc(db,"sitedata","quests"),newQuests);
-    _quests=newQuests;invalidateSitedataCache();
-    fbEl.textContent="✓ Quêtes sauvegardées !";fbEl.className="admin-feedback ok";
-    renderQuests();showToast("Quêtes mises à jour !");
-  }catch(err){fbEl.textContent=err.code==="permission-denied"?"❌ Règles Firestore.":"Erreur: "+err.message;fbEl.className="admin-feedback err";}
+window.adminSaveQuests = async function() {
+  const fbEl = document.getElementById('admin-quests-feedback');
+  const raw = (document.getElementById('quest-admin-list')?.value||'').trim().split('\n').filter(Boolean);
+  const quests = raw.map((line,i) => { const p=line.split('|'); return {id:'q_'+i+'_'+Date.now()%10000,title:(p[0]||'').trim(),desc:(p[1]||'').trim(),xp:parseInt(p[2]||'0',10)||0,coins:parseInt(p[3]||'0',10)||0,cat:(p[4]||'Débutant').trim(),icon:(p[5]||'⚔️').trim()}; });
+  const newQuests = { title:(document.getElementById('quest-page-title')?.value||'').trim()||_quests.title, desc:(document.getElementById('quest-page-desc')?.value||'').trim()||_quests.desc, quests };
+  fbEl.textContent='Sauvegarde…'; fbEl.className='admin-feedback';
+  try {
+    await sdSet('quests', newQuests);
+    _quests = newQuests; invalidateSitedataCache();
+    fbEl.textContent='✓ Quêtes sauvegardées !'; fbEl.className='admin-feedback ok';
+    renderQuests(); showToast('Quêtes mises à jour !');
+  } catch(err) { fbEl.textContent='Erreur: '+err.message; fbEl.className='admin-feedback err'; }
 };
-window.adminResetQuestsDefault=function(){
-  const ta=document.getElementById("quest-admin-list");if(ta)ta.value=DEFAULT_QUESTS_EXAMPLES.join("\n");
-  showToast("Exemples chargés (non sauvegardé).");
-};
-
-/* ════ Quick Links ════ */
-window.renderQuickLinks=function(links){
-  const c=document.getElementById('ql-links-container');if(!c)return;
-  if(!links||links.length===0){c.innerHTML='<div class="ql-empty">Aucun lien disponible.</div>';return;}
-  c.innerHTML=links.map(l=>{const b=l.badge?'<span class="ql-item-badge">'+escHtml(l.badge)+'</span>':'';if(l.external)return'<a class="ql-item" href="'+escHtml(l.url)+'" target="_blank" rel="noopener"><span class="ql-item-icon">'+escHtml(l.icon||'🔗')+'</span><span class="ql-item-label">'+escHtml(l.label)+'</span>'+b+'</a>';return'<button class="ql-item" onclick="showSection(\''+escHtml(l.url)+'\');closeQuickLinks()"><span class="ql-item-icon">'+escHtml(l.icon||'🔗')+'</span><span class="ql-item-label">'+escHtml(l.label)+'</span>'+b+'</button>';}).join('');
-};
-window.adminLoadLinksEditor=function(){const ta=document.getElementById("ql-admin-links");if(!ta||!_quickLinks)return;ta.value=_quickLinks.map(l=>(l.icon||'🔗')+'|'+(l.label||'')+'|'+(l.url||'')+'|'+(l.badge||'')+'|'+(l.external?'oui':'non')).join('\n');};
-window.adminSaveQuickLinks=async function(){
-  const fbEl=document.getElementById("admin-links-feedback"),raw=(document.getElementById("ql-admin-links")?.value||"").trim().split("\n").filter(Boolean);
-  const links=raw.map(line=>{const p=line.split("|");return{icon:(p[0]||"🔗").trim(),label:(p[1]||"Lien").trim(),url:(p[2]||"").trim(),badge:(p[3]||"").trim(),external:(p[4]||"").trim().toLowerCase()==="oui"};}).filter(l=>l.url);
-  fbEl.textContent="Sauvegarde…";fbEl.className="admin-feedback";
-  try{await setDoc(doc(db,"sitedata","quicklinks"),{links});_quickLinks=links;invalidateSitedataCache();fbEl.textContent="✓ Liens sauvegardés !";fbEl.className="admin-feedback ok";window.renderQuickLinks(_quickLinks);showToast("Liens rapides mis à jour !");}
-  catch(err){fbEl.textContent=err.code==="permission-denied"?"❌ Règles Firestore insuffisantes.":"Erreur: "+err.message;fbEl.className="admin-feedback err";}
-};
-window.adminPreviewQuickLinks=function(){
-  const raw=(document.getElementById("ql-admin-links")?.value||"").trim().split("\n").filter(Boolean);
-  const links=raw.map(line=>{const p=line.split("|");return{icon:(p[0]||"🔗").trim(),label:(p[1]||"Lien").trim(),url:(p[2]||"").trim(),badge:(p[3]||"").trim(),external:(p[4]||"").trim().toLowerCase()==="oui"};}).filter(l=>l.url);
-  window.renderQuickLinks(links);document.getElementById('ql-sidebar').classList.add('open');showToast("Aperçu (non sauvegardé)");
+window.adminResetQuestsDefault = function() {
+  const ta = document.getElementById('quest-admin-list'); if(ta) ta.value = DEFAULT_QUESTS_EXAMPLES.join('\n');
+  showToast('Exemples chargés (non sauvegardé).');
 };
 
-/* ════ Tutoriels ════ */
+// ─── Quick Links ──────────────────────────────────────────────────────────
+window.renderQuickLinks = function(links) {
+  const c = document.getElementById('ql-links-container'); if (!c) return;
+  if (!links || links.length === 0) { c.innerHTML='<div class="ql-empty">Aucun lien disponible.</div>'; return; }
+  c.innerHTML = links.map(l => {
+    const b = l.badge ? '<span class="ql-item-badge">'+escHtml(l.badge)+'</span>' : '';
+    if (l.external) return '<a class="ql-item" href="'+escHtml(l.url)+'" target="_blank" rel="noopener"><span class="ql-item-icon">'+escHtml(l.icon||'🔗')+'</span><span class="ql-item-label">'+escHtml(l.label)+'</span>'+b+'</a>';
+    return '<button class="ql-item" onclick="showSection(\''+escHtml(l.url)+'\');closeQuickLinks()"><span class="ql-item-icon">'+escHtml(l.icon||'🔗')+'</span><span class="ql-item-label">'+escHtml(l.label)+'</span>'+b+'</button>';
+  }).join('');
+};
+window.adminLoadLinksEditor = function() {
+  const ta = document.getElementById('ql-admin-links'); if (!ta || !_quickLinks) return;
+  ta.value = _quickLinks.map(l => (l.icon||'🔗')+'|'+(l.label||'')+'|'+(l.url||'')+'|'+(l.badge||'')+'|'+(l.external?'oui':'non')).join('\n');
+};
+window.adminSaveQuickLinks = async function() {
+  const fbEl = document.getElementById('admin-links-feedback');
+  const raw = (document.getElementById('ql-admin-links')?.value||'').trim().split('\n').filter(Boolean);
+  const links = raw.map(line => { const p=line.split('|'); return {icon:(p[0]||'🔗').trim(),label:(p[1]||'Lien').trim(),url:(p[2]||'').trim(),badge:(p[3]||'').trim(),external:(p[4]||'').trim().toLowerCase()==='oui'}; }).filter(l=>l.url);
+  fbEl.textContent='Sauvegarde…'; fbEl.className='admin-feedback';
+  try {
+    await sdSet('quicklinks', {links});
+    _quickLinks = links; invalidateSitedataCache();
+    fbEl.textContent='✓ Liens sauvegardés !'; fbEl.className='admin-feedback ok';
+    window.renderQuickLinks(_quickLinks); showToast('Liens rapides mis à jour !');
+  } catch(err) { fbEl.textContent='Erreur: '+err.message; fbEl.className='admin-feedback err'; }
+};
+window.adminPreviewQuickLinks = function() {
+  const raw = (document.getElementById('ql-admin-links')?.value||'').trim().split('\n').filter(Boolean);
+  const links = raw.map(line => { const p=line.split('|'); return {icon:(p[0]||'🔗').trim(),label:(p[1]||'Lien').trim(),url:(p[2]||'').trim(),badge:(p[3]||'').trim(),external:(p[4]||'').trim().toLowerCase()==='oui'}; }).filter(l=>l.url);
+  window.renderQuickLinks(links); document.getElementById('ql-sidebar').classList.add('open'); showToast('Aperçu (non sauvegardé)');
+};
+
+// ─── Tutoriels ────────────────────────────────────────────────────────────
 function linkIcon(){return'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';}
-function renderTutos(){
-  if(!_tutos)return;const grid=document.getElementById("tuto-grid");if(!grid)return;
-  const empty=document.getElementById("tuto-empty");
-  if(_tutos.length===0){if(empty)empty.style.display="";return;}if(empty)empty.style.display="none";
-  Array.from(grid.children).forEach(c=>{if(c.id!=="tuto-empty")c.remove();});
-  _tutos.forEach(t=>{
-    const bannerHtml=t.image?'<img class="tuto-banner" src="'+escHtml(t.image)+'" alt="" onerror="this.style.display=\'none\'">':'';
-    const tutoLinkHtml=t.link?'<a class="tuto-link" href="'+escHtml(t.link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+linkIcon()+escHtml(t.linkLabel||'Voir le lien')+'</a>':'';
-    let stepsHtml=(t.steps||[]).map((s,i)=>{const imgHtml=s.img?'<img class="step-img" src="'+escHtml(s.img)+'" alt="">':'';const lnkHtml=s.link?'<a class="step-link" href="'+escHtml(s.link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+linkIcon()+escHtml(s.linkLabel||'Voir')+'</a>':'';return'<div class="tuto-step"><div class="step-n">'+(i+1)+'</div><div class="step-body"><div class="step-text"><strong>'+escHtml(s.title)+'</strong>'+escHtml(s.desc)+'</div>'+imgHtml+lnkHtml+'</div></div>';}).join("");
-    const card=document.createElement("div");card.className="tuto-card";card.onclick=function(){toggleTuto(card);};
-    card.innerHTML=bannerHtml+'<div class="tuto-icon">'+(t.icon||'📖')+'</div><div class="tuto-title">'+escHtml(t.title)+'</div><div class="tuto-desc">'+escHtml(t.desc)+'</div>'+tutoLinkHtml+'<div class="tuto-toggle">Voir le guide ▾</div><div class="tuto-steps">'+stepsHtml+'</div>';
+function renderTutos() {
+  if (!_tutos) return;
+  const grid = document.getElementById('tuto-grid'); if (!grid) return;
+  const empty = document.getElementById('tuto-empty');
+  if (_tutos.length === 0) { if(empty) empty.style.display=''; return; } if(empty) empty.style.display='none';
+  Array.from(grid.children).forEach(c => { if(c.id !== 'tuto-empty') c.remove(); });
+  _tutos.forEach(t => {
+    const bannerHtml = t.image ? '<img class="tuto-banner" src="'+escHtml(t.image)+'" alt="" onerror="this.style.display=\'none\'">' : '';
+    const tutoLinkHtml = t.link ? '<a class="tuto-link" href="'+escHtml(t.link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+linkIcon()+escHtml(t.linkLabel||'Voir le lien')+'</a>' : '';
+    let stepsHtml = (t.steps||[]).map((s,i) => {
+      const imgHtml = s.img ? '<img class="step-img" src="'+escHtml(s.img)+'" alt="">' : '';
+      const lnkHtml = s.link ? '<a class="step-link" href="'+escHtml(s.link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+linkIcon()+escHtml(s.linkLabel||'Voir')+'</a>' : '';
+      return '<div class="tuto-step"><div class="step-n">'+(i+1)+'</div><div class="step-body"><div class="step-text"><strong>'+escHtml(s.title)+'</strong>'+escHtml(s.desc)+'</div>'+imgHtml+lnkHtml+'</div></div>';
+    }).join('');
+    const card = document.createElement('div'); card.className='tuto-card';
+    card.onclick = function() { toggleTuto(card); };
+    card.innerHTML = bannerHtml+'<div class="tuto-icon">'+(t.icon||'📖')+'</div><div class="tuto-title">'+escHtml(t.title)+'</div><div class="tuto-desc">'+escHtml(t.desc)+'</div>'+tutoLinkHtml+'<div class="tuto-toggle">Voir le guide ▾</div><div class="tuto-steps">'+stepsHtml+'</div>';
     grid.appendChild(card);
   });
 }
 
-/* ════ Pays ════ */
-function renderPays(){
-  if(!_pays)return;const p=_pays;
-  setEl("pays-fondation",p.fondation||"[Année]");setEl("pays-membres",p.membres||"142");setEl("pays-rang",p.rang||"#3");setEl("stat-membres",p.membres||"142");setEl("stat-rang",p.rang||"#3");setEl("pays-desc",p.paydesc||"");setEl("hero-desc",p.herodesc||"");
-  const govGrid=document.getElementById("gov-grid");if(govGrid&&p.gouv)govGrid.innerHTML=p.gouv.map(m=>'<div class="gov-member"><div class="gov-avatar">'+escHtml(m.init)+'</div><div><div class="gov-name">'+escHtml(m.nom)+'</div><div class="gov-role">'+escHtml(m.role)+'</div></div><span class="gov-badge">'+escHtml(m.badge)+'</span></div>').join("");
+// ─── Pays ─────────────────────────────────────────────────────────────────
+function renderPays() {
+  if (!_pays) return; const p = _pays;
+  setEl('pays-fondation',p.fondation||'[Année]'); setEl('pays-membres',p.membres||'142'); setEl('pays-rang',p.rang||'#3');
+  setEl('stat-membres',p.membres||'142'); setEl('stat-rang',p.rang||'#3');
+  setEl('pays-desc',p.paydesc||''); setEl('hero-desc',p.herodesc||'');
+  const govGrid = document.getElementById('gov-grid');
+  if (govGrid && p.gouv) govGrid.innerHTML = p.gouv.map(m => '<div class="gov-member"><div class="gov-avatar">'+escHtml(m.init)+'</div><div><div class="gov-name">'+escHtml(m.nom)+'</div><div class="gov-role">'+escHtml(m.role)+'</div></div><span class="gov-badge">'+escHtml(m.badge)+'</span></div>').join('');
 }
 
-/* ════ Boutique ════ */
-function renderShop(){
-  if(!_shop)return;const items=_shop.items||[];const grid=document.getElementById("shop-grid"),catsEl=document.getElementById("shop-cats");if(!grid)return;
-  const cats=["Tous",...new Set(items.map(i=>i.cat||"Général"))];
-  if(catsEl)catsEl.innerHTML=cats.map((c,idx)=>'<button class="shop-cat-btn'+(idx===0?' active':'')+'" onclick="filterShop(\''+escHtml(c)+'\', this)">'+escHtml(c)+'</button>').join("");
-  renderShopGrid(items,"Tous");updateShopInventoryDisplay();
-  const balanceEl=document.getElementById("shop-balance-display"),shopBanner=document.getElementById("shop-auth-banner");
-  if(balanceEl&&shopBanner){if(_currentUserUID){balanceEl.style.display="";shopBanner.style.display="none";document.getElementById("shop-balance-num").textContent=_currentUserCoins.toLocaleString("fr-FR");}else{balanceEl.style.display="none";shopBanner.style.display="";}}
+// ─── Boutique ─────────────────────────────────────────────────────────────
+function renderShop() {
+  if (!_shop) return;
+  const items = _shop.items||[], grid = document.getElementById('shop-grid'), catsEl = document.getElementById('shop-cats');
+  if (!grid) return;
+  const cats = ['Tous', ...new Set(items.map(i => i.cat||'Général'))];
+  if (catsEl) catsEl.innerHTML = cats.map((c,idx) => '<button class="shop-cat-btn'+(idx===0?' active':'')+'" onclick="filterShop(\''+escHtml(c)+'\', this)">'+escHtml(c)+'</button>').join('');
+  renderShopGrid(items, 'Tous');
+  updateShopInventoryDisplay();
+  const balanceEl = document.getElementById('shop-balance-display'), shopBanner = document.getElementById('shop-auth-banner');
+  if (balanceEl && shopBanner) {
+    if (_currentUserUID) { balanceEl.style.display=''; shopBanner.style.display='none'; document.getElementById('shop-balance-num').textContent = _currentUserCoins.toLocaleString('fr-FR'); }
+    else { balanceEl.style.display='none'; shopBanner.style.display=''; }
+  }
 }
-window._currentShopFilter="Tous";
-window.filterShop=function(cat,btn){window._currentShopFilter=cat;document.querySelectorAll(".shop-cat-btn").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");renderShopGrid(_shop?_shop.items||[]:[],cat);};
-function renderShopGrid(items,cat){
-  const grid=document.getElementById("shop-grid");if(!grid)return;
-  const filtered=cat==="Tous"?items:items.filter(i=>(i.cat||"Général")===cat);
-  grid.innerHTML="";
-  if(filtered.length===0){grid.innerHTML='<div class="shop-empty">Aucun article dans cette catégorie.</div>';return;}
-  filtered.forEach(item=>{
-    const isOwned=_currentUserUID&&_currentUserPurchases.some(p=>p.itemId===item.id&&item.unique);
-    const isSoldOut=item.stock!==undefined&&item.stock!==-1&&item.stock<=0;
-    const price=item.price||0,affordable=_currentUserCoins>=price;
-    let cardClass="shop-card";if(isOwned)cardClass+=" owned";if(isSoldOut)cardClass+=" sold-out";
-    const imgHtml=item.image?'<img class="shop-card-img" src="'+escHtml(item.image)+'" alt="" onerror="this.parentNode.innerHTML=\'<div class=shop-card-img-placeholder>'+escHtml(item.icon||'🛒')+'</div>\'">'
-      :'<div class="shop-card-img-placeholder">'+(item.icon||'🛒')+'</div>';
-    const limitedBadge=item.limited?'<div class="shop-badge-limited">LIMITÉ</div>':'';
-    const priceHtml='<div class="shop-card-price'+(price===0?' free':'')+'">'+(price===0?'🆓 Gratuit':'🪙 '+price.toLocaleString('fr-FR'))+'</div>';
-    let footerHtml='';
-    if(isOwned)footerHtml=priceHtml+'<span class="shop-badge-owned">✓ Acquis</span>';
-    else if(isSoldOut)footerHtml=priceHtml+'<span class="shop-badge-soldout">Épuisé</span>';
-    else if(!_currentUserUID)footerHtml=priceHtml+'<button class="btn-shop-buy" onclick="Timor.loginWithDiscord()">Connexion</button>';
-    else footerHtml=priceHtml+'<button class="btn-shop-buy" '+(affordable?'':'disabled title="Pièces insuffisantes"')+' onclick="openPurchaseModal(\''+escHtml(item.id)+'\')">Acheter</button>';
-    const stockInfo=(item.stock!==undefined&&item.stock!==-1)?'<div style="font-size:0.68rem;color:var(--text-dim);margin-bottom:8px;font-family:\'JetBrains Mono\',monospace;">Stock : '+item.stock+'</div>':'';
-    grid.innerHTML+='<div class="'+cardClass+'">'+limitedBadge+imgHtml+'<div class="shop-card-body"><div class="shop-card-cat">'+(item.cat||'Général')+'</div><div class="shop-card-title">'+escHtml(item.name||'Article')+'</div><div class="shop-card-desc">'+escHtml(item.desc||'')+'</div>'+stockInfo+'<div class="shop-card-footer">'+footerHtml+'</div></div></div>';
+window._currentShopFilter = 'Tous';
+window.filterShop = function(cat, btn) {
+  window._currentShopFilter = cat;
+  document.querySelectorAll('.shop-cat-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderShopGrid(_shop ? _shop.items||[] : [], cat);
+};
+function renderShopGrid(items, cat) {
+  const grid = document.getElementById('shop-grid'); if (!grid) return;
+  const filtered = cat === 'Tous' ? items : items.filter(i => (i.cat||'Général') === cat);
+  grid.innerHTML = '';
+  if (filtered.length === 0) { grid.innerHTML='<div class="shop-empty">Aucun article dans cette catégorie.</div>'; return; }
+  filtered.forEach(item => {
+    const isOwned = _currentUserUID && _currentUserPurchases.some(p => p.item_id === item.id && item.unique);
+    const isSoldOut = item.stock !== undefined && item.stock !== -1 && item.stock <= 0;
+    const price = item.price||0, affordable = _currentUserCoins >= price;
+    let cardClass = 'shop-card'; if(isOwned) cardClass+=' owned'; if(isSoldOut) cardClass+=' sold-out';
+    const imgHtml = item.image ? '<img class="shop-card-img" src="'+escHtml(item.image)+'" alt="" onerror="this.parentNode.innerHTML=\'<div class=shop-card-img-placeholder>'+escHtml(item.icon||'🛒')+'</div>\'">' : '<div class="shop-card-img-placeholder">'+(item.icon||'🛒')+'</div>';
+    const limitedBadge = item.limited ? '<div class="shop-badge-limited">LIMITÉ</div>' : '';
+    const priceHtml = '<div class="shop-card-price'+(price===0?' free':'')+'">'+( price===0?'🆓 Gratuit':'🪙 '+price.toLocaleString('fr-FR'))+'</div>';
+    let footerHtml = '';
+    if (isOwned)         footerHtml = priceHtml+'<span class="shop-badge-owned">✓ Acquis</span>';
+    else if (isSoldOut)  footerHtml = priceHtml+'<span class="shop-badge-soldout">Épuisé</span>';
+    else if (!_currentUserUID) footerHtml = priceHtml+'<button class="btn-shop-buy" onclick="Timor.loginWithDiscord()">Connexion</button>';
+    else footerHtml = priceHtml+'<button class="btn-shop-buy" '+(affordable?'':'disabled title="Pièces insuffisantes"')+' onclick="openPurchaseModal(\''+escHtml(item.id)+'\')">Acheter</button>';
+    const stockInfo = (item.stock!==undefined&&item.stock!==-1)?'<div style="font-size:0.68rem;color:var(--text-dim);margin-bottom:8px;font-family:\'JetBrains Mono\',monospace;">Stock : '+item.stock+'</div>':'';
+    grid.innerHTML += '<div class="'+cardClass+'">'+limitedBadge+imgHtml+'<div class="shop-card-body"><div class="shop-card-cat">'+(item.cat||'Général')+'</div><div class="shop-card-title">'+escHtml(item.name||'Article')+'</div><div class="shop-card-desc">'+escHtml(item.desc||'')+'</div>'+stockInfo+'<div class="shop-card-footer">'+footerHtml+'</div></div></div>';
   });
 }
-function updateShopInventoryDisplay(){
-  const section=document.getElementById("shop-inventory-section"),grid=document.getElementById("shop-inventory-grid");if(!section||!grid)return;
-  if(!_currentUserUID||_currentUserPurchases.length===0){section.style.display="none";return;}
-  section.style.display="";grid.innerHTML=_currentUserPurchases.map(p=>'<div class="shop-inv-item"><span>'+(p.itemIcon||'🛒')+'</span>'+escHtml(p.itemName||p.itemId)+'</div>').join("");
+function updateShopInventoryDisplay() {
+  const section = document.getElementById('shop-inventory-section'), grid = document.getElementById('shop-inventory-grid');
+  if (!section || !grid) return;
+  if (!_currentUserUID || _currentUserPurchases.length === 0) { section.style.display='none'; return; }
+  section.style.display = '';
+  grid.innerHTML = _currentUserPurchases.map(p => '<div class="shop-inv-item"><span>'+(p.item_icon||'🛒')+'</span>'+escHtml(p.item_name||p.item_id)+'</div>').join('');
 }
 
-/* ════ Purchase modal ════ */
-window.openPurchaseModal=function(itemId){
-  if(!_shop||!_currentUserUID)return;const item=(_shop.items||[]).find(i=>i.id===itemId);if(!item)return;
-  _pendingPurchaseItem=item;document.getElementById("pm-icon").textContent=item.icon||'🛒';document.getElementById("pm-title").textContent=item.name||'Article';document.getElementById("pm-desc").textContent=item.desc||'';document.getElementById("pm-price").textContent=item.price===0?'🆓 Gratuit':'🪙 '+(item.price||0).toLocaleString('fr-FR')+' pièces';document.getElementById("pm-balance").textContent='Ton solde : 🪙 '+_currentUserCoins.toLocaleString('fr-FR')+' pièces';document.getElementById("pm-error").textContent='';document.getElementById("pm-confirm-btn").disabled=_currentUserCoins<(item.price||0);document.getElementById("purchase-overlay").classList.add("show");
+// ─── Admin Joueurs ────────────────────────────────────────────────────────
+let _adminPlayersCache = {};
+window.adminRefreshPlayers = async function() {
+  const sel = document.getElementById('admin-target-player'); if (!sel) return;
+  setAdminFeedback('Chargement…', '');
+  try {
+    const { data, error } = await sb.from('users').select('*').order('xp', { ascending: false });
+    if (error) throw error;
+    _adminPlayersCache = {};
+    sel.innerHTML = '<option value="">— Sélectionne un joueur ('+data.length+') —</option>';
+    data.forEach(p => {
+      _adminPlayersCache[p.id] = p;
+      const opt = document.createElement('option'); opt.value = p.id;
+      opt.textContent = (p.global_name||p.username||'Inconnu')+' — '+(p.xp||0)+' XP — ['+(p.role||'citoyen')+']';
+      sel.appendChild(opt);
+    });
+    setAdminFeedback(data.length+' joueur(s).', 'ok');
+  } catch(err) { setAdminFeedback('Erreur: '+err.message, 'err'); }
 };
-window.closePurchaseModal=function(){document.getElementById("purchase-overlay").classList.remove("show");_pendingPurchaseItem=null;};
-window.confirmPurchase=async function(){
-  const item=_pendingPurchaseItem;if(!item||!_currentUserUID)return;
-  const confirmBtn=document.getElementById("pm-confirm-btn"),errorEl=document.getElementById("pm-error");
-  confirmBtn.disabled=true;confirmBtn.textContent="Traitement…";errorEl.textContent="";
-  try{
-    const ref=doc(db,"users",_currentUserUID),snap=await getDoc(ref);if(!snap.exists())throw new Error("Profil introuvable.");
-    const profile=snap.data(),currentCoins=profile.coins||0,price=item.price||0;
-    if(currentCoins<price){errorEl.textContent="Pièces insuffisantes.";confirmBtn.disabled=false;confirmBtn.textContent="Acheter";return;}
-    if(item.unique){const already=_currentUserPurchases.some(p=>p.itemId===item.id);if(already){errorEl.textContent="Tu possèdes déjà cet article.";confirmBtn.disabled=false;confirmBtn.textContent="Acheter";return;}}
-    if(item.stock!==undefined&&item.stock!==-1&&item.stock<=0){errorEl.textContent="Article épuisé.";confirmBtn.disabled=false;confirmBtn.textContent="Acheter";return;}
-    const newCoins=currentCoins-price;await updateDoc(ref,{coins:newCoins});_currentUserCoins=newCoins;
-    const purchaseData={uid:_currentUserUID,username:profile.globalName||profile.username||"Inconnu",itemId:item.id,itemName:item.name||"Article",itemIcon:item.icon||"🛒",itemCat:item.cat||"Général",price,instructions:item.instructions||"",status:"pending",purchasedAt:new Date().toISOString()};
-    await addDoc(collection(db,"purchases"),purchaseData);_currentUserPurchases.push(purchaseData);
-    if(item.stock!==undefined&&item.stock!==-1){const shopSnap=await getDoc(doc(db,"sitedata","shop"));if(shopSnap.exists()){const sd=shopSnap.data();const upd=(sd.items||[]).map(i=>i.id===item.id?{...i,stock:Math.max(0,(i.stock||0)-1)}:i);await setDoc(doc(db,"sitedata","shop"),{items:upd});_shop={items:upd};invalidateSitedataCache();}}
-    renderShop();renderProfileLevel(_currentUserXP,_currentUserCoins);const navC=document.querySelector(".nav-coins");if(navC)navC.textContent="🪙 "+newCoins.toLocaleString("fr-FR");await loadLeaderboard(true);closePurchaseModal();showToast("✅ "+escHtml(item.name)+" commandé !");
-  }catch(err){console.error(err);errorEl.textContent="Erreur : "+err.message;confirmBtn.disabled=false;confirmBtn.textContent="Acheter";}
+window.onAdminPlayerChange = function() {
+  const sel = document.getElementById('admin-target-player'), uid = sel?.value;
+  const roleSection = document.getElementById('admin-role-section');
+  if (!uid || !_adminPlayersCache[uid]) { if(roleSection) roleSection.style.display='none'; return; }
+  const p = _adminPlayersCache[uid];
+  if (roleSection) roleSection.style.display = '';
+  const roleDisplay = document.getElementById('admin-player-role-display');
+  if (roleDisplay) { const r=p.role||'citoyen'; let cls=r==='admin'?'role-admin':r==='modo'?'role-modo':''; roleDisplay.className='role-badge-display nav-role-badge '+cls; roleDisplay.textContent=r.charAt(0).toUpperCase()+r.slice(1); }
+  const grantBtn=document.getElementById('btn-grant-modo'), revokeBtn=document.getElementById('btn-revoke-modo');
+  if (grantBtn && revokeBtn) { const r=p.role||'citoyen'; grantBtn.style.display=(r==='admin'||r==='modo')?'none':''; revokeBtn.style.display=(r==='modo'?'':'none'); }
 };
-async function loadUserPurchases(uid){try{const q=query(collection(db,"purchases"),where("uid","==",uid));const snap=await getDocs(q);_currentUserPurchases=[];snap.forEach(ds=>{_currentUserPurchases.push({...ds.data(),docId:ds.id});});}catch(e){_currentUserPurchases=[];}}
+window.adminGrantModo = async function() {
+  const uid = document.getElementById('admin-target-player')?.value; if(!uid){setAdminFeedback('Sélectionne un joueur.','err');return;}
+  const p = _adminPlayersCache[uid]; if(!p||p.role==='admin'){setAdminFeedback('Impossible.','err');return;}
+  try { await userUpdate(uid,{role:'modo'}); setAdminFeedback('✓ Modo attribué.','ok'); showToast('✓ Rôle modo attribué !'); await adminRefreshPlayers(); }
+  catch(err) { setAdminFeedback('Erreur: '+err.message,'err'); }
+};
+window.adminRevokeModo = async function() {
+  const uid = document.getElementById('admin-target-player')?.value; if(!uid){setAdminFeedback('Sélectionne un joueur.','err');return;}
+  const p = _adminPlayersCache[uid]; if(!p||p.role==='admin'){setAdminFeedback('Impossible.','err');return;}
+  try { await userUpdate(uid,{role:'citoyen'}); setAdminFeedback('✓ Rôle retiré.','ok'); showToast('✓ Rôle modo retiré.'); await adminRefreshPlayers(); }
+  catch(err) { setAdminFeedback('Erreur: '+err.message,'err'); }
+};
+window.adminModifyXP = async function(sign) {
+  const targetUid = document.getElementById('admin-target-player')?.value; if(!targetUid){setAdminFeedback('Sélectionne un joueur.','err');return;}
+  const rawAmount = parseInt(document.getElementById('admin-xp-amount')?.value,10); if(isNaN(rawAmount)||rawAmount<=0){setAdminFeedback('Montant invalide.','err');return;}
+  const delta = sign * rawAmount; setAdminFeedback('Modification…','');
+  try {
+    const profile = await userGet(targetUid); if(!profile){setAdminFeedback('Joueur introuvable.','err');return;}
+    const oldXP=profile.xp||0, newXP=Math.max(0,oldXP+delta);
+    const oldLvl=getLevelFromXP(oldXP), newLvl=getLevelFromXP(newXP);
+    let coinsBonus=0; if(newLvl>oldLvl){for(let l=oldLvl+1;l<=newLvl;l++){const ld=window.LEVELS?window.LEVELS[l-1]:null;if(ld)coinsBonus+=ld.coins;}}
+    const updData={xp:newXP}; if(coinsBonus>0) updData.coins=Math.max(0,(profile.coins||0)+coinsBonus);
+    await userUpdate(targetUid, updData);
+    const pn=profile.global_name||profile.username||'Joueur', label=delta>=0?'+'+delta:String(delta);
+    setAdminFeedback('✓ '+pn+' : '+label+' XP → '+newXP+(coinsBonus>0?' | Niv. '+newLvl+' 🪙 +'+coinsBonus:''),'ok');
+    showToast('✓ '+pn+' — '+label+' XP');
+    if(targetUid===_currentUserUID){_currentUserXP=newXP;if(coinsBonus>0)_currentUserCoins=(profile.coins||0)+coinsBonus;renderProfileLevel(_currentUserXP,_currentUserCoins);}
+    await adminRefreshPlayers(); await loadLeaderboard(true);
+  } catch(err) { setAdminFeedback('Erreur: '+err.message,'err'); }
+};
+window.adminModifyCoins = async function(sign) {
+  const targetUid = document.getElementById('admin-target-player')?.value; if(!targetUid){setAdminFeedback('Sélectionne un joueur.','err');return;}
+  const rawAmount = parseInt(document.getElementById('admin-coins-amount')?.value,10); if(isNaN(rawAmount)||rawAmount<=0){setAdminFeedback('Montant invalide.','err');return;}
+  const delta = sign * rawAmount; setAdminFeedback('Modification…','');
+  try {
+    const profile = await userGet(targetUid); if(!profile){setAdminFeedback('Joueur introuvable.','err');return;}
+    const newCoins = Math.max(0,(profile.coins||0)+delta);
+    await userUpdate(targetUid,{coins:newCoins});
+    const pn=profile.global_name||profile.username||'Joueur', label=delta>=0?'+'+delta:String(delta);
+    setAdminFeedback('✓ '+pn+' : '+label+' pièces → '+newCoins,'ok'); showToast('✓ '+pn+' — '+label+' pièces');
+    if(targetUid===_currentUserUID){_currentUserCoins=newCoins;renderProfileLevel(_currentUserXP,_currentUserCoins);}
+    await adminRefreshPlayers(); await loadLeaderboard(true);
+  } catch(err) { setAdminFeedback('Erreur: '+err.message,'err'); }
+};
 
-/* ════ ADMIN ORDERS ════ */
-window.adminLoadOrders=async function(){
-  const listEl=document.getElementById("orders-list");if(!listEl)return;listEl.innerHTML='<div class="orders-empty">Chargement…</div>';
-  try{const snap=await getDocs(collection(db,"purchases"));_allOrders=[];snap.forEach(ds=>{_allOrders.push({...ds.data(),docId:ds.id});});_allOrders.sort((a,b)=>b.purchasedAt>a.purchasedAt?1:-1);_updateOrdersBadge();renderOrdersList(_ordersFilter);}
-  catch(err){listEl.innerHTML='<div class="orders-empty" style="color:var(--danger);">Erreur : '+escHtml(err.message)+'</div>';}
+// ─── Admin Tutos ──────────────────────────────────────────────────────────
+window._editingTutoId = null;
+window.adminLoadTutoEditor = function() {
+  if (!_tutos) return;
+  const list = document.getElementById('admin-tuto-list'); if (!list) return;
+  list.innerHTML = '';
+  _tutos.forEach(t => {
+    const item = document.createElement('div'); item.className='admin-card-item';
+    item.innerHTML = '<span style="font-size:1.1rem;">'+(t.icon||'📖')+'</span><span class="admin-card-item-name">'+escHtml(t.title)+'</span>';
+    item.onclick = function() {
+      document.querySelectorAll('#admin-tuto-list .admin-card-item').forEach(i=>i.classList.remove('selected'));
+      item.classList.add('selected'); window._editingTutoId=t.id;
+      document.getElementById('ate-title').value=t.title||''; document.getElementById('ate-icon').value=t.icon||'📖';
+      document.getElementById('ate-image').value=t.image||''; document.getElementById('ate-link').value=t.link||'';
+      document.getElementById('ate-link-label').value=t.linkLabel||''; document.getElementById('ate-desc').value=t.desc||'';
+      document.getElementById('ate-steps').value=(t.steps||[]).map(s=>{let l=s.title+'|'+s.desc;if(s.img)l+='|img:'+s.img;if(s.link)l+='|lien:'+s.link+'|'+(s.linkLabel||'Voir');return l;}).join('\n');
+      document.getElementById('admin-tuto-editor').style.display=''; document.getElementById('btn-del-tuto').style.display='';
+    };
+    list.appendChild(item);
+  });
 };
-function _updateOrdersBadge(){
-  const pending=_allOrders.filter(o=>(o.status||"pending")==="pending");const countEl=document.getElementById("orders-pending-count"),tabBtn=document.getElementById("tab-orders-btn");
-  if(countEl){countEl.textContent=pending.length;countEl.style.display=pending.length>0?"":"none";}if(tabBtn)tabBtn.classList.toggle("has-notif",pending.length>0);
-  const notifyBanner=document.getElementById("orders-notify-banner"),notifyText=document.getElementById("orders-notify-text");
-  if(notifyBanner&&notifyText){if(pending.length>0){notifyBanner.style.display="";notifyText.textContent=pending.length+" commande"+(pending.length>1?"s":"")+" en attente.";}else{notifyBanner.style.display="none";}}
+window.adminNewTuto = function() {
+  window._editingTutoId = 't_'+Date.now();
+  ['ate-title','ate-icon','ate-image','ate-link','ate-link-label','ate-desc','ate-steps'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ate-icon').value='📖';
+  document.getElementById('admin-tuto-editor').style.display=''; document.getElementById('btn-del-tuto').style.display='none';
+  document.querySelectorAll('#admin-tuto-list .admin-card-item').forEach(i=>i.classList.remove('selected'));
+};
+window.adminDeleteTuto = async function() {
+  const tid = window._editingTutoId; if(!tid||!confirm('Supprimer ?')) return;
+  _tutos = _tutos.filter(t => t.id !== tid);
+  try {
+    await sdSet('tutos',{list:_tutos}); invalidateSitedataCache();
+    document.getElementById('admin-tuto-editor').style.display='none'; document.getElementById('btn-del-tuto').style.display='none';
+    renderTutos(); adminLoadTutoEditor(); showToast('Tutoriel supprimé.');
+  } catch(err) { showToast('Erreur: '+err.message); }
+};
+function parseTutoSteps(raw) {
+  return raw.trim().split('\n').filter(Boolean).map(line => {
+    const parts=line.split('|'); const step={title:(parts[0]||'').trim(),desc:(parts[1]||'').trim()};
+    for(let i=2;i<parts.length;i++){const seg=parts[i].trim();if(seg.startsWith('img:'))step.img=seg.slice(4).trim();else if(seg.startsWith('lien:')){step.link=seg.slice(5).trim();if(parts[i+1]!==undefined){step.linkLabel=parts[i+1].trim();i++;}else step.linkLabel='Voir';}}
+    return step;
+  });
 }
-function renderOrdersList(filter){
-  _ordersFilter=filter;const listEl=document.getElementById("orders-list");if(!listEl)return;
-  let filtered=_allOrders;if(filter!=="all")filtered=_allOrders.filter(o=>(o.status||"pending")===filter);
-  if(filtered.length===0){listEl.innerHTML='<div class="orders-empty">Aucune commande dans cette catégorie.</div>';return;}
-  listEl.innerHTML=filtered.map(o=>{
-    const status=o.status||"pending",date=o.purchasedAt?new Date(o.purchasedAt).toLocaleString("fr-FR"):"—";
-    let statusLabel="",statusClass="";
-    if(status==="pending"){statusLabel="⏳ En attente";statusClass="status-pending";}else if(status==="fulfilled"){statusLabel="✅ Traité";statusClass="status-fulfilled";}else{statusLabel="✕ Annulé";statusClass="status-cancelled";}
-    const instructionsHtml=o.instructions?'<div class="order-instructions"><strong>📋 Instructions</strong>'+escHtml(o.instructions)+'</div>':'';
-    const actionsHtml=status==="pending"?'<div class="order-actions"><button class="btn-fulfill" onclick="adminFulfillOrder(\''+o.docId+'\')">✅ Valider</button><button class="btn-cancel-order" onclick="adminCancelOrder(\''+o.docId+'\')">✕</button></div>':'<div class="order-actions" style="font-size:0.72rem;color:var(--text-dim);">'+statusLabel+'</div>';
-    return'<div class="order-card '+status+'" id="order-'+o.docId+'"><div class="order-card-header"><span class="order-icon">'+(o.itemIcon||'🛒')+'</span><span class="order-item-name">'+escHtml(o.itemName||o.itemId)+'</span><span class="order-price">🪙 '+((o.price||0).toLocaleString('fr-FR'))+'</span><span class="order-status-badge '+statusClass+'">'+statusLabel+'</span></div><div class="order-card-body"><div class="order-info"><div class="order-buyer">Acheteur : <span>'+escHtml(o.username||"?")+'</span></div><div class="order-date">'+date+'</div></div>'+instructionsHtml+actionsHtml+'</div></div>';
-  }).join("");
-}
-window.filterOrders=function(filter,btn){document.querySelectorAll(".orders-filter-tab").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");renderOrdersList(filter);};
-window.adminFulfillOrder=async function(docId){
-  const btn=document.querySelector('#order-'+docId+' .btn-fulfill');if(btn){btn.disabled=true;btn.textContent="Validation…";}
-  try{await updateDoc(doc(db,"purchases",docId),{status:"fulfilled",fulfilledAt:new Date().toISOString(),fulfilledBy:_currentUserUID});const idx=_allOrders.findIndex(o=>o.docId===docId);if(idx>=0)_allOrders[idx].status="fulfilled";_updateOrdersBadge();renderOrdersList(_ordersFilter);showToast("✅ Commande validée !");document.getElementById("admin-orders-feedback").textContent="✓ Traitée.";document.getElementById("admin-orders-feedback").className="admin-feedback ok";}
-  catch(err){if(btn){btn.disabled=false;btn.textContent="✅ Valider";}document.getElementById("admin-orders-feedback").textContent="Erreur : "+err.message;document.getElementById("admin-orders-feedback").className="admin-feedback err";}
-};
-window.adminCancelOrder=async function(docId){
-  if(!confirm("Annuler cette commande ?"))return;
-  try{await updateDoc(doc(db,"purchases",docId),{status:"cancelled",cancelledAt:new Date().toISOString(),cancelledBy:_currentUserUID});const idx=_allOrders.findIndex(o=>o.docId===docId);if(idx>=0)_allOrders[idx].status="cancelled";_updateOrdersBadge();renderOrdersList(_ordersFilter);showToast("Commande annulée.");}
-  catch(err){showToast("Erreur : "+err.message);}
+window.adminSaveTuto = async function() {
+  const tid = window._editingTutoId; if(!tid) return;
+  const steps = parseTutoSteps(document.getElementById('ate-steps').value||'');
+  const newTuto = {id:tid,icon:(document.getElementById('ate-icon').value||'').trim()||'📖',title:(document.getElementById('ate-title').value||'').trim()||'Tutoriel',desc:(document.getElementById('ate-desc').value||'').trim()||'',image:(document.getElementById('ate-image').value||'').trim()||'',link:(document.getElementById('ate-link').value||'').trim()||'',linkLabel:(document.getElementById('ate-link-label').value||'').trim()||'',steps};
+  if(!newTuto.image)delete newTuto.image; if(!newTuto.link){delete newTuto.link;delete newTuto.linkLabel;} if(!newTuto.linkLabel)delete newTuto.linkLabel;
+  const idx = _tutos.findIndex(t=>t.id===tid); if(idx>=0) _tutos[idx]=newTuto; else _tutos.push(newTuto);
+  const fbEl=document.getElementById('admin-tuto-feedback'); fbEl.textContent='Sauvegarde…'; fbEl.className='admin-feedback';
+  try {
+    await sdSet('tutos',{list:_tutos}); invalidateSitedataCache();
+    fbEl.textContent='✓ Sauvegardé !'; fbEl.className='admin-feedback ok';
+    renderTutos(); adminLoadTutoEditor(); showToast('Tutoriel mis à jour !');
+  } catch(err) { fbEl.textContent='Erreur: '+err.message; fbEl.className='admin-feedback err'; }
 };
 
-/* ════ Discord OAuth ════ */
-function loginWithDiscord(){const state=crypto.randomUUID();sessionStorage.setItem("discord_oauth_state",state);const url=new URL("https://discord.com/oauth2/authorize");url.searchParams.set("client_id",DISCORD_CLIENT_ID);url.searchParams.set("redirect_uri",DISCORD_REDIRECT_URI);url.searchParams.set("response_type","code");url.searchParams.set("scope",DISCORD_SCOPES);url.searchParams.set("state",state);window.location.href=url.toString();}
-async function handleDiscordCallback(code,returnedState){const savedState=sessionStorage.getItem("discord_oauth_state");if(savedState&&returnedState&&returnedState!==savedState){showToast("Erreur de sécurité OAuth.");return null;}sessionStorage.removeItem("discord_oauth_state");try{const res=await fetch(EXCHANGE_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code,redirect_uri:DISCORD_REDIRECT_URI})});if(!res.ok)throw new Error("Token exchange failed: "+res.status);const{access_token,firebase_token}=await res.json();const userCred=await signInWithCustomToken(auth,firebase_token);const discordUser=await fetchDiscordUser(access_token);await upsertUserProfile(userCred.user.uid,discordUser,access_token);showToast("Bienvenue, "+(discordUser.global_name||discordUser.username)+" !");return userCred.user;}catch(err){console.error(err);showToast("Erreur Discord.");return null;}}
-async function fetchDiscordUser(t){const r=await fetch("https://discord.com/api/users/@me",{headers:{Authorization:"Bearer "+t}});if(!r.ok)throw new Error("Discord API: "+r.status);return r.json();}
-async function upsertUserProfile(uid,d,token){const ref=doc(db,"users",uid),snap=await getDoc(ref);const avatar=d.avatar?"https://cdn.discordapp.com/avatars/"+d.id+"/"+d.avatar+".png?size=128":"https://cdn.discordapp.com/embed/avatars/"+(Number(d.discriminator||0)%5)+".png";const base={discordId:d.id,username:d.username,discriminator:d.discriminator||"0",globalName:d.global_name||d.username,avatar,discordToken:token,updatedAt:new Date().toISOString()};if(!snap.exists()){await setDoc(ref,{...base,xp:0,coins:0,role:ADMIN_IDS.has(d.id)?"admin":MODO_IDS.has(d.id)?"modo":"citoyen",joinedAt:new Date().toISOString()});}else{const upd={...base};if(ADMIN_IDS.has(d.id))upd.role="admin";else if(MODO_IDS.has(d.id)&&snap.data().role!=="admin")upd.role="modo";await updateDoc(ref,upd);}}
-async function logout(){await signOut(auth);document.body.classList.remove("is-admin","is-modo");showToast("Déconnecté.");}
-
-loadSiteData();
-
-onAuthStateChanged(auth,async function(user){
-  if(user){
-    const snap=await getDoc(doc(db,"users",user.uid));const profile=snap.exists()?snap.data():null;
-    _currentUserRole=profile?.role||"citoyen";_currentUserUID=user.uid;_currentUserXP=profile?.xp??0;_currentUserCoins=profile?.coins??0;
-    window._spinCurrentUID=user.uid;
-    await loadUserPurchases(user.uid);await syncSpinCooldown(user.uid);
-    renderConnectedState(user,profile);renderProfileLevel(_currentUserXP,_currentUserCoins);
-    renderQuests();renderShop();renderQuickLinks(_quickLinks);await loadLeaderboard();
-  }else{
-    _currentUserRole=null;_currentUserUID=null;_currentUserPurchases=[];window._spinCurrentUID=null;
-    renderDisconnectedState();renderQuests();renderShop();renderQuickLinks(_quickLinks);window.updateSpinUI();await loadLeaderboard();
-  }
-});
-
-function renderConnectedState(user,profile){
-  document.getElementById("auth-banner").style.display="none";
-  const name=escHtml(profile?.globalName||profile?.username||user.displayName||"Citoyen");
-  const xp=profile?.xp??0,coins=profile?.coins??0,role=profile?.role||"citoyen",lvl=getLevelFromXP(xp);
-  document.body.classList.toggle("is-admin",role==="admin");document.body.classList.toggle("is-modo",role==="modo");
-  const adminPanel=document.getElementById("admin-panel");
-  if(adminPanel){adminPanel.classList.toggle("visible",role==="admin"||role==="modo");if(role==="admin"||role==="modo"){adminRefreshPlayers();adminLoadTutoEditor();adminLoadPaysEditor();adminLoadQuestsEditor();adminLoadShopEditor();adminLoadOrders();adminLoadLinksEditor();window.adminLoadSpinEditor();}}
-  let badge="";if(role==="admin")badge='<span class="nav-role-badge role-admin">Admin</span>';else if(role==="modo")badge='<span class="nav-role-badge role-modo">Modo</span>';
-  const navAuth=document.getElementById("nav-auth");
-  if(navAuth){navAuth.innerHTML='<div class="nav-user">'+(profile?.avatar?'<img src="'+profile.avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">':"")+
-    '<span class="nav-username">'+name+'</span>'+badge+'<span class="nav-pill nav-level">Niv. '+lvl+'</span><span class="nav-pill nav-xp">'+xp.toLocaleString("fr-FR")+' XP</span><span class="nav-pill nav-coins">🪙 '+coins.toLocaleString("fr-FR")+'</span><button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';
-    document.getElementById("btn-logout").addEventListener("click",logout);}
-  const dw=document.getElementById("dash-welcome");if(dw)dw.textContent="Bienvenue, "+(profile?.globalName||profile?.username||"Citoyen")+" !";
-}
-function renderDisconnectedState(){
-  document.getElementById("auth-banner").style.display="";document.body.classList.remove("is-admin","is-modo");
-  const adminPanel=document.getElementById("admin-panel");if(adminPanel)adminPanel.classList.remove("visible");
-  const profileCard=document.getElementById("profile-level-card");if(profileCard)profileCard.style.display="none";
-  const dw=document.getElementById("dash-welcome");if(dw)dw.textContent="Tableau de bord";
-  const navAuth=document.getElementById("nav-auth");
-  if(navAuth){navAuth.innerHTML='<button class="btn-discord" id="btn-login"><svg width="16" height="12" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.42,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>Connexion Discord</button>';
-    document.getElementById("btn-login").addEventListener("click",loginWithDiscord);}
-}
-
-async function loadLeaderboard(force=false){
-  const lbEl=document.getElementById("leaderboard-dynamic");if(!lbEl)return;
-  if(!force&&_lbCache&&(Date.now()-_lbTs)<LB_CACHE_TTL){_renderLeaderboard(_lbCache);return;}
-  try{const q=query(collection(db,"users"),orderBy("xp","desc"),limit(10));const snap=await getDocs(q);const rows=[];snap.forEach(ds=>{rows.push({id:ds.id,...ds.data()});});_lbCache=rows;_lbTs=Date.now();_renderLeaderboard(rows);}
-  catch(err){console.warn("LB error:",err.message);}
-}
-function _renderLeaderboard(rows){
-  const lbEl=document.getElementById("leaderboard-dynamic");if(!lbEl)return;
-  if(!rows||rows.length===0){lbEl.innerHTML='<div style="padding:2rem;text-align:center;color:var(--text-dim);">Aucun joueur classé.</div>';return;}
-  const medals=["🥇","🥈","🥉"],topCls=["top1","top2","top3"],rkCls=["rank-1","rank-2","rank-3"];
-  lbEl.innerHTML="";let i=0;
-  rows.forEach(p=>{const name=escHtml(p.globalName||p.username||"Inconnu"),xp=p.xp??0,coins=p.coins??0,lvl=getLevelFromXP(xp),init=name.slice(0,2).toUpperCase();const avt=p.avatar?'<div class="lb-avatar"><img src="'+p.avatar+'" alt="" onerror="this.parentNode.textContent=\''+init+'\'"></div>':'<div class="lb-avatar">'+init+'</div>';lbEl.innerHTML+='<div class="lb-row '+(i<3?topCls[i]:'')+'">'+'<div class="lb-rank '+(i<3?rkCls[i]:'rank-other')+'">'+(i<3?medals[i]:i+1)+'</div>'+avt+'<div class="lb-info"><div class="lb-name">'+name+'</div><div class="lb-detail">Niveau '+lvl+' · 🪙 '+coins.toLocaleString('fr-FR')+'</div></div><div style="text-align:right;"><div class="lb-xp">'+xp.toLocaleString('fr-FR')+' XP</div><div class="lb-level-badge">Niv. '+lvl+'</div></div></div>';i++;});
-}
-
-/* ════ Admin Joueurs ════ */
-let _adminPlayersCache={};
-window.adminRefreshPlayers=async function(){
-  const sel=document.getElementById("admin-target-player");if(!sel)return;setAdminFeedback("Chargement…","");
-  try{const snap=await getDocs(collection(db,"users"));_adminPlayersCache={};sel.innerHTML='<option value="">— Sélectionne un joueur ('+snap.size+') —</option>';snap.forEach(ds=>{const p=ds.data();_adminPlayersCache[ds.id]=p;const opt=document.createElement("option");opt.value=ds.id;opt.textContent=(p.globalName||p.username||"Inconnu")+" — "+(p.xp||0)+" XP — ["+(p.role||"citoyen")+"]";sel.appendChild(opt);});setAdminFeedback(snap.size+" joueur(s).","ok");}
-  catch(err){setAdminFeedback("Erreur: "+err.message,"err");}
+// ─── Admin Pays ───────────────────────────────────────────────────────────
+window.adminLoadPaysEditor = function() {
+  if (!_pays) return;
+  setInputVal('ape-membres',_pays.membres||''); setInputVal('ape-rang',_pays.rang||'');
+  setInputVal('ape-fondation',_pays.fondation||''); setInputVal('ape-herodesc',_pays.herodesc||'');
+  setInputVal('ape-paydesc',_pays.paydesc||'');
+  const gouvTA = document.getElementById('ape-gouv');
+  if (gouvTA && _pays.gouv) gouvTA.value = _pays.gouv.map(m=>m.init+'|'+m.nom+'|'+m.role+'|'+m.badge).join('\n');
 };
-window.onAdminPlayerChange=function(){
-  const sel=document.getElementById("admin-target-player"),uid=sel?.value;const roleSection=document.getElementById("admin-role-section");
-  if(!uid||!_adminPlayersCache[uid]){if(roleSection)roleSection.style.display="none";return;}
-  const p=_adminPlayersCache[uid];if(roleSection)roleSection.style.display="";
-  const roleDisplay=document.getElementById("admin-player-role-display");if(roleDisplay){const r=p.role||"citoyen";let cls=r==="admin"?"role-admin":r==="modo"?"role-modo":"";roleDisplay.className="role-badge-display nav-role-badge "+cls;roleDisplay.textContent=r.charAt(0).toUpperCase()+r.slice(1);}
-  const grantBtn=document.getElementById("btn-grant-modo"),revokeBtn=document.getElementById("btn-revoke-modo");if(grantBtn&&revokeBtn){const r=p.role||"citoyen";grantBtn.style.display=(r==="admin"||r==="modo")?"none":"";revokeBtn.style.display=(r==="modo"?"":"none");}
-};
-window.adminGrantModo=async function(){const uid=document.getElementById("admin-target-player")?.value;if(!uid){setAdminFeedback("Sélectionne un joueur.","err");return;}const p=_adminPlayersCache[uid];if(!p)return;if(p.role==="admin"){setAdminFeedback("Impossible.","err");return;}try{await updateDoc(doc(db,"users",uid),{role:"modo"});setAdminFeedback("✓ Modo attribué.","ok");showToast("✓ Rôle modo attribué !");await adminRefreshPlayers();}catch(err){setAdminFeedback("Erreur: "+err.message,"err");}};
-window.adminRevokeModo=async function(){const uid=document.getElementById("admin-target-player")?.value;if(!uid){setAdminFeedback("Sélectionne un joueur.","err");return;}const p=_adminPlayersCache[uid];if(!p)return;if(p.role==="admin"){setAdminFeedback("Impossible.","err");return;}try{await updateDoc(doc(db,"users",uid),{role:"citoyen"});setAdminFeedback("✓ Rôle retiré.","ok");showToast("✓ Rôle modo retiré.");await adminRefreshPlayers();}catch(err){setAdminFeedback("Erreur: "+err.message,"err");}};
-window.adminModifyXP=async function(sign){
-  const targetUid=document.getElementById("admin-target-player")?.value;if(!targetUid){setAdminFeedback("Sélectionne un joueur.","err");return;}
-  const rawAmount=parseInt(document.getElementById("admin-xp-amount")?.value,10);if(isNaN(rawAmount)||rawAmount<=0){setAdminFeedback("Montant invalide.","err");return;}
-  const delta=sign*rawAmount;setAdminFeedback("Modification…","");
-  try{const ref=doc(db,"users",targetUid),snap=await getDoc(ref);if(!snap.exists()){setAdminFeedback("Joueur introuvable.","err");return;}const profile=snap.data(),oldXP=profile.xp||0,newXP=Math.max(0,oldXP+delta);const oldLvl=getLevelFromXP(oldXP),newLvl=getLevelFromXP(newXP);let coinsBonus=0;if(newLvl>oldLvl){for(let l=oldLvl+1;l<=newLvl;l++){const ld=window.LEVELS?window.LEVELS[l-1]:null;if(ld)coinsBonus+=ld.coins;}}const updData={xp:newXP};if(coinsBonus>0)updData.coins=Math.max(0,(profile.coins||0)+coinsBonus);await updateDoc(ref,updData);const pn=profile.globalName||profile.username||"Joueur";const label=delta>=0?"+"+delta:String(delta);setAdminFeedback("✓ "+pn+" : "+label+" XP → "+newXP+(coinsBonus>0?" | Niv. "+newLvl+" 🪙 +"+coinsBonus:""),"ok");showToast("✓ "+pn+" — "+label+" XP");if(targetUid===_currentUserUID){_currentUserXP=newXP;if(coinsBonus>0)_currentUserCoins=(profile.coins||0)+coinsBonus;renderProfileLevel(_currentUserXP,_currentUserCoins);}await adminRefreshPlayers();await loadLeaderboard(true);}
-  catch(err){setAdminFeedback("Erreur: "+err.message,"err");}
-};
-window.adminModifyCoins=async function(sign){
-  const targetUid=document.getElementById("admin-target-player")?.value;if(!targetUid){setAdminFeedback("Sélectionne un joueur.","err");return;}
-  const rawAmount=parseInt(document.getElementById("admin-coins-amount")?.value,10);if(isNaN(rawAmount)||rawAmount<=0){setAdminFeedback("Montant invalide.","err");return;}
-  const delta=sign*rawAmount;setAdminFeedback("Modification…","");
-  try{const ref=doc(db,"users",targetUid),snap=await getDoc(ref);if(!snap.exists()){setAdminFeedback("Joueur introuvable.","err");return;}const profile=snap.data(),newCoins=Math.max(0,(profile.coins||0)+delta);await updateDoc(ref,{coins:newCoins});const pn=profile.globalName||profile.username||"Joueur";const label=delta>=0?"+"+delta:String(delta);setAdminFeedback("✓ "+pn+" : "+label+" pièces → "+newCoins,"ok");showToast("✓ "+pn+" — "+label+" pièces");if(targetUid===_currentUserUID){_currentUserCoins=newCoins;renderProfileLevel(_currentUserXP,_currentUserCoins);}await adminRefreshPlayers();await loadLeaderboard(true);}
-  catch(err){setAdminFeedback("Erreur: "+err.message,"err");}
+window.adminSavePays = async function() {
+  const gouvRaw = (document.getElementById('ape-gouv')?.value||'').trim().split('\n').filter(Boolean);
+  const gouv = gouvRaw.map(line=>{const p=line.split('|');return{init:(p[0]||'').trim(),nom:(p[1]||'').trim(),role:(p[2]||'').trim(),badge:(p[3]||'').trim()};});
+  _pays = {membres:(document.getElementById('ape-membres')?.value||'').trim()||_pays.membres,rang:(document.getElementById('ape-rang')?.value||'').trim()||_pays.rang,fondation:(document.getElementById('ape-fondation')?.value||'').trim()||_pays.fondation,herodesc:(document.getElementById('ape-herodesc')?.value||'').trim()||_pays.herodesc,paydesc:(document.getElementById('ape-paydesc')?.value||'').trim()||_pays.paydesc,gouv:gouv.length?gouv:_pays.gouv};
+  const fbEl=document.getElementById('admin-pays-feedback'); fbEl.textContent='Sauvegarde…'; fbEl.className='admin-feedback';
+  try {
+    await sdSet('pays',_pays); invalidateSitedataCache();
+    fbEl.textContent='✓ Sauvegardé !'; fbEl.className='admin-feedback ok';
+    renderPays(); showToast('Infos pays mises à jour !');
+  } catch(err) { fbEl.textContent='Erreur: '+err.message; fbEl.className='admin-feedback err'; }
 };
 
-/* ════ Admin Tutos ════ */
-window._editingTutoId=null;
-window.adminLoadTutoEditor=function(){if(!_tutos)return;const list=document.getElementById("admin-tuto-list");if(!list)return;list.innerHTML="";_tutos.forEach(t=>{const item=document.createElement("div");item.className="admin-card-item";item.innerHTML='<span style="font-size:1.1rem;">'+(t.icon||'📖')+'</span><span class="admin-card-item-name">'+escHtml(t.title)+'</span>';item.onclick=function(){document.querySelectorAll("#admin-tuto-list .admin-card-item").forEach(i=>i.classList.remove("selected"));item.classList.add("selected");window._editingTutoId=t.id;document.getElementById("ate-title").value=t.title||"";document.getElementById("ate-icon").value=t.icon||"📖";document.getElementById("ate-image").value=t.image||"";document.getElementById("ate-link").value=t.link||"";document.getElementById("ate-link-label").value=t.linkLabel||"";document.getElementById("ate-desc").value=t.desc||"";document.getElementById("ate-steps").value=(t.steps||[]).map(s=>{let l=s.title+"|"+s.desc;if(s.img)l+="|img:"+s.img;if(s.link)l+="|lien:"+s.link+"|"+(s.linkLabel||"Voir");return l;}).join("\n");document.getElementById("admin-tuto-editor").style.display="";document.getElementById("btn-del-tuto").style.display="";};list.appendChild(item);});};
-window.adminNewTuto=function(){window._editingTutoId="t_"+Date.now();["ate-title","ate-icon","ate-image","ate-link","ate-link-label","ate-desc","ate-steps"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});document.getElementById("ate-icon").value="📖";document.getElementById("admin-tuto-editor").style.display="";document.getElementById("btn-del-tuto").style.display="none";document.querySelectorAll("#admin-tuto-list .admin-card-item").forEach(i=>i.classList.remove("selected"));};
-window.adminDeleteTuto=async function(){const tid=window._editingTutoId;if(!tid)return;if(!confirm("Supprimer ?"))return;_tutos=_tutos.filter(t=>t.id!==tid);try{await setDoc(doc(db,"sitedata","tutos"),{list:_tutos});invalidateSitedataCache();document.getElementById("admin-tuto-editor").style.display="none";document.getElementById("btn-del-tuto").style.display="none";renderTutos();adminLoadTutoEditor();showToast("Tutoriel supprimé.");}catch(err){showToast("Erreur: "+err.message);}};
-function parseTutoSteps(raw){return raw.trim().split("\n").filter(Boolean).map(line=>{const parts=line.split("|");const step={title:(parts[0]||"").trim(),desc:(parts[1]||"").trim()};for(let i=2;i<parts.length;i++){const seg=parts[i].trim();if(seg.startsWith("img:"))step.img=seg.slice(4).trim();else if(seg.startsWith("lien:")){step.link=seg.slice(5).trim();if(parts[i+1]!==undefined){step.linkLabel=parts[i+1].trim();i++;}else step.linkLabel="Voir";}}return step;});}
-window.adminSaveTuto=async function(){const tid=window._editingTutoId;if(!tid)return;const steps=parseTutoSteps(document.getElementById("ate-steps").value||"");const newTuto={id:tid,icon:(document.getElementById("ate-icon").value||"").trim()||"📖",title:(document.getElementById("ate-title").value||"").trim()||"Tutoriel",desc:(document.getElementById("ate-desc").value||"").trim()||"",image:(document.getElementById("ate-image").value||"").trim()||"",link:(document.getElementById("ate-link").value||"").trim()||"",linkLabel:(document.getElementById("ate-link-label").value||"").trim()||"",steps};if(!newTuto.image)delete newTuto.image;if(!newTuto.link){delete newTuto.link;delete newTuto.linkLabel;}if(!newTuto.linkLabel)delete newTuto.linkLabel;const idx=_tutos.findIndex(t=>t.id===tid);if(idx>=0)_tutos[idx]=newTuto;else _tutos.push(newTuto);const fbEl=document.getElementById("admin-tuto-feedback");fbEl.textContent="Sauvegarde…";fbEl.className="admin-feedback";try{await setDoc(doc(db,"sitedata","tutos"),{list:_tutos});invalidateSitedataCache();fbEl.textContent="✓ Sauvegardé !";fbEl.className="admin-feedback ok";renderTutos();adminLoadTutoEditor();showToast("Tutoriel mis à jour !");}catch(err){fbEl.textContent=err.code==="permission-denied"?"❌ Règles Firestore.":"Erreur: "+err.message;fbEl.className="admin-feedback err";}};
+// ─── Admin Boutique ───────────────────────────────────────────────────────
+window._editingShopItemId = null;
+window.adminLoadShopEditor = function() {
+  if (!_shop) return;
+  const list = document.getElementById('admin-shop-list'); if(!list) return;
+  list.innerHTML = '';
+  (_shop.items||[]).forEach(item => {
+    const el = document.createElement('div'); el.className='admin-card-item';
+    el.innerHTML = '<span style="font-size:1.1rem;">'+(item.icon||'🛒')+'</span><span class="admin-card-item-name">'+escHtml(item.name||'Article')+'</span><span class="admin-card-item-xp">🪙 '+(item.price||0)+'</span>';
+    el.onclick = function() {
+      document.querySelectorAll('#admin-shop-list .admin-card-item').forEach(i=>i.classList.remove('selected'));
+      el.classList.add('selected'); window._editingShopItemId=item.id;
+      document.getElementById('ase-name').value=item.name||''; document.getElementById('ase-icon').value=item.icon||'🛒';
+      document.getElementById('ase-cat').value=item.cat||''; document.getElementById('ase-price').value=item.price!==undefined?item.price:'';
+      document.getElementById('ase-stock').value=item.stock!==undefined?item.stock:-1; document.getElementById('ase-image').value=item.image||'';
+      document.getElementById('ase-unique').value=item.unique?'true':'false'; document.getElementById('ase-limited').value=item.limited?'true':'false';
+      document.getElementById('ase-desc').value=item.desc||''; document.getElementById('ase-instructions').value=item.instructions||'';
+      document.getElementById('admin-shop-editor').style.display=''; document.getElementById('btn-del-shop').style.display='';
+    };
+    list.appendChild(el);
+  });
+};
+window.adminNewShopItem = function() {
+  window._editingShopItemId = 'shop_'+Date.now();
+  ['ase-name','ase-icon','ase-cat','ase-price','ase-image','ase-desc','ase-instructions'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ase-icon').value='🛒'; document.getElementById('ase-stock').value='-1';
+  document.getElementById('ase-unique').value='false'; document.getElementById('ase-limited').value='false';
+  document.getElementById('admin-shop-editor').style.display=''; document.getElementById('btn-del-shop').style.display='none';
+  document.querySelectorAll('#admin-shop-list .admin-card-item').forEach(i=>i.classList.remove('selected'));
+};
+window.adminDeleteShopItem = async function() {
+  const id = window._editingShopItemId; if(!id||!confirm('Supprimer ?')) return;
+  _shop.items = (_shop.items||[]).filter(i=>i.id!==id);
+  try {
+    await sdSet('shop',_shop); invalidateSitedataCache();
+    document.getElementById('admin-shop-editor').style.display='none'; document.getElementById('btn-del-shop').style.display='none';
+    renderShop(); adminLoadShopEditor(); showToast('Article supprimé.');
+  } catch(err) { showToast('Erreur: '+err.message); }
+};
+window.adminSaveShopItem = async function() {
+  const id = window._editingShopItemId; if(!id) return;
+  const price=parseInt(document.getElementById('ase-price').value||'0',10), stock=parseInt(document.getElementById('ase-stock').value||'-1',10);
+  const newItem={id,name:(document.getElementById('ase-name').value||'').trim()||'Article',icon:(document.getElementById('ase-icon').value||'').trim()||'🛒',cat:(document.getElementById('ase-cat').value||'').trim()||'Général',price:isNaN(price)?0:Math.max(0,price),stock:isNaN(stock)?-1:stock,image:(document.getElementById('ase-image').value||'').trim()||'',unique:document.getElementById('ase-unique').value==='true',limited:document.getElementById('ase-limited').value==='true',desc:(document.getElementById('ase-desc').value||'').trim()||'',instructions:(document.getElementById('ase-instructions').value||'').trim()||''};
+  if(!newItem.image)delete newItem.image; if(!newItem.instructions)delete newItem.instructions;
+  if(!_shop)_shop={items:[]}; if(!_shop.items)_shop.items=[];
+  const idx=_shop.items.findIndex(i=>i.id===id); if(idx>=0)_shop.items[idx]=newItem;else _shop.items.push(newItem);
+  const fbEl=document.getElementById('admin-shop-feedback'); fbEl.textContent='Sauvegarde…'; fbEl.className='admin-feedback';
+  try {
+    await sdSet('shop',_shop); invalidateSitedataCache();
+    fbEl.textContent='✓ Sauvegardé !'; fbEl.className='admin-feedback ok';
+    renderShop(); adminLoadShopEditor(); showToast('Article mis à jour !');
+  } catch(err) { fbEl.textContent='Erreur: '+err.message; fbEl.className='admin-feedback err'; }
+};
 
-/* ════ Admin Pays ════ */
-window.adminLoadPaysEditor=function(){if(!_pays)return;setInputVal("ape-membres",_pays.membres||"");setInputVal("ape-rang",_pays.rang||"");setInputVal("ape-fondation",_pays.fondation||"");setInputVal("ape-herodesc",_pays.herodesc||"");setInputVal("ape-paydesc",_pays.paydesc||"");const gouvTA=document.getElementById("ape-gouv");if(gouvTA&&_pays.gouv)gouvTA.value=_pays.gouv.map(m=>m.init+"|"+m.nom+"|"+m.role+"|"+m.badge).join("\n");};
-window.adminSavePays=async function(){const gouvRaw=(document.getElementById("ape-gouv")?.value||"").trim().split("\n").filter(Boolean);const gouv=gouvRaw.map(line=>{const p=line.split("|");return{init:(p[0]||"").trim(),nom:(p[1]||"").trim(),role:(p[2]||"").trim(),badge:(p[3]||"").trim()};});_pays={membres:(document.getElementById("ape-membres")?.value||"").trim()||_pays.membres,rang:(document.getElementById("ape-rang")?.value||"").trim()||_pays.rang,fondation:(document.getElementById("ape-fondation")?.value||"").trim()||_pays.fondation,herodesc:(document.getElementById("ape-herodesc")?.value||"").trim()||_pays.herodesc,paydesc:(document.getElementById("ape-paydesc")?.value||"").trim()||_pays.paydesc,gouv:gouv.length?gouv:_pays.gouv};const fbEl=document.getElementById("admin-pays-feedback");fbEl.textContent="Sauvegarde…";fbEl.className="admin-feedback";try{await setDoc(doc(db,"sitedata","pays"),_pays);invalidateSitedataCache();fbEl.textContent="✓ Sauvegardé !";fbEl.className="admin-feedback ok";renderPays();showToast("Infos pays mises à jour !");}catch(err){fbEl.textContent=err.code==="permission-denied"?"❌ Règles Firestore.":"Erreur: "+err.message;fbEl.className="admin-feedback err";}};
+// ─── Utilitaires ──────────────────────────────────────────────────────────
+function setAdminFeedback(msg, type) { const el=document.getElementById('admin-feedback'); if(!el)return; el.textContent=msg; el.className='admin-feedback'+(type?' '+type:''); }
+function setEl(id, val) { var e=document.getElementById(id); if(e)e.textContent=val; }
+function setInputVal(id, val) { var e=document.getElementById(id); if(e)e.value=val; }
 
-/* ════ Admin Boutique ════ */
-window._editingShopItemId=null;
-window.adminLoadShopEditor=function(){if(!_shop)return;const list=document.getElementById("admin-shop-list");if(!list)return;list.innerHTML="";(_shop.items||[]).forEach(item=>{const el=document.createElement("div");el.className="admin-card-item";el.innerHTML='<span style="font-size:1.1rem;">'+(item.icon||'🛒')+'</span><span class="admin-card-item-name">'+escHtml(item.name||'Article')+'</span><span class="admin-card-item-xp">🪙 '+(item.price||0)+'</span>';el.onclick=function(){document.querySelectorAll("#admin-shop-list .admin-card-item").forEach(i=>i.classList.remove("selected"));el.classList.add("selected");window._editingShopItemId=item.id;document.getElementById("ase-name").value=item.name||"";document.getElementById("ase-icon").value=item.icon||"🛒";document.getElementById("ase-cat").value=item.cat||"";document.getElementById("ase-price").value=item.price!==undefined?item.price:"";document.getElementById("ase-stock").value=item.stock!==undefined?item.stock:-1;document.getElementById("ase-image").value=item.image||"";document.getElementById("ase-unique").value=item.unique?"true":"false";document.getElementById("ase-limited").value=item.limited?"true":"false";document.getElementById("ase-desc").value=item.desc||"";document.getElementById("ase-instructions").value=item.instructions||"";document.getElementById("admin-shop-editor").style.display="";document.getElementById("btn-del-shop").style.display="";};list.appendChild(el);});};
-window.adminNewShopItem=function(){window._editingShopItemId="shop_"+Date.now();["ase-name","ase-icon","ase-cat","ase-price","ase-image","ase-desc","ase-instructions"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});document.getElementById("ase-icon").value="🛒";document.getElementById("ase-stock").value="-1";document.getElementById("ase-unique").value="false";document.getElementById("ase-limited").value="false";document.getElementById("admin-shop-editor").style.display="";document.getElementById("btn-del-shop").style.display="none";document.querySelectorAll("#admin-shop-list .admin-card-item").forEach(i=>i.classList.remove("selected"));};
-window.adminDeleteShopItem=async function(){const id=window._editingShopItemId;if(!id)return;if(!confirm("Supprimer ?"))return;_shop.items=(_shop.items||[]).filter(i=>i.id!==id);try{await setDoc(doc(db,"sitedata","shop"),_shop);invalidateSitedataCache();document.getElementById("admin-shop-editor").style.display="none";document.getElementById("btn-del-shop").style.display="none";renderShop();adminLoadShopEditor();showToast("Article supprimé.");}catch(err){showToast("Erreur: "+err.message);}};
-window.adminSaveShopItem=async function(){const id=window._editingShopItemId;if(!id)return;const price=parseInt(document.getElementById("ase-price").value||"0",10);const stock=parseInt(document.getElementById("ase-stock").value||"-1",10);const newItem={id,name:(document.getElementById("ase-name").value||"").trim()||"Article",icon:(document.getElementById("ase-icon").value||"").trim()||"🛒",cat:(document.getElementById("ase-cat").value||"").trim()||"Général",price:isNaN(price)?0:Math.max(0,price),stock:isNaN(stock)?-1:stock,image:(document.getElementById("ase-image").value||"").trim()||"",unique:document.getElementById("ase-unique").value==="true",limited:document.getElementById("ase-limited").value==="true",desc:(document.getElementById("ase-desc").value||"").trim()||"",instructions:(document.getElementById("ase-instructions").value||"").trim()||""};if(!newItem.image)delete newItem.image;if(!newItem.instructions)delete newItem.instructions;if(!_shop)_shop={items:[]};if(!_shop.items)_shop.items=[];const idx=_shop.items.findIndex(i=>i.id===id);if(idx>=0)_shop.items[idx]=newItem;else _shop.items.push(newItem);const fbEl=document.getElementById("admin-shop-feedback");fbEl.textContent="Sauvegarde…";fbEl.className="admin-feedback";try{await setDoc(doc(db,"sitedata","shop"),_shop);invalidateSitedataCache();fbEl.textContent="✓ Sauvegardé !";fbEl.className="admin-feedback ok";renderShop();adminLoadShopEditor();showToast("Article mis à jour !");}catch(err){fbEl.textContent=err.code==="permission-denied"?"❌ Règles Firestore.":"Erreur: "+err.message;fbEl.className="admin-feedback err";}};
-
-/* ════ Utilitaires ════ */
-function setAdminFeedback(msg,type){const el=document.getElementById("admin-feedback");if(!el)return;el.textContent=msg;el.className="admin-feedback"+(type?" "+type:"");}
-function setEl(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
-function setInputVal(id,val){var e=document.getElementById(id);if(e)e.value=val;}
-
-window.Timor={loginWithDiscord,logout,handleDiscordCallback};
-(async function(){const code=sessionStorage.getItem("discord_pending_code"),state=sessionStorage.getItem("discord_pending_state");if(code){sessionStorage.removeItem("discord_pending_code");sessionStorage.removeItem("discord_pending_state");await handleDiscordCallback(code,state||"");}})();
+// Exposer loginWithDiscord globalement
+window.Timor = { loginWithDiscord, logout };
 </script>
 
 <!-- ════ UI HELPERS ════ -->
