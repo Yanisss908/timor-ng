@@ -837,8 +837,9 @@ function renderConnectedState(profile, dbProfile){
   const navAuth=document.getElementById('nav-auth');
   if(navAuth){navAuth.innerHTML='<div class="nav-user">'+(avatar?'<img src="'+avatar+'" class="nav-avatar" alt="" onerror="this.style.display=\'none\'">':``)+'<span class="nav-username">'+name+'</span>'+badge+'<span class="nav-pill nav-level">Niv. '+lvl+'</span><span class="nav-pill nav-xp">'+xp.toLocaleString('fr-FR')+' XP</span><span class="nav-pill nav-coins">🪙 '+coins.toLocaleString('fr-FR')+'</span><button class="btn-nav-logout" id="btn-logout" title="Déconnexion">✕</button></div>';document.getElementById('btn-logout').addEventListener('click',logout);}
   const dw=document.getElementById('dash-welcome');if(dw)dw.textContent='Bienvenue, '+(dbProfile?.global_name||profile.global_name||'Citoyen')+' !';
-  if (role === 'admin') applyMaintenanceState(false);
-  
+ if (role === 'admin') applyMaintenanceState(false);
+}
+
 function renderDisconnectedState(){
   const ab=document.getElementById('auth-banner');if(ab)ab.style.display='';
   document.body.classList.remove('is-admin','is-modo');
@@ -1000,7 +1001,8 @@ window.Timor = { loginWithDiscord, logout };
     await loadLeaderboard();
   }
 })();
-  
+</script>
+
 <!-- ════ UI HELPERS ════ -->
 <script>
 function showSection(id){
